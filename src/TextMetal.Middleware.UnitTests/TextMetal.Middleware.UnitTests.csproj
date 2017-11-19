@@ -1,0 +1,28 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <TargetFramework>netcoreapp2.0</TargetFramework>
+    <OutputType>Exe</OutputType>
+  </PropertyGroup>
+
+  <Import Project="..\common.props" />
+
+  <ItemGroup>
+    <None Update="appconfig.json">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\TextMetal.Imports.NMock\TextMetal.Imports.NMock.csproj" />
+    <ProjectReference Include="..\TextMetal.Imports.NUnit\TextMetal.Imports.NUnit.csproj" />
+    <ProjectReference Include="..\TextMetal.Middleware.Solder.Context\TextMetal.Middleware.Solder.Context.csproj" />
+    <ProjectReference Include="..\TextMetal.Middleware.Solder.Executive\TextMetal.Middleware.Solder.Executive.csproj" />
+    <ProjectReference Include="..\TextMetal.Middleware.Solder.Extensions\TextMetal.Middleware.Solder.Extensions.csproj" />
+    <ProjectReference Include="..\TextMetal.Middleware.Solder.Injection\TextMetal.Middleware.Solder.Injection.csproj" />
+    <ProjectReference Include="..\TextMetal.Middleware.Solder.Interception\TextMetal.Middleware.Solder.Interception.csproj" />
+    <ProjectReference Include="..\TextMetal.Middleware.Solder.Primitives\TextMetal.Middleware.Solder.Primitives.csproj" />
+    <ProjectReference Include="..\TextMetal.Middleware.Solder.Serialization\TextMetal.Middleware.Solder.Serialization.csproj" />
+    <ProjectReference Include="..\TextMetal.Middleware.Solder.Utilities\TextMetal.Middleware.Solder.Utilities.csproj" />
+  </ItemGroup>
+
+</Project>

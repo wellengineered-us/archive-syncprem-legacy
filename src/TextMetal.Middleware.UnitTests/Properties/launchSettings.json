@@ -1,0 +1,13 @@
+{
+	"profiles":
+	{
+		"default":
+		{
+			"commandName": "Project",
+			"environmentVariables":
+			{
+				"SOLDER_HOOK_UNHANDLED_EXCEPTIONS": "false"
+			}
+		}
+	}
+}

@@ -1,0 +1,23 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <TargetFramework>netcoreapp2.0</TargetFramework>
+    <ApplicationIcon />
+    <OutputType>Exe</OutputType>
+    <StartupObject />
+  </PropertyGroup>
+
+  <Import Project="..\common.props" />
+
+  <ItemGroup>
+    <None Update="appconfig.json">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\SyncPrem.Infrastructure.Oxymoron\SyncPrem.Infrastructure.Oxymoron.csproj" />
+    <ProjectReference Include="..\SyncPrem.Pipeline.Abstractions\SyncPrem.Pipeline.Abstractions.csproj" />
+    <ProjectReference Include="..\SyncPrem.Pipeline.Core\SyncPrem.Pipeline.Core.csproj" />
+  </ItemGroup>
+
+</Project>

@@ -1,0 +1,19 @@
+﻿@model SyncPrem.Controller.Web.Program
+
+@{
+	this.ViewData["Title"] = "TestView";
+}
+
+<html>
+	<head></head>
+	<body>
+		<h2>TestView</h2>
+		@{
+			@using (this.Html.BeginForm("Index", "Test", FormMethod.Post, new { enctype = "multipart/form-data" }))
+			 {
+				 @(this.Html.TextBox("bob", null, new { type = "file" }))
+				 <input type="submit" id="btnSave" value="Submit"/>
+			 }
+		}
+	</body>
+</html>

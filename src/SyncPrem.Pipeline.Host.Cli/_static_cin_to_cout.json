@@ -1,0 +1,41 @@
+{
+	"PipelineAqtn": "SyncPrem.Pipeline.Core.DefaultStaticPipeline, SyncPrem.Pipeline.Core",
+
+	"ProducerFilterConfiguration":
+	{
+		"FilterAqtn": "SyncPrem.Pipeline.Core.Filters.Console.ConsoleProducerPipelineFilter, SyncPrem.Pipeline.Core",
+		"FilterSpecificConfiguration":
+		{
+		}
+	},
+
+	"TransformerFilterConfigurations":
+	[
+		{
+			"FilterAqtn": "",
+			"FilterSpecificConfiguration":
+			{
+			}
+		},
+		{
+			"FilterAqtn": "",
+			"FilterSpecificConfiguration":
+			{
+			}
+		},
+		{
+			"FilterAqtn": "",
+			"FilterSpecificConfiguration":
+			{
+			}
+		}
+	],
+
+	"ConsumerFilterConfiguration":
+	{
+		"FilterAqtn": "SyncPrem.Pipeline.Core.Filters.Console.ConsoleConsumerPipelineFilter, SyncPrem.Pipeline.Core",
+		"FilterSpecificConfiguration":
+		{
+		}
+	}
+}

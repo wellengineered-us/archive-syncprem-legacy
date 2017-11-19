@@ -1,0 +1,36 @@
+# catch-all
+[\!]git*
+
+# directory name specs
+.partial
+.vs
+PublishProfiles
+TestResults
+_ReSharper.*
+artifacts
+bin
+clientbin
+debug
+obj
+output
+packages
+pkg
+release
+
+# file name specs
+#project.lock.json
+.DS_Store
+TestResult.xml
+desktop.ini
+thumbs.db
+
+# file extension specs
+*.DotSettings
+*.VisualState.xml
+*.cache
+*.orig
+*.pidb
+*.resharper
+*.suo
+*.user
+*.userprefs

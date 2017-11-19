@@ -1,0 +1,14 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <TargetFramework>netstandard2.0</TargetFramework>
+  </PropertyGroup>
+
+  <Import Project="..\common.props" />
+
+  <ItemGroup>
+    <ProjectReference Include="..\TextMetal.Middleware.Solder.Utilities\TextMetal.Middleware.Solder.Utilities.csproj" />
+    <ProjectReference Include="..\TextMetal.Middleware.Solder.Injection\TextMetal.Middleware.Solder.Injection.csproj" />
+    <ProjectReference Include="..\TextMetal.Middleware.Solder.Serialization\TextMetal.Middleware.Solder.Serialization.csproj" />
+  </ItemGroup>
+
+</Project>

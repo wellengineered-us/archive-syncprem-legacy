@@ -1,0 +1,12 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <TargetFramework>netcoreapp2.0</TargetFramework>
+  </PropertyGroup>
+
+  <Import Project="..\common.props" />
+
+  <ItemGroup>
+    <ProjectReference Include="..\SyncPrem.Infrastructure.Wrappers\SyncPrem.Infrastructure.Wrappers.csproj" />
+  </ItemGroup>
+
+</Project>

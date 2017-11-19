@@ -1,0 +1,574 @@
+﻿/*
+	Copyright ©2002-2017 Daniel P. Bullington (dpbullington@gmail.com)
+	Distributed under the MIT license: http://www.opensource.org/licenses/mit-license.php
+*/
+
+using System;
+using System.Collections.Generic;
+using System.Collections.ObjectModel;
+using System.Data;
+using System.Data.Common;
+using System.Linq;
+using System.Reflection;
+
+using SyncPrem.Infrastructure.Data.Primitives;
+using SyncPrem.Infrastructure.Wrappers;
+
+using TextMetal.Middleware.Solder.Extensions;
+using TextMetal.Middleware.Solder.Primitives;
+
+namespace SyncPrem.Infrastructure.Data.AdoNet
+{
+	internal class AdoNetStreamingFascade : IAdoNetStreamingFascade
+	{
+		#region Constructors/Destructors
+
+		/// <summary>
+		/// Initializes a new instance of the AdoNetStreamingFascade class.
+		/// </summary>
+		public AdoNetStreamingFascade()
+		{
+		}
+
+		#endregion
+
+		#region Methods/Operators
+
+		/// <summary>
+		/// Create a new data parameter from the data source.
+		/// This method DOES NOT DISPOSE OF CONNECTION/TRANSACTION - UP TO THE CALLER.
+		/// </summary>
+		/// <param name="dbConnection"> The database connection. </param>
+		/// <param name="dbTransaction"> An optional local database transaction. </param>
+		/// <param name="sourceColumn"> Specifies the source column. </param>
+		/// <param name="parameterDirection"> Specifies the parameter direction. </param>
+		/// <param name="parameterDbType"> Specifies the parameter provider-(in)dependent type. </param>
+		/// <param name="parameterSize"> Specifies the parameter size. </param>
+		/// <param name="parameterPrecision"> Specifies the parameter precision. </param>
+		/// <param name="parameterScale"> Specifies the parameter scale. </param>
+		/// <param name="parameterNullable"> Specifies the parameter nullable-ness. </param>
+		/// <param name="parameterName"> Specifies the parameter name. </param>
+		/// <param name="parameterValue"> Specifies the parameter value. </param>
+		/// <returns> The data parameter with the specified properties set. </returns>
+		public DbParameter CreateParameter(DbConnection dbConnection, DbTransaction dbTransaction, string sourceColumn, ParameterDirection parameterDirection, DbType parameterDbType, int parameterSize, byte parameterPrecision, byte parameterScale, bool parameterNullable, string parameterName, object parameterValue)
+		{
+			DbParameter dbParameter;
+
+			Guid _ = this.__enter();
+
+			if ((object)dbConnection == null)
+				throw new ArgumentNullException(nameof(dbConnection));
+
+			using (DbCommand dbCommand = this.__use(_, dbConnection.CreateCommand()))
+				dbParameter = dbCommand.CreateParameter();
+
+			dbParameter.ParameterName = parameterName;
+			dbParameter.Size = parameterSize;
+			dbParameter.Value = parameterValue;
+			dbParameter.Direction = parameterDirection;
+			dbParameter.DbType = parameterDbType;
+			dbParameter.IsNullable = parameterNullable;
+			dbParameter.Precision = parameterPrecision;
+			dbParameter.Scale = parameterScale;
+			dbParameter.SourceColumn = sourceColumn;
+
+			this.__leave(_);
+
+			return dbParameter;
+		}
+
+		/// <summary>
+		/// Executes a command, returning a data reader, against a data source.
+		/// This method DOES NOT DISPOSE OF CONNECTION/TRANSACTION - UP TO THE CALLER.
+		/// This method DOES NOT DISPOSE OF DATA READER - UP TO THE CALLER.
+		/// </summary>
+		/// <param name="dbConnection"> The database connection. </param>
+		/// <param name="dbTransaction"> An optional local database transaction. </param>
+		/// <param name="commandType"> The type of the command. </param>
+		/// <param name="commandText"> The SQL text or stored procedure name. </param>
+		/// <param name="commandParameters"> The parameters to use during the operation. </param>
+		/// <param name="commandBehavior"> The reader behavior. </param>
+		/// <param name="commandTimeout"> The command timeout (use null for default). </param>
+		/// <param name="commandPrepare"> Whether to prepare the command at the data source. </param>
+		/// <returns> The data reader result. </returns>
+		public DbDataReader ExecuteReader(DbConnection dbConnection, DbTransaction dbTransaction, CommandType commandType, string commandText, IEnumerable<DbParameter> commandParameters, CommandBehavior commandBehavior, int? commandTimeout, bool commandPrepare)
+		{
+			DbDataReader dbDataReader;
+
+			Guid _ = this.__enter();
+
+			if ((object)dbConnection == null)
+				throw new ArgumentNullException(nameof(dbConnection));
+
+			using (DbCommand dbCommand = this.__use(_, dbConnection.CreateCommand()))
+			{
+				dbCommand.Transaction = dbTransaction;
+				dbCommand.CommandType = commandType;
+				dbCommand.CommandText = commandText;
+
+				if ((object)commandTimeout != null)
+					dbCommand.CommandTimeout = (int)commandTimeout;
+
+				// add parameters
+				if ((object)commandParameters != null)
+				{
+					foreach (DbParameter commandParameter in commandParameters)
+					{
+						if ((object)commandParameter.Value == null)
+							commandParameter.Value = DBNull.Value;
+
+						dbCommand.Parameters.Add(commandParameter);
+					}
+				}
+
+				if (commandPrepare)
+					dbCommand.Prepare();
+
+				// do the database work
+				dbDataReader = dbCommand.ExecuteReader(commandBehavior);
+
+#if DEBUG
+				// wrap reader with proxy
+				dbDataReader = new WrappedDbDataReader(dbDataReader);
+#endif
+				// clean out parameters
+				//dbCommand.Parameters.Clear();
+
+				this.__disp(_, dbCommand);
+			}
+
+			this.__leave(_);
+
+			return dbDataReader;
+		}
+
+		/// <summary>
+		/// Execute a command against a data source, mapping the data reader to an enumerable of record dictionaries.
+		/// This method perfoms LAZY LOADING/DEFERRED EXECUTION.
+		/// This method DOES NOT DISPOSE OF CONNECTION/TRANSACTION - UP TO THE CALLER.
+		/// </summary>
+		/// <param name="dbConnection"> The database connection. </param>
+		/// <param name="dbTransaction"> An optional local database transaction. </param>
+		/// <param name="commandType"> The type of the command. </param>
+		/// <param name="commandText"> The SQL text or stored procedure name. </param>
+		/// <param name="commandParameters"> The parameters to use during the operation. </param>
+		/// <param name="rowsAffectedCallback"> Executed when the output count of records affected is available to return (post enumeration). </param>
+		/// <returns> An enumerable of result instances, each containing an enumerable of dictionaries with record key/value pairs of schema metadata. </returns>
+		public IEnumerable<IRecord> ExecuteRecords(DbConnection dbConnection, DbTransaction dbTransaction, CommandType commandType, string commandText, IEnumerable<DbParameter> commandParameters, Action<int> rowsAffectedCallback)
+		{
+			IEnumerable<IRecord> records;
+			DbDataReader dbDataReader;
+
+			// force no preparation
+			const bool COMMAND_PREPARE = false;
+
+			// force provider default timeout
+			const object COMMAND_TIMEOUT = null; /*int?*/
+
+			// force command behavior to default; the unit of work will manage connection lifetime
+			const CommandBehavior COMMAND_BEHAVIOR = CommandBehavior.Default;
+
+			Guid _ = this.__enter();
+
+			if ((object)dbConnection == null)
+				throw new ArgumentNullException(nameof(dbConnection));
+
+			// MUST DISPOSE WITHIN A NEW YIELD STATE MACHINE
+			using (this.__use(_, dbDataReader = this.ExecuteReader(dbConnection, dbTransaction, commandType, commandText, commandParameters, COMMAND_BEHAVIOR, (int?)COMMAND_TIMEOUT, COMMAND_PREPARE)))
+			{
+				records = this.GetRecordsFromReader(dbDataReader, rowsAffectedCallback);
+
+				this.__trace(_, "before yield loop");
+
+				foreach (IRecord record in records)
+				{
+					this.__trace(_, "on yield item");
+
+					yield return record; // LAZY PROCESSING INTENT HERE / DO NOT FORCE EAGER LOAD
+				}
+
+				this.__trace(_, "after yield loop");
+
+				this.__disp(_, dbDataReader);
+			}
+
+			this.__leave(_);
+		}
+
+		/// <summary>
+		/// Execute a command against a data source, mapping the data reader to an enumerable of results, each with an enumerable of record dictionaries.
+		/// This method perfoms LAZY LOADING/DEFERRED EXECUTION.
+		/// This method DOES NOT DISPOSE OF CONNECTION/TRANSACTION - UP TO THE CALLER.
+		/// </summary>
+		/// <param name="dbConnection"> The database connection. </param>
+		/// <param name="dbTransaction"> An optional local database transaction. </param>
+		/// <param name="commandType"> The type of the command. </param>
+		/// <param name="commandText"> The SQL text or stored procedure name. </param>
+		/// <param name="commandParameters"> The parameters to use during the operation. </param>
+		/// <returns> An enumerable of result instances, each containing an enumerable of dictionaries with record key/value pairs of data. </returns>
+		public IEnumerable<IResult> ExecuteResults(DbConnection dbConnection, DbTransaction dbTransaction, CommandType commandType, string commandText, IEnumerable<DbParameter> commandParameters)
+		{
+			IEnumerable<IResult> results;
+			DbDataReader dbDataReader;
+
+			// force no preparation
+			const bool COMMAND_PREPARE = false;
+
+			// force provider default timeout
+			const object COMMAND_TIMEOUT = null; /*int?*/
+
+			// force command behavior to default; the unit of work will manage connection lifetime
+			const CommandBehavior COMMAND_BEHAVIOR = CommandBehavior.Default;
+
+			Guid _ = this.__enter();
+
+			if ((object)dbConnection == null)
+				throw new ArgumentNullException(nameof(dbConnection));
+
+			// MUST DISPOSE WITHIN A NEW YIELD STATE MACHINE
+			using (this.__use(_, dbDataReader = this.ExecuteReader(dbConnection, dbTransaction, commandType, commandText, commandParameters, COMMAND_BEHAVIOR, (int?)COMMAND_TIMEOUT, COMMAND_PREPARE)))
+			{
+				results = this.GetResultsFromReader(dbDataReader);
+
+				this.__trace(_, "before yield loop");
+
+				foreach (IResult result in results)
+				{
+					this.__trace(_, "on yield item");
+
+					yield return result; // LAZY PROCESSING INTENT HERE / DO NOT FORCE EAGER LOAD
+				}
+
+				this.__trace(_, "after yield loop");
+
+				this.__disp(_, dbDataReader);
+			}
+
+			this.__leave(_);
+		}
+
+		/// <summary>
+		/// Execute a command against a data source, mapping the data reader GetSchemaTable() result to an enumerable of enumerable of record dictionaries.
+		/// This method perfoms LAZY LOADING/DEFERRED EXECUTION.
+		/// This method DOES NOT DISPOSE OF CONNECTION/TRANSACTION - UP TO THE CALLER.
+		/// </summary>
+		/// <param name="dbConnection"> The database connection. </param>
+		/// <param name="dbTransaction"> An optional local database transaction. </param>
+		/// <param name="commandType"> The type of the command. </param>
+		/// <param name="commandText"> The SQL text or stored procedure name. </param>
+		/// <param name="commandParameters"> The parameters to use during the operation. </param>
+		/// <param name="recordsAffectedCallback"> Executed when the output count of records affected is available to return (post enumeration). </param>
+		/// <returns> An enumerable of result instances, each containing an enumerable of dictionaries with record key/value pairs of schema metadata. </returns>
+		public IEnumerable<IRecord> ExecuteSchemaRecords(DbConnection dbConnection, DbTransaction dbTransaction, CommandType commandType, string commandText, IEnumerable<DbParameter> commandParameters, Action<int> recordsAffectedCallback)
+		{
+			IEnumerable<IRecord> records;
+			DbDataReader dbDataReader;
+
+			// force no preparation
+			const bool COMMAND_PREPARE = false;
+
+			// force provider default timeout
+			const object COMMAND_TIMEOUT = null; /*int?*/
+
+			// force command behavior to default; the unit of work will manage connection lifetime
+			const CommandBehavior COMMAND_BEHAVIOR = CommandBehavior.Default;
+
+			Guid _ = this.__enter();
+
+			if ((object)dbConnection == null)
+				throw new ArgumentNullException(nameof(dbConnection));
+
+			// MUST DISPOSE WITHIN A NEW YIELD STATE MACHINE
+			using (this.__use(_, dbDataReader = this.ExecuteReader(dbConnection, dbTransaction, commandType, commandText, commandParameters, COMMAND_BEHAVIOR, (int?)COMMAND_TIMEOUT, COMMAND_PREPARE)))
+			{
+				records = this.GetSchemaRecordsFromReader(dbDataReader, recordsAffectedCallback);
+
+				this.__trace(_, "before yield loop");
+
+				foreach (IRecord record in records)
+				{
+					this.__trace(_, "on yield item");
+
+					yield return record; // LAZY PROCESSING INTENT HERE / DO NOT FORCE EAGER LOAD
+				}
+
+				this.__trace(_, "after yield loop");
+
+				this.__disp(_, dbDataReader);
+			}
+
+			this.__leave(_);
+		}
+
+		/// <summary>
+		/// Execute a command against a data source, mapping the data reader GetSchemaTable() result to an results, each with an enumerable of record dictionaries.
+		/// This method perfoms LAZY LOADING/DEFERRED EXECUTION.
+		/// This method DOES NOT DISPOSE OF CONNECTION/TRANSACTION - UP TO THE CALLER.
+		/// </summary>
+		/// <param name="dbConnection"> The database connection. </param>
+		/// <param name="dbTransaction"> An optional local database transaction. </param>
+		/// <param name="commandType"> The type of the command. </param>
+		/// <param name="commandText"> The SQL text or stored procedure name. </param>
+		/// <param name="commandParameters"> The parameters to use during the operation. </param>
+		/// <returns> An enumerable of result instances, each containing an enumerable of dictionaries with record key/value pairs of schema metadata. </returns>
+		public IEnumerable<IResult> ExecuteSchemaResults(DbConnection dbConnection, DbTransaction dbTransaction, CommandType commandType, string commandText, IEnumerable<DbParameter> commandParameters)
+		{
+			IEnumerable<IResult> results;
+			DbDataReader dbDataReader;
+
+			// force no preparation
+			const bool COMMAND_PREPARE = false;
+
+			// force provider default timeout
+			const object COMMAND_TIMEOUT = null; /*int?*/
+
+			// force command behavior to default; the unit of work will manage connection lifetime
+			const CommandBehavior COMMAND_BEHAVIOR = CommandBehavior.SchemaOnly;
+
+			Guid _ = this.__enter();
+
+			if ((object)dbConnection == null)
+				throw new ArgumentNullException(nameof(dbConnection));
+
+			// MUST DISPOSE WITHIN A NEW YIELD STATE MACHINE
+			using (this.__use(_, dbDataReader = this.ExecuteReader(dbConnection, dbTransaction, commandType, commandText, commandParameters, COMMAND_BEHAVIOR, (int?)COMMAND_TIMEOUT, COMMAND_PREPARE)))
+			{
+				results = this.GetSchemaResultsFromReader(dbDataReader);
+
+				this.__trace(_, "before yield loop");
+
+				foreach (IResult result in results)
+				{
+					this.__trace(_, "on yield item");
+
+					yield return result; // LAZY PROCESSING INTENT HERE / DO NOT FORCE EAGER LOAD
+				}
+
+				this.__trace(_, "after yield loop");
+
+				this.__disp(_, dbDataReader);
+			}
+
+			this.__leave(_);
+		}
+
+		/// <summary>
+		/// Execute a command against a data source, mapping the data reader to an enumerable of record dictionaries.
+		/// This method perfoms LAZY LOADING/DEFERRED EXECUTION.
+		/// Note that THE DATA READER WILL NOT BE DISPOSED UPON ENUMERATION OR FOREACH BRANCH OUT.
+		/// </summary>
+		/// <param name="dbDataReader"> The target data reader. </param>
+		/// <param name="recordsAffectedCallback"> Executed when the output count of records affected is available to return (post enumeration). </param>
+		/// <returns> An enumerable of record dictionary instances, containing key/value pairs of data. </returns>
+		public IEnumerable<IRecord> GetRecordsFromReader(DbDataReader dbDataReader, Action<int> recordsAffectedCallback)
+		{
+			IRecord record;
+			int recordsAffected;
+			int recordIndex = 0;
+			string key;
+			object value;
+
+			Guid _ = this.__enter();
+
+			if ((object)dbDataReader == null)
+				throw new ArgumentNullException(nameof(dbDataReader));
+
+			//using (this.__use(_, dbDataReader))
+			{
+				this.__trace(_, "before yield loop");
+
+				while (dbDataReader.Read())
+				{
+					record = new Record(recordIndex++);
+
+					for (int fieldIndex = 0; fieldIndex < dbDataReader.FieldCount; fieldIndex++)
+					{
+						key = dbDataReader.GetName(fieldIndex);
+						value = dbDataReader.GetValue(fieldIndex);
+						value = value.ChangeType<object>();
+
+						if (record.ContainsKey(key) || (key ?? string.Empty).Length == 0)
+							key = string.Format("Field_{0:0000}", fieldIndex);
+
+						record.Add(key, value);
+					}
+
+					this.__trace(_, "on yield item");
+
+					yield return record; // LAZY PROCESSING INTENT HERE / DO NOT FORCE EAGER LOAD
+				}
+
+				this.__trace(_, "after yield loop");
+
+				//this.__disp(_, dbDataReader);
+			}
+
+			recordsAffected = dbDataReader.RecordsAffected;
+
+			if ((object)recordsAffectedCallback != null)
+				recordsAffectedCallback(recordsAffected);
+
+			this.__leave(_);
+		}
+
+		/// <summary>
+		/// Execute a command against a data source, mapping the data reader to an enumerable of results, each with an enumerable of records.
+		/// This method perfoms LAZY LOADING/DEFERRED EXECUTION.
+		/// Note that THE DATA READER WILL NOT BE DISPOSED UPON ENUMERATION OR FOREACH BRANCH OUT.
+		/// </summary>
+		/// <param name="dbDataReader"> The target data reader. </param>
+		/// <returns> An enumerable of result instances, each containing an enumerable of dictionaries with record key/value pairs of data. </returns>
+		public IEnumerable<IResult> GetResultsFromReader(DbDataReader dbDataReader)
+		{
+			int resultIndex = 0;
+
+			Guid _ = this.__enter();
+
+			if ((object)dbDataReader == null)
+				throw new ArgumentNullException(nameof(dbDataReader));
+
+			//using (this.__use(_, dbDataReader))
+			{
+				this.__trace(_, "before yield loop");
+
+				do
+				{
+					Result result = new Result(resultIndex++); // prevent modified closure
+					result.Records = this.GetRecordsFromReader(dbDataReader, (ra) => result.RecordsAffected = ra);
+
+					this.__trace(_, "on yield item");
+
+					yield return result; // LAZY PROCESSING INTENT HERE / DO NOT FORCE EAGER LOAD
+				}
+				while (dbDataReader.NextResult());
+
+				this.__trace(_, "after yield loop");
+
+				//this.__disp(_, dbDataReader);
+			}
+
+			this.__leave(_);
+		}
+
+		/// <summary>
+		/// Execute a command against a data source, mapping the data reader GetSchemaTable() result to an enumerable of record dictionaries.
+		/// This method perfoms LAZY LOADING/DEFERRED EXECUTION.
+		/// Note that THE DATA READER WILL NOT BE DISPOSED UPON ENUMERATION OR FOREACH BRANCH OUT.
+		/// </summary>
+		/// <param name="dbDataReader"> The target data reader. </param>
+		/// <param name="recordsAffectedCallback"> Executed when the output count of records affected is available to return (post enumeration). </param>
+		/// <returns> An enumerable of record dictionary instances, containing key/value pairs of schema metadata. </returns>
+		public IEnumerable<IRecord> GetSchemaRecordsFromReader(DbDataReader dbDataReader, Action<int> recordsAffectedCallback)
+		{
+			ReadOnlyCollection<DbColumn> dbColumns;
+			DbColumn dbColumn;
+			PropertyInfo[] propertyInfos;
+			PropertyInfo propertyInfo;
+			Record record;
+			int recordsAffected;
+			string key;
+			object value;
+
+			Guid _ = this.__enter();
+
+			if ((object)dbDataReader == null)
+				throw new ArgumentNullException(nameof(dbDataReader));
+
+			if (!dbDataReader.CanGetColumnSchema())
+				throw new NotSupportedException(string.Format("The connection command type '{0}' does not support schema access.", dbDataReader.GetType().FullName));
+
+			//using (this.__use(_, dbDataReader))
+			{
+				dbColumns = dbDataReader.GetColumnSchema();
+
+				this.__trace(_, "before yield loop");
+
+				if ((object)dbColumns != null)
+				{
+					for (int recordIndex = 0; recordIndex < dbColumns.Count; recordIndex++)
+					{
+						dbColumn = dbColumns[recordIndex];
+
+						propertyInfos = dbColumn.GetType().GetProperties(BindingFlags.Public | BindingFlags.Instance | BindingFlags.GetProperty);
+
+						record = new Record(recordIndex);
+						record.ContextData = dbColumn;
+
+						if ((object)propertyInfos != null)
+						{
+							for (int fieldIndex = 0; fieldIndex < propertyInfos.Length; fieldIndex++)
+							{
+								propertyInfo = propertyInfos[fieldIndex];
+
+								if (propertyInfo.GetIndexParameters().Any())
+									continue;
+
+								key = propertyInfo.Name;
+								value = propertyInfo.GetValue(dbColumn);
+								value = value.ChangeType<object>();
+
+								record.Add(key, value);
+							}
+						}
+
+						this.__trace(_, "on yield item");
+
+						yield return record; // LAZY PROCESSING INTENT HERE / DO NOT FORCE EAGER LOAD
+					}
+				}
+
+				this.__trace(_, "after yield loop");
+
+				//this.__disp(_, dbDataReader);
+			}
+
+			recordsAffected = dbDataReader.RecordsAffected;
+
+			if ((object)recordsAffectedCallback != null)
+				recordsAffectedCallback(recordsAffected);
+
+			this.__leave(_);
+		}
+
+		/// <summary>
+		/// Execute a command against a data source, mapping the data reader GetSchemaTable() result to an enumerable of results, each with an enumerable of records.
+		/// This method perfoms LAZY LOADING/DEFERRED EXECUTION.
+		/// Note that THE DATA READER WILL NOT BE DISPOSED UPON ENUMERATION OR FOREACH BRANCH OUT.
+		/// </summary>
+		/// <param name="dbDataReader"> The target data reader. </param>
+		/// <returns> An enumerable of result instances, each containing an enumerable of dictionaries with record key/value pairs of schema metadata. </returns>
+		public IEnumerable<IResult> GetSchemaResultsFromReader(DbDataReader dbDataReader)
+		{
+			int resultIndex = 0;
+
+			Guid _ = this.__enter();
+
+			if ((object)dbDataReader == null)
+				throw new ArgumentNullException(nameof(dbDataReader));
+
+			//using (this.__use(_, dbDataReader))
+			{
+				this.__trace(_, "before yield loop");
+
+				do
+				{
+					Result result = new Result(resultIndex++); // prevent modified closure
+					result.Records = this.GetSchemaRecordsFromReader(dbDataReader, (ra) => result.RecordsAffected = ra);
+
+					this.__trace(_, "on yield item");
+
+					yield return result; // LAZY PROCESSING INTENT HERE / DO NOT FORCE EAGER LOAD
+				}
+				while (dbDataReader.NextResult());
+
+				this.__trace(_, "after yield loop");
+
+				//this.__disp(_, dbDataReader);
+			}
+
+			this.__leave(_);
+		}
+
+		#endregion
+	}
+}

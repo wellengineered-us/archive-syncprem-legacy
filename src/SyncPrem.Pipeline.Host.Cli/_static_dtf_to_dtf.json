@@ -1,0 +1,101 @@
+{
+	"PipelineAqtn": "SyncPrem.Pipeline.Core.DefaultStaticPipeline, SyncPrem.Pipeline.Core",
+
+	"ProducerFilterConfiguration":
+	{
+		"FilterAqtn": "SyncPrem.Pipeline.Core.Filters.Textual.DelimitedTextProducerPipelineFilter, SyncPrem.Pipeline.Core",
+		"FilterSpecificConfiguration":
+		{
+			"DelimitedTextFilePath": "d:\\Confidential_Banking_Data.txt",
+			"DelimitedTextSpec":
+			{
+				"FirstRecordIsHeader": true,
+				"RecordDelimiter": "\r\n",
+				"FieldDelimiter": "\t",
+				"QuoteValue": "",
+
+				"HeaderSpecs":
+				[
+					{
+						"HeaderName": "institution",
+						"FieldType": "String"
+					},
+					{
+						"HeaderName": "txid",
+						"FieldType": "Number"
+					},
+					{
+						"HeaderName": "number",
+						"FieldType": "String"
+					},
+					{
+						"HeaderName": "date",
+						"FieldType": "DateTime"
+					},
+					{
+						"HeaderName": "payee",
+						"FieldType": "String"
+					},
+					{
+						"HeaderName": "amount",
+						"FieldType": "Number"
+					},
+					{
+						"HeaderName": "cleared",
+						"FieldType": "Number"
+					},
+					{
+						"HeaderName": "category",
+						"FieldType": "String"
+					},
+					{
+						"HeaderName": "due",
+						"FieldType": "DateTime"
+					},
+					{
+						"HeaderName": "comments",
+						"FieldType": "String"
+					}
+				]
+			}
+		}
+	},
+
+	"TransformerFilterConfigurations":
+	[
+		{
+			"FilterAqtn": "",
+			"FilterSpecificConfiguration":
+			{
+			}
+		},
+		{
+			"FilterAqtn": "",
+			"FilterSpecificConfiguration":
+			{
+			}
+		},
+		{
+			"FilterAqtn": "",
+			"FilterSpecificConfiguration":
+			{
+			}
+		}
+	],
+
+	"ConsumerFilterConfiguration":
+	{
+		"FilterAqtn": "SyncPrem.Pipeline.Core.Filters.Textual.DelimitedTextConsumerPipelineFilter, SyncPrem.Pipeline.Core",
+		"FilterSpecificConfiguration":
+		{
+			"DelimitedTextFilePath": "d:\\Public_Banking_Data.csv",
+			"DelimitedTextSpec":
+			{
+				"FirstRecordIsHeader": true,
+				"RecordDelimiter": "\n",
+				"FieldDelimiter": ",",
+				"QuoteValue": "\""
+			}
+		}
+	}
+}

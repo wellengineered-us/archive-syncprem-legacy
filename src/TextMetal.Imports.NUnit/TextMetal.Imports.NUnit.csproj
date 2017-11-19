@@ -1,0 +1,25 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <TargetFramework>netstandard2.0</TargetFramework>
+  </PropertyGroup>
+
+  <Import Project="..\common.props" />
+
+  <!--<ItemGroup>
+    <Compile Remove="Framework\Compatibility\System\Lazy.cs;Framework\Internal\Commands\TimeoutCommand.cs" />
+    <Compile Remove="Framework\Internal\Commands\TimeoutCommand.cs" />
+  </ItemGroup>-->
+
+  <ItemGroup>
+    <PackageReference Include="System.Console" Version="4.3.0" />
+    <PackageReference Include="System.Runtime.Loader" Version="4.3.0" />
+    <PackageReference Include="System.Runtime.Serialization.Primitives" Version="4.3.0" />
+    <PackageReference Include="System.Threading.Thread" Version="4.3.0" />
+    <PackageReference Include="System.Xml.XmlDocument" Version="4.3.0" />
+  </ItemGroup>
+
+  <PropertyGroup Condition=" '$(TargetFramework)' == 'netstandard2.0' ">
+    <DefineConstants>$(DefineConstants);NETSTANDARD1_6;PORTABLE;NUNIT_FRAMEWORK;NUNITLITE;ASYNC</DefineConstants>
+  </PropertyGroup>
+
+</Project>

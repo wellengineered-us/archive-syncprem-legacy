@@ -1,0 +1,15 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <TargetFramework>netstandard2.0</TargetFramework>
+  </PropertyGroup>
+
+  <Import Project="..\common.props" />
+
+  <ItemGroup>
+    <ProjectReference Include="..\SyncPrem.Infrastructure.Configuration\SyncPrem.Infrastructure.Configuration.csproj" />
+    <ProjectReference Include="..\SyncPrem.Infrastructure.Data.Primitives\SyncPrem.Infrastructure.Data.Primitives.csproj" />
+    <ProjectReference Include="..\TextMetal.Middleware.Solder.Extensions\TextMetal.Middleware.Solder.Extensions.csproj" />
+    <ProjectReference Include="..\TextMetal.Middleware.Solder.Primitives\TextMetal.Middleware.Solder.Primitives.csproj" />
+  </ItemGroup>
+
+</Project>

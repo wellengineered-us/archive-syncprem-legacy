@@ -1,0 +1,46 @@
+<Project>
+	<PropertyGroup>
+		<DebugType>portable</DebugType>
+		<SignAssembly>true</SignAssembly>
+		<AssemblyOriginatorKeyFile>..\SyncPrem.snk</AssemblyOriginatorKeyFile>
+	</PropertyGroup>
+
+	<PropertyGroup>
+		<GenerateAssemblyTitleAttribute>false</GenerateAssemblyTitleAttribute>
+		<GenerateAssemblyConfigurationAttribute>false</GenerateAssemblyConfigurationAttribute>
+		<GenerateAssemblyCompanyAttribute>false</GenerateAssemblyCompanyAttribute>
+		<GenerateAssemblyProductAttribute>false</GenerateAssemblyProductAttribute>
+		<GenerateAssemblyCopyrightAttribute>false</GenerateAssemblyCopyrightAttribute>
+		<GenerateAssemblyDescriptionAttribute>false</GenerateAssemblyDescriptionAttribute>
+		<GenerateAssemblyVersionAttribute>false</GenerateAssemblyVersionAttribute>
+		<GenerateAssemblyFileVersionAttribute>false</GenerateAssemblyFileVersionAttribute>
+		<GenerateAssemblyInformationalVersionAttribute>false</GenerateAssemblyInformationalVersionAttribute>
+	</PropertyGroup>
+
+	<PropertyGroup>
+		<GeneratePackageOnBuild>true</GeneratePackageOnBuild>
+		<Product>SyncPrem</Product>
+		<Description>$(MSBuildProjectName) Library</Description>
+		<VersionPrefix>0.0.1</VersionPrefix>
+		<VersionSuffix>mvp</VersionSuffix>
+		<Authors>Daniel P. Bullington (dpbullington@gmail.com)</Authors>
+		<Copyright>©2002-2017 Daniel P. Bullington (dpbullington@gmail.com)</Copyright>
+		<PackageId>$(MSBuildProjectName)</PackageId>
+		<PackageTags>SyncPrem</PackageTags>
+		<PackageRequireLicenseAcceptance>true</PackageRequireLicenseAcceptance>
+		<PackageIconUrl>https://github.com/dpbullington/syncprem/blob/master/doc/syncprem-logo.png</PackageIconUrl>
+		<PackageProjectUrl>http://www.syncprem.com</PackageProjectUrl>
+		<PackageLicenseUrl>http://www.opensource.org/licenses/mit-license.php</PackageLicenseUrl>
+		<RepositoryType>git</RepositoryType>
+		<RepositoryUrl>https://github.com/syncprem/main</RepositoryUrl>
+		<NeutralLanguage>en-US</NeutralLanguage>
+	</PropertyGroup>
+
+	<ItemGroup>
+		<Compile Include="..\SolutionAssemblyInfo.cs" Link="Properties\SolutionAssemblyInfo.cs" />
+	</ItemGroup>
+
+	<ItemGroup>
+		<None Include="..\SyncPrem.snk" Link="SyncPrem.snk" />
+	</ItemGroup>
+</Project>

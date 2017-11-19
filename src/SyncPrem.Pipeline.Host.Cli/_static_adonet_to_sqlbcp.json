@@ -1,0 +1,83 @@
+{
+	"PipelineAqtn": "SyncPrem.Pipeline.Core.DefaultStaticPipeline, SyncPrem.Pipeline.Core",
+
+	"ProducerFilterConfiguration":
+	{
+		"FilterAqtn": "SyncPrem.Pipeline.Core.Filters.Relational.AdoNetProducerPipelineFilter, SyncPrem.Pipeline.Core",
+		"FilterSpecificConfiguration":
+		{
+			"ConnectionAqtn": "System.Data.SqlClient.SqlConnection, System.Data.SqlClient",
+			"ConnectionString":
+				"Server=(local);User ID=bank_account_demo_mssql_lcl_login;PWD=LrJGmP6UfW8TEp7x3wWhECUYULE6zzMcWQ03R6UxeB4xzVmnq5S4Lx0vApegZVH;Database=bank_account_demo;",
+
+			"PreExecuteCommand":
+			{
+				"CommandType": "",
+				"CommandText": ""
+			},
+
+			"ExecuteCommand":
+			{
+				"CommandType": "StoredProcedure",
+				"CommandText": "[bank_account_demo].[dbo].[ExecuteExport_AccountReporting]"
+			},
+
+			"PostExecuteCommand":
+			{
+				"CommandType": "",
+				"CommandText": ""
+			}
+		}
+	},
+
+	"TransformerFilterConfigurations":
+	[
+		{
+			"FilterAqtn": "",
+			"FilterSpecificConfiguration":
+			{
+			}
+		},
+		{
+			"FilterAqtn": "",
+			"FilterSpecificConfiguration":
+			{
+			}
+		},
+		{
+			"FilterAqtn": "",
+			"FilterSpecificConfiguration":
+			{
+			}
+		}
+	],
+
+	"ConsumerFilterConfiguration":
+	{
+		"FilterAqtn": "SyncPrem.Pipeline.Core.Filters.Relational.SqlBulkCopyConsumerPipelineFilter, SyncPrem.Pipeline.Core",
+		"FilterSpecificConfiguration":
+		{
+			"ConnectionAqtn": "System.Data.SqlClient.SqlConnection, System.Data.SqlClient",
+			"ConnectionString":
+				"Server=(local);User ID=bank_account_demo_mssql_lcl_login;PWD=LrJGmP6UfW8TEp7x3wWhECUYULE6zzMcWQ03R6UxeB4xzVmnq5S4Lx0vApegZVH;Database=bank_account_demo;",
+
+			"PreExecuteCommand":
+			{
+				"CommandType": "Text",
+				"CommandText": "TRUNCATE TABLE [bank_account_demo].[dbo].[Ox_AccountReporting]"
+			},
+
+			"ExecuteCommand":
+			{
+				"CommandType": "TableDirect",
+				"CommandText": "[bank_account_demo].[dbo].[Ox_AccountReporting]"
+			},
+
+			"PostExecuteCommand":
+			{
+				"CommandType": "",
+				"CommandText": ""
+			}
+		}
+	}
+}

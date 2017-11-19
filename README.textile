@@ -1,0 +1,7 @@
+h1. SyncPrem
+
+SyncPrem - coming soon!
+
+h2. License
+
+See doc/LICENSE.txt.

@@ -1,0 +1,387 @@
+{
+	"ConfigurationVersion":
+	{
+		"Major": 1,
+		"Minor": 0,
+		"Revision": 0,
+		"Build": 0
+	},
+
+	"EngineVersion":
+	{
+		"Major": 1,
+		"Minor": 0,
+		"Revision": 0,
+		"Build": 0
+	},
+
+	"SourceAdapterConfiguration":
+	{
+		"AdapterAqtn":
+			"TextMetal.Middleware.Oxymoron.Legacy.Adapter.Source.DelimitedTextSourceAdapter, TextMetal.Middleware.Oxymoron.Legacy",
+
+		"AdapterSpecificConfiguration":
+		{
+			"DelimitedTextFilePath": "d:\\Confidential_Banking_Data.txt",
+			"DelimitedTextSpec":
+			{
+				"FirstRecordIsHeader": true,
+				"RecordDelimiter": "\r\n",
+				"FieldDelimiter": "\t",
+				"QuoteValue": "",
+
+				"TextHeaderSpecs":
+				[
+					{
+						"HeaderName": "institution",
+						"FieldType": "String"
+					},
+					{
+						"HeaderName": "txid",
+						"FieldType": "Number"
+					},
+					{
+						"HeaderName": "number",
+						"FieldType": "String"
+					},
+					{
+						"HeaderName": "date",
+						"FieldType": "DateTime"
+					},
+					{
+						"HeaderName": "payee",
+						"FieldType": "String"
+					},
+					{
+						"HeaderName": "amount",
+						"FieldType": "Number"
+					},
+					{
+						"HeaderName": "cleared",
+						"FieldType": "Number"
+					},
+					{
+						"HeaderName": "category",
+						"FieldType": "String"
+					},
+					{
+						"HeaderName": "due",
+						"FieldType": "DateTime"
+					},
+					{
+						"HeaderName": "comments",
+						"FieldType": "String"
+					}
+				]
+			}
+		}
+	},
+
+	"DestinationAdapterConfiguration":
+	{
+		"AdapterAqtn":
+			"TextMetal.Middleware.Oxymoron.Legacy.Adapter.Destination.RecordCommandAdoNetDestinationAdapter, TextMetal.Middleware.Oxymoron.Legacy",
+
+		"AdapterSpecificConfiguration":
+		{
+			"ConnectionAqtn": "System.Data.SqlClient.SqlConnection, System.Data.SqlClient",
+			"ConnectionString": "Server=(local);Integrated Security=SSPI;",
+
+			"PreExecuteCommand":
+			{
+				"CommandType": "Text",
+				"CommandText": "TRUNCATE TABLE [bank_account_demo].[dbo].[stage_confidential_banking_data_txt]"
+			},
+
+			"ExecuteCommand":
+			{
+				"CommandType": "Text",
+				"CommandText":
+					"INSERT INTO [bank_account_demo].[dbo].[stage_confidential_banking_data_txt] VALUES (@InstitutionName, @TransactionNumber, @RefNumber, @TheDate, @PayeeName, @TheAmount, @IsCleared, @CategoryName, @DueDate, @Comments)",
+
+				"AdoNetParameterConfigurations":
+				[
+					{
+						"ParameterDirection": "Input",
+						"ParameterName": "@TransactionNumber",
+						"ParameterDbType": "String",
+						"SourceColumn": "institution"
+					},
+					{
+						"ParameterDirection": "Input",
+						"ParameterName": "@InstitutionName",
+						"ParameterDbType": "String",
+						"SourceColumn": "txid"
+					},
+					{
+						"ParameterDirection": "Input",
+						"ParameterName": "@RefNumber",
+						"ParameterDbType": "String",
+						"SourceColumn": "number"
+					},
+					{
+						"ParameterDirection": "Input",
+						"ParameterName": "@TheDate",
+						"ParameterDbType": "DateTime",
+						"SourceColumn": "date"
+					},
+					{
+						"ParameterDirection": "Input",
+						"ParameterName": "@PayeeName",
+						"ParameterDbType": "String",
+						"SourceColumn": "payee"
+					},
+					{
+						"ParameterDirection": "Input",
+						"ParameterName": "@TheAmount",
+						"ParameterDbType": "Double",
+						"SourceColumn": "amount"
+					},
+					{
+						"ParameterDirection": "Input",
+						"ParameterName": "@IsCleared",
+						"ParameterDbType": "Boolean",
+						"SourceColumn": "cleared"
+					},
+					{
+						"ParameterDirection": "Input",
+						"ParameterName": "@CategoryName",
+						"ParameterDbType": "String",
+						"SourceColumn": "category"
+					},
+					{
+						"ParameterDirection": "Input",
+						"ParameterName": "@DueDate",
+						"ParameterDbType": "DateTime",
+						"SourceColumn": "due"
+					},
+					{
+						"ParameterDirection": "Input",
+						"ParameterName": "@Comments",
+						"ParameterDbType": "String",
+						"SourceColumn": "comments"
+					}
+				]
+			},
+
+			"PostExecuteCommand":
+			{
+				"CommandType": "",
+				"CommandText": ""
+			}
+		}
+	},
+
+	"HashConfiguration":
+	{
+		"Multiplier": 33,
+		"Seed": 5381
+	},
+
+	"DictionaryConfigurations":
+	[
+		{
+			"PreloadEnabled": true,
+			"DictionaryId": "d_CrayonColor",
+			"RecordCount": 121,
+
+			"DictionaryAdapterConfiguration":
+			{
+				"AdapterAqtn":
+					"TextMetal.Middleware.Oxymoron.Legacy.Adapter.Dictionary.AdoNetDictionaryAdapter, TextMetal.Middleware.Oxymoron.Legacy",
+
+				"AdapterSpecificConfiguration":
+				{
+					"ConnectionAqtn": "System.Data.SqlClient.SqlConnection, System.Data.SqlClient",
+					"ConnectionString": "Server=(local);Integrated Security=SSPI;",
+
+					"PreExecuteCommand":
+					{
+						"CommandType": "",
+						"CommandText": ""
+					},
+
+					"ExecuteCommand":
+					{
+						"CommandType": "Text",
+						"CommandText":
+							"SELECT t.[Key], t.[CrayonColor] FROM [bank_account_demo].[OxConfig].[CrayonColorDictionary] t ORDER BY t.[Key] ASC"
+					},
+
+					"PostExecuteCommand":
+					{
+						"CommandType": "",
+						"CommandText": ""
+					}
+				}
+			}
+		},
+		{
+			"PreloadEnabled": true,
+			"DictionaryId": "d_LastName",
+			"RecordCount": 88800,
+
+			"DictionaryAdapterConfiguration":
+			{
+				"AdapterAqtn":
+					"TextMetal.Middleware.Oxymoron.Legacy.Adapter.Dictionary.AdoNetDictionaryAdapter, TextMetal.Middleware.Oxymoron.Legacy",
+
+				"AdapterSpecificConfiguration":
+				{
+					"ConnectionAqtn": "System.Data.SqlClient.SqlConnection, System.Data.SqlClient",
+					"ConnectionString": "Server=(local);Integrated Security=SSPI;",
+
+					"PreExecuteCommand":
+					{
+						"CommandType": "",
+						"CommandText": ""
+					},
+
+					"ExecuteCommand":
+					{
+						"CommandType": "Text",
+						"CommandText":
+							"SELECT t.[Key], t.[LastName] FROM [bank_account_demo].[OxConfig].[LastNameDictionary] t ORDER BY t.[Key] ASC"
+					},
+
+					"PostExecuteCommand":
+					{
+						"CommandType": "",
+						"CommandText": ""
+					}
+				}
+			}
+		},
+		{
+			"PreloadEnabled": true,
+			"DictionaryId": "d_FirstName",
+			"RecordCount": 5495,
+
+			"DictionaryAdapterConfiguration":
+			{
+				"AdapterAqtn":
+					"TextMetal.Middleware.Oxymoron.Legacy.Adapter.Dictionary.AdoNetDictionaryAdapter, TextMetal.Middleware.Oxymoron.Legacy",
+
+				"AdapterSpecificConfiguration":
+				{
+					"ConnectionAqtn": "System.Data.SqlClient.SqlConnection, System.Data.SqlClient",
+					"ConnectionString": "Server=(local);Integrated Security=SSPI;",
+
+					"PreExecuteCommand":
+					{
+						"CommandType": "",
+						"CommandText": ""
+					},
+
+					"ExecuteCommand":
+					{
+						"CommandType": "Text",
+						"CommandText":
+							"SELECT t.[Key], t.[FirstName] FROM [bank_account_demo].[OxConfig].[FirstNameDictionary] t ORDER BY t.[Key] ASC"
+					},
+
+					"PostExecuteCommand":
+					{
+						"CommandType": "",
+						"CommandText": ""
+					}
+				}
+			}
+		}
+	],
+
+	"TableConfiguration":
+	{
+		"ColumnConfigurations":
+		[
+			{
+				"ColumnName": "institution",
+				"ObfuscationStrategyAqtn":
+					"TextMetal.Middleware.Oxymoron.Legacy.Strategy.SubstitutionObfuscationStrategy, TextMetal.Middleware.Oxymoron.Legacy",
+				"ObfuscationStrategySpecificConfiguration":
+				{
+					"DictionaryReference": "d_FirstName"
+				}
+			},
+			{
+				"ColumnName": "txid",
+				"ObfuscationStrategyAqtn":
+					"TextMetal.Middleware.Oxymoron.Legacy.Strategy.DefaultingObfuscationStrategy, TextMetal.Middleware.Oxymoron.Legacy",
+				"ObfuscationStrategySpecificConfiguration":
+				{
+					"DefaultingCanBeNull": false
+				}
+			},
+			{
+				"ColumnName": "number",
+				"IsColumnNullable": false,
+				"ObfuscationStrategyAqtn":
+					"TextMetal.Middleware.Oxymoron.Legacy.Strategy.ShufflingObfuscationStrategy, TextMetal.Middleware.Oxymoron.Legacy",
+				"ObfuscationStrategySpecificConfiguration":
+				{
+				}
+			},
+			{
+				"ColumnName": "date",
+				"ObfuscationStrategyAqtn":
+					"TextMetal.Middleware.Oxymoron.Legacy.Strategy.VarianceObfuscationStrategy, TextMetal.Middleware.Oxymoron.Legacy",
+				"ObfuscationStrategySpecificConfiguration":
+				{
+					"VariancePercentValue": 25
+				}
+			},
+			{
+				"ColumnName": "payee",
+				"ObfuscationStrategyAqtn":
+					"TextMetal.Middleware.Oxymoron.Legacy.Strategy.SubstitutionObfuscationStrategy, TextMetal.Middleware.Oxymoron.Legacy",
+				"ObfuscationStrategySpecificConfiguration":
+				{
+					"DictionaryReference": "d_LastName"
+				}
+			},
+			{
+				"ColumnName": "amount",
+				"ObfuscationStrategyAqtn":
+					"TextMetal.Middleware.Oxymoron.Legacy.Strategy.VarianceObfuscationStrategy, TextMetal.Middleware.Oxymoron.Legacy",
+				"ObfuscationStrategySpecificConfiguration":
+				{
+					"VariancePercentValue": 100
+				}
+			},
+			{
+				"ColumnName": "cleared",
+				"ObfuscationStrategyAqtn":
+					"TextMetal.Middleware.Oxymoron.Legacy.Strategy.NoneObfuscationStrategy, TextMetal.Middleware.Oxymoron.Legacy",
+				"ObfuscationStrategySpecificConfiguration":
+				{
+				}
+			},
+			{
+				"ColumnName": "category",
+				"ObfuscationStrategyAqtn":
+					"TextMetal.Middleware.Oxymoron.Legacy.Strategy.SubstitutionObfuscationStrategy, TextMetal.Middleware.Oxymoron.Legacy",
+				"ObfuscationStrategySpecificConfiguration":
+				{
+					"DictionaryReference": "d_CrayonColor"
+				}
+			},
+			{
+				"ColumnName": "due",
+				"ObfuscationStrategyAqtn":
+					"TextMetal.Middleware.Oxymoron.Legacy.Strategy.VarianceObfuscationStrategy, TextMetal.Middleware.Oxymoron.Legacy",
+				"ObfuscationStrategySpecificConfiguration":
+				{
+					"VariancePercentValue": 10
+				}
+			},
+			{
+				"ColumnName": "comments",
+				"ObfuscationStrategyAqtn":
+					"TextMetal.Middleware.Oxymoron.Legacy.Strategy.CipheringObfuscationStrategy, TextMetal.Middleware.Oxymoron.Legacy",
+				"ObfuscationStrategySpecificConfiguration":
+				{
+				}
+			}
+		]
+	}
+}
