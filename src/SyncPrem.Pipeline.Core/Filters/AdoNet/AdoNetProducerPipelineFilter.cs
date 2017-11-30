@@ -15,11 +15,11 @@ using SyncPrem.Pipeline.Abstractions;
 using SyncPrem.Pipeline.Abstractions.Configurations;
 using SyncPrem.Pipeline.Abstractions.Filters.Producer;
 using SyncPrem.Pipeline.Abstractions.Messages;
-using SyncPrem.Pipeline.Core.Configurations.Relational;
+using SyncPrem.Pipeline.Core.Configurations.AdoNet;
 
 using TextMetal.Middleware.Solder.Extensions;
 
-namespace SyncPrem.Pipeline.Core.Filters.Relational
+namespace SyncPrem.Pipeline.Core.Filters.AdoNet
 {
 	public class AdoNetProducerPipelineFilter : ProducerPipelineFilter<AdoNetFilterSpecificConfiguration>
 	{
@@ -172,14 +172,13 @@ namespace SyncPrem.Pipeline.Core.Filters.Relational
 					{
 						DbColumn dbColumn = (DbColumn)record.ContextData;
 
-						fields.Add(new Field()
+						fields.Add(new Field(i++)
 									{
-										FieldIndex = i++,
 										FieldName = dbColumn.ColumnName,
 										FieldType = dbColumn.DataType,
 										IsFieldOptional = dbColumn.AllowDBNull ?? true,
 										ContextData = record
-						});
+									});
 					}
 				}
 			}

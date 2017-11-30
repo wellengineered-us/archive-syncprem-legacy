@@ -61,9 +61,13 @@ namespace SyncPrem.Infrastructure.Data.Primitives
 			}
 		}
 
+		#endregion
+
+		#region Methods/Operators
+
 		public IResult ApplyWrap(Func<IEnumerable<IRecord>, IEnumerable<IRecord>> wrapperCallback)
 		{
-			if((object)wrapperCallback == null)
+			if ((object)wrapperCallback == null)
 				throw new ArgumentNullException(nameof(wrapperCallback));
 
 			this.Records = wrapperCallback(this.Records);

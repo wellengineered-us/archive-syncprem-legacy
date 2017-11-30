@@ -335,12 +335,12 @@ namespace SyncPrem.Infrastructure.Oxymoron
 						fieldType = (originalFieldValue ?? new object()).GetType();
 
 						field = new Field(fieldIndex++)
-									{
-										FieldName = fieldName,
-										FieldType = fieldType,
-										IsFieldOptional = isFieldOptional,
-										ContextData = item
-						};
+								{
+									FieldName = fieldName,
+									FieldType = fieldType,
+									IsFieldOptional = isFieldOptional,
+									ContextData = item
+								};
 
 						obfuscatedFieldValue = this.GetObfuscatedValue(field, originalFieldValue);
 						obfuscatedRecord.Add(fieldName, obfuscatedFieldValue);

@@ -3,7 +3,7 @@
 
 	"ProducerFilterConfiguration":
 	{
-		"FilterAqtn": "SyncPrem.Pipeline.Core.Filters.Relational.AdoNetProducerPipelineFilter, SyncPrem.Pipeline.Core",
+		"FilterAqtn": "SyncPrem.Pipeline.Core.Filters.AdoNet.AdoNetProducerPipelineFilter, SyncPrem.Pipeline.Core",
 		"FilterSpecificConfiguration":
 		{
 			"ConnectionAqtn": "System.Data.SqlClient.SqlConnection, System.Data.SqlClient",
@@ -54,7 +54,7 @@
 
 	"ConsumerFilterConfiguration":
 	{
-		"FilterAqtn": "SyncPrem.Pipeline.Core.Filters.Relational.RecordCommandConsumerPipelineFilter, SyncPrem.Pipeline.Core",
+		"FilterAqtn": "SyncPrem.Pipeline.Core.Filters.AdoNet.RecordCommandConsumerPipelineFilter, SyncPrem.Pipeline.Core",
 		"FilterSpecificConfiguration":
 		{
 			"ConnectionAqtn": "System.Data.SqlClient.SqlConnection, System.Data.SqlClient",

@@ -15,11 +15,11 @@ using SyncPrem.Pipeline.Abstractions;
 using SyncPrem.Pipeline.Abstractions.Configurations;
 using SyncPrem.Pipeline.Abstractions.Filters.Consumer;
 using SyncPrem.Pipeline.Abstractions.Messages;
-using SyncPrem.Pipeline.Core.Configurations.Relational;
+using SyncPrem.Pipeline.Core.Configurations.AdoNet;
 
 using TextMetal.Middleware.Solder.Extensions;
 
-namespace SyncPrem.Pipeline.Core.Filters.Relational
+namespace SyncPrem.Pipeline.Core.Filters.AdoNet
 {
 	public abstract class AdoNetConsumerPipelineFilter : ConsumerPipelineFilter<AdoNetFilterSpecificConfiguration>
 	{

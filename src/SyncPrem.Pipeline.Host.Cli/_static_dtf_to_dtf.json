@@ -7,14 +7,17 @@
 		"FilterSpecificConfiguration":
 		{
 			"DelimitedTextFilePath": "d:\\Confidential_Banking_Data.txt",
-			"DelimitedTextSpec":
+
+			"DelimitedTextSpecConfiguration":
 			{
 				"FirstRecordIsHeader": true,
+				"LastRecordIsFooter": false,
 				"RecordDelimiter": "\r\n",
 				"FieldDelimiter": "\t",
-				"QuoteValue": "",
+				"OpenQuoteValue": "",
+				"CloseQuoteValue": "",
 
-				"HeaderSpecs":
+				"DelimitedTextFieldConfigurations":
 				[
 					{
 						"HeaderName": "institution",
@@ -63,24 +66,6 @@
 
 	"TransformerFilterConfigurations":
 	[
-		{
-			"FilterAqtn": "",
-			"FilterSpecificConfiguration":
-			{
-			}
-		},
-		{
-			"FilterAqtn": "",
-			"FilterSpecificConfiguration":
-			{
-			}
-		},
-		{
-			"FilterAqtn": "",
-			"FilterSpecificConfiguration":
-			{
-			}
-		}
 	],
 
 	"ConsumerFilterConfiguration":
@@ -89,12 +74,15 @@
 		"FilterSpecificConfiguration":
 		{
 			"DelimitedTextFilePath": "d:\\Public_Banking_Data.csv",
-			"DelimitedTextSpec":
+
+			"DelimitedTextSpecConfiguration":
 			{
 				"FirstRecordIsHeader": true,
+				"LastRecordIsFooter": false,
 				"RecordDelimiter": "\n",
 				"FieldDelimiter": ",",
-				"QuoteValue": "\""
+				"OpenQuoteValue": "\"",
+				"CloseQuoteValue": "\""
 			}
 		}
 	}

@@ -8,13 +8,14 @@ using System.Collections.Generic;
 using System.Data;
 
 using SyncPrem.Infrastructure.Configuration;
+using SyncPrem.Pipeline.Abstractions.Configurations;
 
 using TextMetal.Middleware.Solder.Extensions;
 using TextMetal.Middleware.Solder.Primitives;
 
-namespace SyncPrem.Pipeline.Core.Configurations.Relational
+namespace SyncPrem.Pipeline.Core.Configurations.AdoNet
 {
-	public class AdoNetParameterConfiguration : ConfigurationObject
+	public class AdoNetParameterConfiguration : PipelineConfigurationObject
 	{
 		#region Constructors/Destructors
 

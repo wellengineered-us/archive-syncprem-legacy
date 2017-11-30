@@ -17,20 +17,24 @@ namespace SyncPrem.Infrastructure.Data.Primitives
 			get;
 		}
 
-		int ResultIndex
-		{
-			get;
-		}
-
 		int? RecordsAffected
 		{
 			get;
 		}
 
+		int ResultIndex
+		{
+			get;
+		}
+
+		#endregion
+
+		#region Methods/Operators
+
 		/// <summary>
 		/// Feels kind of hack-ish.
 		/// </summary>
-		/// <param name="wrapperCallback"></param>
+		/// <param name="wrapperCallback"> </param>
 		IResult ApplyWrap(Func<IEnumerable<IRecord>, IEnumerable<IRecord>> wrapperCallback);
 
 		#endregion

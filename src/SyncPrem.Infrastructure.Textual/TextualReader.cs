@@ -62,7 +62,9 @@ namespace SyncPrem.Infrastructure.Textual
 				this.BaseTextReader.Dispose();
 		}
 
-		public abstract IEnumerable<IField> ReadHeaders();
+		public abstract IEnumerable<IRecord> ReadFooterRecords(IEnumerable<IField> fields);
+
+		public abstract IEnumerable<IField> ReadHeaderFields();
 
 		public abstract IEnumerable<IRecord> ReadRecords();
 

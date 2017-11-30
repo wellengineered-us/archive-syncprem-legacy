@@ -6,10 +6,8 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
-using System.Linq;
 
 using SyncPrem.Infrastructure.Data.Primitives;
-using SyncPrem.Infrastructure.Textual;
 using SyncPrem.Infrastructure.Textual.Delimited;
 using SyncPrem.Pipeline.Abstractions;
 using SyncPrem.Pipeline.Abstractions.Configurations;
@@ -91,7 +89,7 @@ namespace SyncPrem.Pipeline.Core.Filters.Textual
 
 		protected override void PreProcessMessage(IPipelineContext pipelineContext, TableConfiguration tableConfiguration)
 		{
-			IEnumerable<IField> headers;
+			IEnumerable<IField> fields;
 			IPipelineMetadata pipelineMetadata;
 
 			if ((object)pipelineContext == null)
@@ -108,27 +106,26 @@ namespace SyncPrem.Pipeline.Core.Filters.Textual
 
 			DelimitedTextFilterSpecificConfiguration fsConfig = this.FilterConfiguration.FilterSpecificConfiguration;
 
-			if ((object)fsConfig.DelimitedTextSpec == null)
-				throw new InvalidOperationException(string.Format("Configuration missing: '{0}'.", nameof(fsConfig.DelimitedTextSpec)));
+			if ((object)fsConfig.DelimitedTextSpecConfiguration == null)
+				throw new InvalidOperationException(string.Format("Configuration missing: '{0}'.", nameof(fsConfig.DelimitedTextSpecConfiguration)));
 
 			if (SolderFascadeAccessor.DataTypeFascade.IsNullOrWhiteSpace(fsConfig.DelimitedTextFilePath))
 				throw new InvalidOperationException(string.Format("Configuration missing: '{0}'.", nameof(fsConfig.DelimitedTextFilePath)));
 
-			this.DelimitedTextReader = new DelimitedTextReader(new StreamReader(File.Open(fsConfig.DelimitedTextFilePath, FileMode.Open, FileAccess.Read, FileShare.None)), fsConfig.DelimitedTextSpec);
+			this.DelimitedTextReader = new DelimitedTextReader(new StreamReader(File.Open(fsConfig.DelimitedTextFilePath, FileMode.Open, FileAccess.Read, FileShare.None)), fsConfig.DelimitedTextSpecConfiguration);
 
-			headers = this.DelimitedTextReader.ReadHeaders();
+			fields = this.DelimitedTextReader.ReadHeaderFields();
 
-			if ((object)headers == null)
-				throw new InvalidOperationException(string.Format("Headers were invalid."));
+			if ((object)fields == null)
+				throw new InvalidOperationException(string.Format("Fields were invalid."));
 
-			pipelineMetadata = pipelineContext.CreateMetadata(headers);
+			pipelineMetadata = pipelineContext.CreateMetadata(fields);
 			pipelineContext.MetadataChain.Push(pipelineMetadata);
 		}
 
 		protected override IPipelineMessage ProduceMessage(IPipelineContext pipelineContext, TableConfiguration tableConfiguration)
 		{
 			IPipelineMessage pipelineMessage;
-
 			IEnumerable<IResult> sourceDataEnumerable;
 
 			if ((object)pipelineContext == null)

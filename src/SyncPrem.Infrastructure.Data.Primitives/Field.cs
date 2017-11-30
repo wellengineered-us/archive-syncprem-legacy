@@ -7,13 +7,9 @@ using System;
 
 namespace SyncPrem.Infrastructure.Data.Primitives
 {
-	public sealed class Field : IField
+	public class Field : IField
 	{
 		#region Constructors/Destructors
-
-		public Field()
-		{
-		}
 
 		public Field(int fieldIndex)
 		{
@@ -28,6 +24,7 @@ namespace SyncPrem.Infrastructure.Data.Primitives
 		private int fieldIndex;
 		private string fieldName;
 		private Type fieldType;
+		private bool isFieldKeyComponent;
 		private bool isFieldOptional;
 
 		#endregion
@@ -52,7 +49,7 @@ namespace SyncPrem.Infrastructure.Data.Primitives
 			{
 				return this.fieldIndex;
 			}
-			set
+			private set
 			{
 				this.fieldIndex = value;
 			}
@@ -79,6 +76,18 @@ namespace SyncPrem.Infrastructure.Data.Primitives
 			set
 			{
 				this.fieldType = value;
+			}
+		}
+
+		public bool IsFieldKeyComponent
+		{
+			get
+			{
+				return this.isFieldKeyComponent;
+			}
+			set
+			{
+				this.isFieldKeyComponent = value;
 			}
 		}
 

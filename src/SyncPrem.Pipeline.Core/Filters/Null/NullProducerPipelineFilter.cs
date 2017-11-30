@@ -26,6 +26,8 @@ namespace SyncPrem.Pipeline.Core.Filters.Null
 
 		#region Fields/Constants
 
+		private const int FIELD_COUNT = 100;
+
 		private const string FIELD_NAME = "RandomValue_{0:0000}";
 
 		private static readonly Random random = new Random();
@@ -50,7 +52,7 @@ namespace SyncPrem.Pipeline.Core.Filters.Null
 		{
 			int recordCount;
 
-			recordCount = 10000;//Random.Next(0, 100);
+			recordCount = 10000; //Random.Next(0, 100);
 
 			for (int recordIndex = 0; recordIndex < recordCount; recordIndex++)
 			{
@@ -71,7 +73,7 @@ namespace SyncPrem.Pipeline.Core.Filters.Null
 		{
 			int resultCount;
 
-			resultCount = 100;//Random.Next(0, 10);
+			resultCount = 100; //Random.Next(0, 10);
 
 			for (int resultIndex = 0; resultIndex < resultCount; resultIndex++)
 			{
@@ -100,8 +102,6 @@ namespace SyncPrem.Pipeline.Core.Filters.Null
 				throw new ArgumentNullException(nameof(tableConfiguration));
 		}
 
-		private const int FIELD_COUNT = 100;
-
 		protected override void PreProcessMessage(IPipelineContext pipelineContext, TableConfiguration tableConfiguration)
 		{
 			IField[] fields;
@@ -116,7 +116,13 @@ namespace SyncPrem.Pipeline.Core.Filters.Null
 			fields = new IField[FIELD_COUNT];
 			for (int fieldIndex = 0; fieldIndex < FIELD_COUNT; fieldIndex++)
 			{
-				fields[fieldIndex] = new Field(fieldIndex) { FieldName = string.Format(FIELD_NAME, fieldIndex), FieldType = typeof(double) };
+				fields[fieldIndex] = new Field(fieldIndex)
+									{
+										FieldName = string.Format(FIELD_NAME, fieldIndex),
+										FieldType = typeof(double),
+										IsFieldOptional = true,
+										IsFieldKeyComponent = false
+									};
 			}
 
 			pipelineMetadata = pipelineContext.CreateMetadata(fields);

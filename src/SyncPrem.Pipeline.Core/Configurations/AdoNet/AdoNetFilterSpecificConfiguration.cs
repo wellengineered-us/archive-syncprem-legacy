@@ -13,7 +13,7 @@ using SyncPrem.Pipeline.Abstractions.Configurations;
 using TextMetal.Middleware.Solder.Extensions;
 using TextMetal.Middleware.Solder.Primitives;
 
-namespace SyncPrem.Pipeline.Core.Configurations.Relational
+namespace SyncPrem.Pipeline.Core.Configurations.AdoNet
 {
 	public class AdoNetFilterSpecificConfiguration : FilterSpecificConfiguration
 	{
@@ -106,14 +106,7 @@ namespace SyncPrem.Pipeline.Core.Configurations.Relational
 
 		public Type GetConnectionType()
 		{
-			Type connectionType;
-
-			if (SolderFascadeAccessor.DataTypeFascade.IsNullOrWhiteSpace(this.ConnectionAqtn))
-				return null;
-
-			connectionType = Type.GetType(this.ConnectionAqtn, false);
-
-			return connectionType;
+			return GetTypeFromString(this.ConnectionAqtn);
 		}
 
 		public virtual IUnitOfWork GetUnitOfWork(IsolationLevel isolationLevel = IsolationLevel.Unspecified)

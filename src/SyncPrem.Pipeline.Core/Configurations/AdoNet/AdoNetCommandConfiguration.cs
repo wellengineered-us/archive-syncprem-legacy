@@ -11,12 +11,13 @@ using System.Linq;
 
 using SyncPrem.Infrastructure.Configuration;
 using SyncPrem.Infrastructure.Data.AdoNet.UoW;
+using SyncPrem.Pipeline.Abstractions.Configurations;
 
 using TextMetal.Middleware.Solder.Primitives;
 
-namespace SyncPrem.Pipeline.Core.Configurations.Relational
+namespace SyncPrem.Pipeline.Core.Configurations.AdoNet
 {
-	public class AdoNetCommandConfiguration : ConfigurationObject
+	public class AdoNetCommandConfiguration : PipelineConfigurationObject
 	{
 		#region Constructors/Destructors
 

@@ -35,7 +35,7 @@ namespace SyncPrem.Infrastructure.Wrappers
 				if ((itemCount % PROCESSING_CALLBACK_WINDOW_SIZE) == 0)
 				{
 					if ((object)processingCallback != null)
-						;//processingCallback(source, itemCount, false, (DateTime.UtcNow - startUtc).TotalSeconds);
+						; //processingCallback(source, itemCount, false, (DateTime.UtcNow - startUtc).TotalSeconds);
 				}
 
 				if ((object)itemCallback != null)

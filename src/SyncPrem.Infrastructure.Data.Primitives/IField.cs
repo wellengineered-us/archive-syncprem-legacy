@@ -21,12 +21,12 @@ namespace SyncPrem.Infrastructure.Data.Primitives
 			get;
 		}
 
-		string FieldName
+		Type FieldType
 		{
 			get;
 		}
 
-		Type FieldType
+		bool IsFieldKeyComponent
 		{
 			get;
 		}
@@ -34,6 +34,12 @@ namespace SyncPrem.Infrastructure.Data.Primitives
 		bool IsFieldOptional
 		{
 			get;
+		}
+
+		string FieldName
+		{
+			get;
+			set;
 		}
 
 		#endregion

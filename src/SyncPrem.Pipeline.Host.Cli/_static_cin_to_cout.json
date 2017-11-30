@@ -11,24 +11,6 @@
 
 	"TransformerFilterConfigurations":
 	[
-		{
-			"FilterAqtn": "",
-			"FilterSpecificConfiguration":
-			{
-			}
-		},
-		{
-			"FilterAqtn": "",
-			"FilterSpecificConfiguration":
-			{
-			}
-		},
-		{
-			"FilterAqtn": "",
-			"FilterSpecificConfiguration":
-			{
-			}
-		}
 	],
 
 	"ConsumerFilterConfiguration":

@@ -4,26 +4,22 @@
 */
 
 using System;
-using System.Collections.Generic;
-using System.Data;
 using System.Data.Common;
-using System.Linq;
+using System.Data.SqlClient;
 
-using SyncPrem.Infrastructure.Data.AdoNet.UoW;
-using SyncPrem.Infrastructure.Data.Primitives;
 using SyncPrem.Pipeline.Abstractions;
 using SyncPrem.Pipeline.Abstractions.Configurations;
-using SyncPrem.Pipeline.Core.Configurations.Relational;
+using SyncPrem.Pipeline.Core.Configurations.AdoNet;
 
 using TextMetal.Middleware.Solder.Extensions;
 
-namespace SyncPrem.Pipeline.Core.Filters.Relational
+namespace SyncPrem.Pipeline.Core.Filters.AdoNet
 {
-	public class RecordCommandConsumerPipelineFilter : AdoNetConsumerPipelineFilter
+	public class SqlBulkCopyConsumerPipelineFilter : AdoNetConsumerPipelineFilter
 	{
 		#region Constructors/Destructors
 
-		public RecordCommandConsumerPipelineFilter()
+		public SqlBulkCopyConsumerPipelineFilter()
 		{
 		}
 
@@ -33,9 +29,8 @@ namespace SyncPrem.Pipeline.Core.Filters.Relational
 
 		protected override void ConsumeMessageReader(IPipelineContext pipelineContext, TableConfiguration tableConfiguration, DbDataReader sourceDataReader, out long rowsCopied)
 		{
-			IEnumerable<IResult> results;
-			IEnumerable<DbParameter> dbParameters;
 			long _rowsCopied = 0;
+			//SqlRowsCopiedEventHandler callback;
 
 			if ((object)pipelineContext == null)
 				throw new ArgumentNullException(nameof(pipelineContext));
@@ -60,33 +55,25 @@ namespace SyncPrem.Pipeline.Core.Filters.Relational
 			if (SolderFascadeAccessor.DataTypeFascade.IsNullOrWhiteSpace(fsConfig.ExecuteCommand.CommandText))
 				throw new InvalidOperationException(string.Format("Configuration missing: '{0}.{1}'.", nameof(fsConfig.ExecuteCommand), nameof(fsConfig.ExecuteCommand.CommandText)));
 
-			do
+			using (SqlBulkCopy sqlBulkCopy = new SqlBulkCopy((SqlConnection)this.DestinationUnitOfWork.Connection, SqlBulkCopyOptions.Default, (SqlTransaction)this.DestinationUnitOfWork.Transaction))
 			{
-				while (sourceDataReader.Read())
-				{
-					dbParameters = fsConfig.ExecuteCommand.GetDbDataParameters(this.DestinationUnitOfWork);
+				//callback = (sender, e) => Console.WriteLine(_rowsCopied = e.RowsCopied);
 
-					dbParameters = dbParameters.Select(p =>
-														{
-															// prevent modified closure bug
-															DbDataReader _sourceDataReader = sourceDataReader;
-															// lazy load
-															p.Value = _sourceDataReader[p.SourceColumn];
-															return p;
-														});
+				foreach (ColumnConfiguration columnConfiguration in tableConfiguration.ColumnConfigurations)
+					sqlBulkCopy.ColumnMappings.Add(columnConfiguration.ColumnName, columnConfiguration.ColumnName);
 
-					results = this.DestinationUnitOfWork.ExecuteResults(fsConfig.ExecuteCommand.CommandType ?? CommandType.Text, fsConfig.ExecuteCommand.CommandText, dbParameters);
+				sqlBulkCopy.EnableStreaming = true;
+				sqlBulkCopy.BatchSize = 2500;
+				sqlBulkCopy.NotifyAfter = 2500;
+				//sqlBulkCopy.SqlRowsCopied += callback;
+				sqlBulkCopy.DestinationTableName = fsConfig.ExecuteCommand.CommandText;
 
-					results.ToArray(); // force execution
+				sqlBulkCopy.WriteToServer(sourceDataReader);
 
-					_rowsCopied++;
-				}
+				//sqlBulkCopy.SqlRowsCopied -= callback;
 			}
-			while (sourceDataReader.NextResult());
 
 			rowsCopied = _rowsCopied;
-
-			//System.Console.WriteLine("DESTINATION (update): rowsCopied={0}", rowsCopied);
 		}
 
 		#endregion

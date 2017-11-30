@@ -121,7 +121,7 @@ namespace SyncPrem.Infrastructure.Oxymoron.Configuration
 
 			if (SolderFascadeAccessor.DataTypeFascade.IsNullOrWhiteSpace(this.ObfuscationStrategyAqtn))
 				return null;
-
+			// FIX
 			type = Type.GetType(this.ObfuscationStrategyAqtn, false);
 
 			return type;

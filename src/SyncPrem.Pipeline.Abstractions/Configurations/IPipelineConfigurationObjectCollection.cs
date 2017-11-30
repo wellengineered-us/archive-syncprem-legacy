@@ -5,9 +5,9 @@
 
 using SyncPrem.Infrastructure.Configuration;
 
-namespace SyncPrem.Infrastructure.Oxymoron.Configuration
+namespace SyncPrem.Pipeline.Abstractions.Configurations
 {
-	public interface IFilterConfigurationDependency : IConfigurationObject
+	public interface IPipelineConfigurationObjectCollection : IConfigurationObjectCollection
 	{
 	}
 }

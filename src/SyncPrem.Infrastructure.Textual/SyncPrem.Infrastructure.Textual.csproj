@@ -6,7 +6,6 @@
   <Import Project="..\common.props" />
 
   <ItemGroup>
-    <Folder Include="Fixed\" />
     <Folder Include="Segmented\" />
   </ItemGroup>
 

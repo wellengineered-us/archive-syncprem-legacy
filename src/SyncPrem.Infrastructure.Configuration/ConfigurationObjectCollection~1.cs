@@ -4,6 +4,7 @@
 */
 
 using System;
+using System.Collections.Generic;
 using System.Collections.ObjectModel;
 
 namespace SyncPrem.Infrastructure.Configuration
@@ -43,6 +44,17 @@ namespace SyncPrem.Infrastructure.Configuration
 		#endregion
 
 		#region Methods/Operators
+
+		public void AddRange(IEnumerable<TConfigurationObject> items)
+		{
+			if ((object)items == null)
+				throw new ArgumentNullException(nameof(items));
+
+			foreach (TConfigurationObject item in items)
+			{
+				this.Add(item);
+			}
+		}
 
 		/// <summary>
 		/// Removes all elements from the collection.

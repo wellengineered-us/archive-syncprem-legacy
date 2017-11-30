@@ -89,14 +89,6 @@ namespace SyncPrem.Infrastructure.Data.Primitives
 			}
 		}
 
-		private IEnumerable<IField> FieldMetadata
-		{
-			get
-			{
-				return this.fieldMetadata;
-			}
-		}
-
 		public override int Depth
 		{
 			get
@@ -110,6 +102,14 @@ namespace SyncPrem.Infrastructure.Data.Primitives
 			get
 			{
 				return this.HasRecord ? this.TargetRecordsEnumerator.Current.Keys.Count : 0;
+			}
+		}
+
+		private IEnumerable<IField> FieldMetadata
+		{
+			get
+			{
+				return this.fieldMetadata;
 			}
 		}
 

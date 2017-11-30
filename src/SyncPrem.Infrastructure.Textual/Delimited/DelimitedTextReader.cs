@@ -105,6 +105,56 @@ namespace SyncPrem.Infrastructure.Textual.Delimited
 			return false; // not enough buffer space to care
 		}
 
+		private void FixupHeaderRecord()
+		{
+			string[] fieldNames;
+			IDelimitedTextFieldSpec delimitedTextFieldSpec;
+			IDelimitedTextFieldSpec[] delimitedTextFieldSpecs;
+
+			delimitedTextFieldSpecs = this.DelimitedTextSpec.DelimitedTextFieldSpecs.ToArray();
+			fieldNames = this.ParserState.headerRecord.Keys.ToArray();
+
+			// stash parsed field names into field specs member
+			if ((object)this.DelimitedTextSpec.DelimitedTextFieldSpecs != null &&
+				fieldNames.Length == delimitedTextFieldSpecs.Length)
+			{
+				if ((object)fieldNames != null)
+				{
+					for (int fieldIndex = 0; fieldIndex < fieldNames.Length; fieldIndex++)
+					{
+						delimitedTextFieldSpec = delimitedTextFieldSpecs[fieldIndex];
+
+						if (!string.IsNullOrWhiteSpace(delimitedTextFieldSpec.FieldName) &&
+							delimitedTextFieldSpec.FieldName.ToLower() != fieldNames[fieldIndex].ToLower())
+							throw new InvalidOperationException(string.Format("Field name mismatch: '{0}' <> '{1}'.", delimitedTextFieldSpec.FieldName, fieldNames[fieldIndex]));
+
+						delimitedTextFieldSpec.FieldName = fieldNames[fieldIndex];
+					}
+				}
+			}
+			else
+			{
+				// reset field specs because they do not match in length
+				delimitedTextFieldSpecs = new IDelimitedTextFieldSpec[fieldNames.Length];
+
+				if ((object)fieldNames != null)
+				{
+					for (int fieldIndex = 0; fieldIndex < fieldNames.Length; fieldIndex++)
+					{
+						delimitedTextFieldSpecs[fieldIndex] = new DelimitedTextFieldSpec(fieldIndex)
+															{
+																FieldName = fieldNames[fieldIndex],
+																FieldType = typeof(string),
+																IsFieldKeyComponent = false,
+																IsFieldOptional = true
+															};
+					}
+				}
+
+				this.DelimitedTextSpec.DelimitedTextFieldSpecs = delimitedTextFieldSpecs;
+			}
+		}
+
 		private bool ParserStateMachine()
 		{
 			bool succeeded;
@@ -136,23 +186,27 @@ namespace SyncPrem.Infrastructure.Textual.Delimited
 				// common logic to store value of field in record
 				if (this.ParserState.isHeaderRecord)
 				{
-					// stash header if FRIS enabled and zeroth record
+					// stash field if FRIS enabled and zeroth record
 					this.ParserState.record.Add(tempStringValue, this.ParserState.fieldIndex.ToString("0000"));
 				}
 				else
 				{
-					IField header;
 					Type fieldType;
 					object fieldValue;
 
-					// check header array and field index validity
-					if ((object)this.DelimitedTextSpec.HeaderSpecs == null ||
-						this.ParserState.fieldIndex >= this.DelimitedTextSpec.HeaderSpecs.Count)
-						throw new InvalidOperationException(string.Format("Delimited text reader parse state failure: field index '{0}' exceeded known field indices '{1}' at character index '{2}'.", this.ParserState.fieldIndex, (object)this.DelimitedTextSpec.HeaderSpecs != null ? (this.DelimitedTextSpec.HeaderSpecs.Count - 1) : (int?)null, this.ParserState.characterIndex));
+					IDelimitedTextFieldSpec delimitedTextFieldSpec;
+					IDelimitedTextFieldSpec[] delimitedTextFieldSpecs;
 
-					header = this.DelimitedTextSpec.HeaderSpecs[this.ParserState.fieldIndex];
+					delimitedTextFieldSpecs = this.DelimitedTextSpec.DelimitedTextFieldSpecs.ToArray();
 
-					fieldType = header.FieldType ?? typeof(string);
+					// check field array and field index validity
+					if ((object)delimitedTextFieldSpecs == null ||
+						this.ParserState.fieldIndex >= delimitedTextFieldSpecs.Length)
+						throw new InvalidOperationException(string.Format("Delimited text reader parse state failure: field index '{0}' exceeded known field indices '{1}' at character index '{2}'.", this.ParserState.fieldIndex, (object)delimitedTextFieldSpecs != null ? (delimitedTextFieldSpecs.Length - 1) : (int?)null, this.ParserState.characterIndex));
+
+					delimitedTextFieldSpec = delimitedTextFieldSpecs[this.ParserState.fieldIndex];
+
+					fieldType = delimitedTextFieldSpec.FieldType ?? typeof(string);
 
 					succeeded = true;
 					if (string.IsNullOrWhiteSpace(tempStringValue))
@@ -163,8 +217,8 @@ namespace SyncPrem.Infrastructure.Textual.Delimited
 					if (!succeeded)
 						throw new InvalidOperationException(string.Format("Delimited text reader parse state failure: field string value '{0}' could not be parsed into a valid '{1}'.", tempStringValue, fieldType.FullName));
 
-					// lookup header name (key) by index and commit value to record
-					this.ParserState.record.Add(header.FieldName, fieldValue);
+					// lookup field name (key) by index and commit value to record
+					this.ParserState.record.Add(delimitedTextFieldSpec.FieldName, fieldValue);
 				}
 
 				// handle blank lines (we assume that any records with valid record delimiter is OK)
@@ -198,8 +252,8 @@ namespace SyncPrem.Infrastructure.Textual.Delimited
 			}
 			else if (!this.ParserState.isEOF &&
 					!this.ParserState.isQuotedValue &&
-					!string.IsNullOrEmpty(this.DelimitedTextSpec.QuoteValue) &&
-					LookBehindFixup(this.ParserState.transientStringBuilder, this.DelimitedTextSpec.QuoteValue))
+					!string.IsNullOrEmpty(this.DelimitedTextSpec.OpenQuoteValue) &&
+					LookBehindFixup(this.ParserState.transientStringBuilder, this.DelimitedTextSpec.OpenQuoteValue))
 			{
 				// BEGIN::QUOTE_VALUE
 				this.ParserState.isQuotedValue = true;
@@ -215,8 +269,8 @@ namespace SyncPrem.Infrastructure.Textual.Delimited
 			//}
 			else if (!this.ParserState.isEOF &&
 					this.ParserState.isQuotedValue &&
-					!string.IsNullOrEmpty(this.DelimitedTextSpec.QuoteValue) &&
-					LookBehindFixup(this.ParserState.transientStringBuilder, this.DelimitedTextSpec.QuoteValue))
+					!string.IsNullOrEmpty(this.DelimitedTextSpec.CloseQuoteValue) &&
+					LookBehindFixup(this.ParserState.transientStringBuilder, this.DelimitedTextSpec.CloseQuoteValue))
 			{
 				// END::QUOTE_VALUE
 				this.ParserState.isQuotedValue = false;
@@ -240,19 +294,29 @@ namespace SyncPrem.Infrastructure.Textual.Delimited
 			return false;
 		}
 
-		public override IEnumerable<IField> ReadHeaders()
+		public override IEnumerable<IRecord> ReadFooterRecords(IEnumerable<IField> fields)
 		{
-			IRecord headerRecord;
+			throw new NotSupportedException(string.Format("Cannot read footer records (from fields) in this version."));
+		}
 
+		public override IEnumerable<IField> ReadHeaderFields()
+		{
 			if (this.ParserState.recordIndex == 0 &&
 				(this.DelimitedTextSpec.FirstRecordIsHeader ?? false))
 			{
-				IEnumerable<IRecord> y = this.ResumableParserMainLoop(true);
+				IRecord headerRecord;
+				IEnumerable<IRecord> headerRecords = this.ResumableParserMainLoop(true);
 
-				headerRecord = y.SingleOrDefault(); // force a single enumeration - yield return is a brain fyck
+				headerRecord = headerRecords.SingleOrDefault(); // force a single enumeration - yield return is a brain fyck
+
+				// sanity check - should never non-null record since it breaks (once==true)
+				if ((object)headerRecord != null)
+					throw new InvalidOperationException(string.Format("Delimited text reader parse state failure: yielded header record was not null."));
+
+				this.FixupHeaderRecord();
 			}
 
-			return this.DelimitedTextSpec.HeaderSpecs;
+			return this.DelimitedTextSpec.DelimitedTextFieldSpecs;
 		}
 
 		public override IEnumerable<IRecord> ReadRecords()
@@ -273,15 +337,17 @@ namespace SyncPrem.Infrastructure.Textual.Delimited
 
 		private void ResetParserState()
 		{
-			this.ParserState.record = new Record(0);
+			const int DEFAULT_INDEX = 0;
+
+			this.ParserState.record = new Record(DEFAULT_INDEX);
 			this.ParserState.transientStringBuilder = new StringBuilder();
 			this.ParserState.readCurrentCharacter = '\0';
 			this.ParserState.peekNextCharacter = '\0';
-			this.ParserState.characterIndex = 0;
-			this.ParserState.contentIndex = 0;
-			this.ParserState.recordIndex = 0;
-			this.ParserState.fieldIndex = 0;
-			this.ParserState.valueIndex = 0;
+			this.ParserState.characterIndex = DEFAULT_INDEX;
+			this.ParserState.contentIndex = DEFAULT_INDEX;
+			this.ParserState.recordIndex = DEFAULT_INDEX;
+			this.ParserState.fieldIndex = DEFAULT_INDEX;
+			this.ParserState.valueIndex = DEFAULT_INDEX;
 			this.ParserState.isQuotedValue = false;
 			this.ParserState.isEOF = false;
 
@@ -321,6 +387,7 @@ namespace SyncPrem.Infrastructure.Textual.Delimited
 
 				// eval on every loop
 				this.ParserState.isHeaderRecord = this.ParserState.recordIndex == 0 && (this.DelimitedTextSpec.FirstRecordIsHeader ?? false);
+				this.ParserState.isFooterRecord = false; //this.ParserState.recordIndex == 0 && (this.DelimitedTextSpec.LastRecordIsFooter ?? false);
 
 				// peek the next byte
 				__value = this.BaseTextReader.Peek();
@@ -329,63 +396,31 @@ namespace SyncPrem.Infrastructure.Textual.Delimited
 
 				if (this.ParserStateMachine())
 				{
+					// if record is null here, then is was a blank line - no error just avoid doing work
 					if ((object)this.ParserState.record != null)
 					{
-						// TODO: refactor this up to the ReadHeaders() method
-						if (this.ParserState.isHeaderRecord)
-						{
-							string[] headerNames;
-							Field header;
-
-							headerNames = this.ParserState.record.Keys.ToArray();
-
-							// stash parsed header names into header specs member
-							if ((object)this.DelimitedTextSpec.HeaderSpecs != null &&
-								headerNames.Length == this.DelimitedTextSpec.HeaderSpecs.Count)
-							{
-								if ((object)headerNames != null)
-								{
-									for (int headerIndex = 0; headerIndex < headerNames.Length; headerIndex++)
-									{
-										header = this.DelimitedTextSpec.HeaderSpecs[headerIndex];
-
-										if (!string.IsNullOrWhiteSpace(header.FieldName) &&
-											header.FieldName.ToLower() != headerNames[headerIndex].ToLower())
-											throw new InvalidOperationException(string.Format("Header name mismatch: '{0}' <> '{1}'.", header.FieldName, headerNames[headerIndex]));
-
-										header.FieldName = headerNames[headerIndex];
-									}
-								}
-							}
-							else
-							{
-								// reset header specs because they do not match in length
-								this.DelimitedTextSpec.HeaderSpecs.Clear();
-
-								if ((object)headerNames != null)
-								{
-									foreach (string headerName in headerNames)
-									{
-										this.DelimitedTextSpec.HeaderSpecs.Add(new Field()
-																				{
-																					FieldName = headerName,
-																					FieldType = typeof(string)
-																				});
-									}
-								}
-							}
-						}
-						else
+						// should never yield the header record
+						if (!this.ParserState.isHeaderRecord)
 						{
 							// aint this some shhhhhhhh!t?
 							yield return this.ParserState.record;
 						}
+						else
+						{
+							// cache
+							this.ParserState.headerRecord = this.ParserState.record;
+						}
 					}
 
+					// sanity check - should never get here with zero record index
+					if (this.ParserState.recordIndex == 0)
+						throw new InvalidOperationException(string.Format("Delimited text reader parse state failure: zero record index unexpected."));
+
+					// create a new record for the next index; will be used later
 					this.ParserState.record = new Record(this.ParserState.recordIndex);
 
 					if (once) // state-based resumption of loop ;)
-						break;
+						break; // MUST NOT USE YIELD BREAK - as we will RESUME the enumeration based on state
 				}
 			}
 		}
@@ -400,13 +435,15 @@ namespace SyncPrem.Infrastructure.Textual.Delimited
 
 			public long characterIndex;
 			public long contentIndex;
-			public IRecord record;
 			public int fieldIndex;
+			public IRecord headerRecord;
 			public bool isEOF;
+			public bool isFooterRecord;
 			public bool isHeaderRecord;
 			public bool isQuotedValue;
 			public char peekNextCharacter;
 			public char readCurrentCharacter;
+			public IRecord record;
 			public int recordIndex;
 			public StringBuilder transientStringBuilder;
 			public int valueIndex;

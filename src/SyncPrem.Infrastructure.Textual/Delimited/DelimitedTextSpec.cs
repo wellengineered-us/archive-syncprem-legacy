@@ -7,11 +7,9 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 
-using SyncPrem.Infrastructure.Data.Primitives;
-
 namespace SyncPrem.Infrastructure.Textual.Delimited
 {
-	public class DelimitedTextSpec : IDelimitedTextSpec
+	public class DelimitedTextSpec : FlatTextSpec, IDelimitedTextSpec
 	{
 		#region Constructors/Destructors
 
@@ -23,21 +21,45 @@ namespace SyncPrem.Infrastructure.Textual.Delimited
 
 		#region Fields/Constants
 
-		private readonly List<Field> headerSpecs = new List<Field>();
+		private string closeQuoteValue;
+
+		private IEnumerable<IDelimitedTextFieldSpec> delimitedTextFieldSpecs;
 		private string fieldDelimiter;
-		private bool? firstRecordIsHeader;
-		private string quoteValue;
-		private string recordDelimiter;
+		private string openQuoteValue;
 
 		#endregion
 
 		#region Properties/Indexers/Events
 
-		public List<Field> HeaderSpecs
+		public override IEnumerable<IFlatTextFieldSpec> FlatTextFieldSpecs
 		{
 			get
 			{
-				return this.headerSpecs;
+				return this.DelimitedTextFieldSpecs;
+			}
+		}
+
+		public string CloseQuoteValue
+		{
+			get
+			{
+				return this.closeQuoteValue;
+			}
+			set
+			{
+				this.closeQuoteValue = value;
+			}
+		}
+
+		public IEnumerable<IDelimitedTextFieldSpec> DelimitedTextFieldSpecs
+		{
+			get
+			{
+				return this.delimitedTextFieldSpecs;
+			}
+			set
+			{
+				this.delimitedTextFieldSpecs = value;
 			}
 		}
 
@@ -53,39 +75,15 @@ namespace SyncPrem.Infrastructure.Textual.Delimited
 			}
 		}
 
-		public bool? FirstRecordIsHeader
+		public string OpenQuoteValue
 		{
 			get
 			{
-				return this.firstRecordIsHeader;
+				return this.openQuoteValue;
 			}
 			set
 			{
-				this.firstRecordIsHeader = value;
-			}
-		}
-
-		public string QuoteValue
-		{
-			get
-			{
-				return this.quoteValue;
-			}
-			set
-			{
-				this.quoteValue = value;
-			}
-		}
-
-		public string RecordDelimiter
-		{
-			get
-			{
-				return this.recordDelimiter;
-			}
-			set
-			{
-				this.recordDelimiter = value;
+				this.openQuoteValue = value;
 			}
 		}
 
@@ -93,9 +91,9 @@ namespace SyncPrem.Infrastructure.Textual.Delimited
 
 		#region Methods/Operators
 
-		public void AssertValid()
+		public override void AssertValid()
 		{
-			List<string> strings;
+			IList<string> strings;
 
 			strings = new List<string>();
 
@@ -105,8 +103,11 @@ namespace SyncPrem.Infrastructure.Textual.Delimited
 			if (!string.IsNullOrEmpty(this.FieldDelimiter))
 				strings.Add(this.FieldDelimiter);
 
-			if (!string.IsNullOrEmpty(this.QuoteValue))
-				strings.Add(this.QuoteValue);
+			if (!string.IsNullOrEmpty(this.OpenQuoteValue))
+				strings.Add(this.OpenQuoteValue);
+
+			if (!string.IsNullOrEmpty(this.CloseQuoteValue))
+				strings.Add(this.CloseQuoteValue);
 
 			if (strings.GroupBy(s => s).Where(gs => gs.Count() > 1).Any())
 				throw new InvalidOperationException(string.Format("Duplicate delimiter/value encountered."));

@@ -44,9 +44,9 @@ namespace SyncPrem.Infrastructure.Data.Primitives
 				throw new ArgumentNullException(nameof(records));
 
 			results = new IResult[]
-						{
-							new Result(0) { Records = records, RecordsAffected = null }
-						};
+					{
+						new Result(0) { Records = records, RecordsAffected = null }
+					};
 
 			return results;
 		}

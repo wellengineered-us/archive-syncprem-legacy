@@ -4,7 +4,6 @@
 */
 
 using System;
-using System.Linq;
 
 using SyncPrem.Infrastructure.Data.Primitives;
 using SyncPrem.Pipeline.Abstractions;

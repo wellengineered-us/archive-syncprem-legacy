@@ -28,6 +28,7 @@ namespace SyncPrem.Pipeline.Core.Filters.Console
 		#region Fields/Constants
 
 		private static readonly TextReader textReader = System.Console.In;
+		private static readonly TextWriter textWriter = System.Console.Out;
 
 		#endregion
 
@@ -41,42 +42,65 @@ namespace SyncPrem.Pipeline.Core.Filters.Console
 			}
 		}
 
+		private static TextWriter TextWriter
+		{
+			get
+			{
+				return textWriter;
+			}
+		}
+
 		#endregion
 
 		#region Methods/Operators
 
-		private static IEnumerable<IResult> GetYieldViaConsole()
+		private static IEnumerable<IResult> GetYieldViaConsole(IEnumerable<IField> fields)
 		{
 			int index = 0;
+
+			if ((object)fields == null)
+				throw new ArgumentNullException(nameof(fields));
+
 			while (index < 1)
 			{
 				yield return new Result(index++)
 							{
 								RecordsAffected = 0,
-								Records = YieldViaConsole()
+								Records = YieldViaConsole(fields)
 							};
 			}
 		}
 
-		private static IEnumerable<IRecord> YieldViaConsole()
+		private static IEnumerable<IRecord> YieldViaConsole(IEnumerable<IField> fields)
 		{
 			IRecord record;
 			int recordIndex = 0;
 			string line;
+			string[] fieldValues;
+
+			if ((object)fields == null)
+				throw new ArgumentNullException(nameof(fields));
 
 			while (true)
 			{
 				line = TextReader.ReadLine();
+				line = (line ?? string.Empty).Trim();
 
-				if ((line ?? string.Empty).Trim() == string.Empty)
+				if (line == string.Empty)
 					yield break;
+
+				fieldValues = line.Split('|');
 
 				record = new Record(recordIndex++)
 						{
 							ContextData = line
 						};
 
-				record.Add("line", line);
+				foreach (IField field in fields)
+				{
+					record.Add(field.FieldName, fieldValues[field.FieldIndex]);
+				}
+
 				yield return record;
 			}
 		}
@@ -104,8 +128,12 @@ namespace SyncPrem.Pipeline.Core.Filters.Console
 
 		protected override void PreProcessMessage(IPipelineContext pipelineContext, TableConfiguration tableConfiguration)
 		{
-			IEnumerable<IField> columns;
+			IList<IField> fields;
+			IField field;
 			IPipelineMetadata pipelineMetadata;
+
+			string line;
+			string[] fieldNames;
 
 			if ((object)pipelineContext == null)
 				throw new ArgumentNullException(nameof(pipelineContext));
@@ -113,9 +141,40 @@ namespace SyncPrem.Pipeline.Core.Filters.Console
 			if ((object)tableConfiguration == null)
 				throw new ArgumentNullException(nameof(tableConfiguration));
 
-			columns = new IField[] { new Field() { FieldIndex = 0, IsFieldOptional = false, FieldName = "line", FieldType = typeof(string), ContextData = null } };
+			TextWriter.WriteLine("Enter list of field names separated by pipe character: ");
+			fields = new List<IField>();
+			line = TextReader.ReadLine();
+			line = (line ?? string.Empty).Trim();
 
-			pipelineMetadata = pipelineContext.CreateMetadata(columns);
+			if (line != string.Empty)
+			{
+				fieldNames = line.Split('|');
+
+				if ((object)fieldNames == null || fieldNames.Length <= 0)
+				{
+					TextWriter.WriteLine("List of field names was invalid; using default.");
+					field = new Field(0) { IsFieldOptional = false, FieldName = "line", FieldType = typeof(string), ContextData = null };
+					fields.Add(field);
+				}
+				else
+				{
+					// does not check for unique field names - quick and dirty example (perhaps a dictionary?)
+					for (int fieldIndex = 0; fieldIndex < fieldNames.Length; fieldIndex++)
+					{
+						string fieldName = fieldNames[fieldIndex];
+
+						if ((fieldName ?? string.Empty).Trim() == string.Empty)
+							continue;
+
+						field = new Field(fieldIndex) { IsFieldOptional = false, FieldName = fieldName, FieldType = typeof(string), ContextData = null };
+						fields.Add(field);
+					}
+
+					TextWriter.WriteLine("List of field names was valid; building field schema: {0}", string.Join(" | ", fieldNames));
+				}
+			}
+
+			pipelineMetadata = pipelineContext.CreateMetadata(fields);
 			pipelineContext.MetadataChain.Push(pipelineMetadata);
 		}
 
@@ -130,7 +189,7 @@ namespace SyncPrem.Pipeline.Core.Filters.Console
 			if ((object)tableConfiguration == null)
 				throw new ArgumentNullException(nameof(tableConfiguration));
 
-			sourceDataEnumerable = GetYieldViaConsole();
+			sourceDataEnumerable = GetYieldViaConsole(pipelineContext.MetadataChain.Peek().UpstreamFields);
 			pipelineMessage = pipelineContext.CreateMessage(sourceDataEnumerable);
 
 			return pipelineMessage;

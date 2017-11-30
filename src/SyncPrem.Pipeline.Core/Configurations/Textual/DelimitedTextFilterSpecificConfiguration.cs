@@ -5,7 +5,6 @@
 
 using System.Collections.Generic;
 
-using SyncPrem.Infrastructure.Textual.Delimited;
 using SyncPrem.Pipeline.Abstractions.Configurations;
 
 using TextMetal.Middleware.Solder.Extensions;
@@ -26,7 +25,7 @@ namespace SyncPrem.Pipeline.Core.Configurations.Textual
 		#region Fields/Constants
 
 		private string delimitedTextFilePath;
-		private DelimitedTextSpec delimitedTextSpec;
+		private DelimitedTextSpecConfiguration delimitedTextSpecConfiguration;
 
 		#endregion
 
@@ -44,15 +43,16 @@ namespace SyncPrem.Pipeline.Core.Configurations.Textual
 			}
 		}
 
-		public DelimitedTextSpec DelimitedTextSpec
+		public DelimitedTextSpecConfiguration DelimitedTextSpecConfiguration
 		{
 			get
 			{
-				return this.delimitedTextSpec;
+				return this.delimitedTextSpecConfiguration;
 			}
 			set
 			{
-				this.delimitedTextSpec = value;
+				this.EnsureParentOnPropertySet(this.delimitedTextSpecConfiguration, value);
+				this.delimitedTextSpecConfiguration = value;
 			}
 		}
 
@@ -71,17 +71,17 @@ namespace SyncPrem.Pipeline.Core.Configurations.Textual
 			if (SolderFascadeAccessor.DataTypeFascade.IsNullOrWhiteSpace(this.DelimitedTextFilePath))
 				messages.Add(NewError(string.Format("{0} adapter delimited text file path is required.", adapterContext)));
 
-			if ((object)this.DelimitedTextSpec == null)
+			if ((object)this.DelimitedTextSpecConfiguration == null)
 				messages.Add(NewError(string.Format("{0} adapter delimited text specification is required.", adapterContext)));
 			else
 			{
-				//if (SolderFascadeAccessor.DataTypeFascade.IsNullOrEmpty(this.DelimitedTextSpec.QuoteValue))
+				//if (SolderFascadeAccessor.DataTypeFascade.IsNullOrEmpty(this.DelimitedTextSpecConfiguration.QuoteValue))
 				//	messages.Add(NewError(string.Format("{0} adapter delimited text quote value is required.", adapterContext)));
 
-				if (SolderFascadeAccessor.DataTypeFascade.IsNullOrEmpty(this.DelimitedTextSpec.RecordDelimiter))
+				if (SolderFascadeAccessor.DataTypeFascade.IsNullOrEmpty(this.DelimitedTextSpecConfiguration.RecordDelimiter))
 					messages.Add(NewError(string.Format("{0} adapter delimited text record delimiter is required.", adapterContext)));
 
-				if (SolderFascadeAccessor.DataTypeFascade.IsNullOrEmpty(this.DelimitedTextSpec.FieldDelimiter))
+				if (SolderFascadeAccessor.DataTypeFascade.IsNullOrEmpty(this.DelimitedTextSpecConfiguration.FieldDelimiter))
 					messages.Add(NewError(string.Format("{0} adapter delimited text field delimiter is required.", adapterContext)));
 			}
 

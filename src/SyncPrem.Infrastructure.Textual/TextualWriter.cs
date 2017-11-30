@@ -67,7 +67,9 @@ namespace SyncPrem.Infrastructure.Textual
 			this.BaseTextWriter.Flush();
 		}
 
-		public abstract void WriteHeaders(IEnumerable<IField> headers);
+		public abstract void WriteFooterRecords(IEnumerable<IField> fields, IEnumerable<IRecord> records);
+
+		public abstract void WriteHeaderFields(IEnumerable<IField> fields);
 
 		public abstract void WriteRecords(IEnumerable<IRecord> records);
 

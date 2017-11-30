@@ -5,31 +5,19 @@
 
 using System.Collections.Generic;
 
-namespace SyncPrem.Infrastructure.Textual.Delimited
+namespace SyncPrem.Infrastructure.Textual.FixedWidth
 {
-	public interface IDelimitedTextSpec : IFlatTextSpec
+	public interface IFixedWidthTextSpec : IFlatTextSpec
 	{
 		#region Properties/Indexers/Events
 
-		string CloseQuoteValue
+		IEnumerable<IFixedWidthTextFieldSpec> DelimitedTextFieldSpecs
 		{
 			get;
 			set;
 		}
 
-		IEnumerable<IDelimitedTextFieldSpec> DelimitedTextFieldSpecs
-		{
-			get;
-			set;
-		}
-
-		string FieldDelimiter
-		{
-			get;
-			set;
-		}
-
-		string OpenQuoteValue
+		int? RecordWidth
 		{
 			get;
 			set;

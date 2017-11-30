@@ -5,35 +5,40 @@
 
 using System.Collections.Generic;
 
-namespace SyncPrem.Infrastructure.Textual.Delimited
+namespace SyncPrem.Infrastructure.Textual
 {
-	public interface IDelimitedTextSpec : IFlatTextSpec
+	public interface IFlatTextSpec
 	{
 		#region Properties/Indexers/Events
 
-		string CloseQuoteValue
+		IEnumerable<IFlatTextFieldSpec> FlatTextFieldSpecs
+		{
+			get;
+		}
+
+		bool? FirstRecordIsHeader
 		{
 			get;
 			set;
 		}
 
-		IEnumerable<IDelimitedTextFieldSpec> DelimitedTextFieldSpecs
+		bool? LastRecordIsFooter
 		{
 			get;
 			set;
 		}
 
-		string FieldDelimiter
+		string RecordDelimiter
 		{
 			get;
 			set;
 		}
 
-		string OpenQuoteValue
-		{
-			get;
-			set;
-		}
+		#endregion
+
+		#region Methods/Operators
+
+		void AssertValid();
 
 		#endregion
 	}
