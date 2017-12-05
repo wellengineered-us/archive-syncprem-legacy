@@ -44,7 +44,7 @@ namespace SyncPrem.Pipeline.Core
 
 		#region Methods/Operators
 
-		private static void LogMetrics(string label, long count, bool done, double timing)
+		private static void LogMetrics(string label, ulong count, bool done, double timing)
 		{
 			Console.WriteLine("{0}: count = {1}, done = {2}, timing = {3}", label, count, done, timing);
 		}
@@ -54,7 +54,7 @@ namespace SyncPrem.Pipeline.Core
 			if ((object)results == null)
 				throw new ArgumentNullException(nameof(results));
 
-			return new DefaultPipelineMessage(results.GetWrappedEnumerableForMetricCallback("result", r => r.ApplyWrap(x => x.GetWrappedEnumerableForMetricCallback("record", null, LogMetrics)), LogMetrics)); // TODO DI/IoC
+			return new DefaultPipelineMessage(results.GetMetricsWrappedEnumerable("result", r => r.ApplyWrap(x => WrappedEnumerableExtensions.GetMetricsWrappedEnumerable(x, "record", null, LogMetrics)), LogMetrics)); // TODO DI/IoC
 		}
 
 		public IPipelineMetadata CreateMetadata(IEnumerable<IField> fields)
@@ -62,7 +62,7 @@ namespace SyncPrem.Pipeline.Core
 			if ((object)fields == null)
 				throw new ArgumentNullException(nameof(fields));
 
-			return new DefaultPipelineMetadata(fields.GetWrappedEnumerableForMetricCallback("fields", null, LogMetrics)); // TODO DI/IoC
+			return new DefaultPipelineMetadata(fields.GetMetricsWrappedEnumerable("fields", null, LogMetrics)); // TODO DI/IoC
 		}
 
 		#endregion

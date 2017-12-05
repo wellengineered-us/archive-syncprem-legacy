@@ -8,13 +8,11 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 
-using SyncPrem.Infrastructure.Configuration;
 using SyncPrem.Infrastructure.Data.Primitives;
-using SyncPrem.Infrastructure.Oxymoron.Configuration;
 using SyncPrem.Infrastructure.Oxymoron.Strategies;
+using SyncPrem.Infrastructure.Wrappers;
 
 using TextMetal.Middleware.Solder.Extensions;
-using TextMetal.Middleware.Solder.Primitives;
 using TextMetal.Middleware.Solder.Serialization;
 
 namespace SyncPrem.Infrastructure.Oxymoron
@@ -23,19 +21,22 @@ namespace SyncPrem.Infrastructure.Oxymoron
 	{
 		#region Constructors/Destructors
 
-		public OxymoronEngine(ResolveDictionaryValueDelegate resolveDictionaryValueCallback, ObfuscationConfiguration obfuscationConfiguration)
+		public OxymoronEngine(ResolveDictionaryValueDelegate resolveDictionaryValueCallback, IObfuscationSpec obfuscationSpec)
 		{
 			if ((object)resolveDictionaryValueCallback == null)
 				throw new ArgumentNullException(nameof(resolveDictionaryValueCallback));
 
-			if ((object)obfuscationConfiguration == null)
-				throw new ArgumentNullException(nameof(obfuscationConfiguration));
+			if ((object)obfuscationSpec == null)
+				throw new ArgumentNullException(nameof(obfuscationSpec));
 
 			this.resolveDictionaryValueCallback = resolveDictionaryValueCallback;
-			this.obfuscationConfiguration = obfuscationConfiguration;
+			this.obfuscationSpec = obfuscationSpec;
 
-			//OnlyWhen._DEBUG_ThenPrint(string.Format("SECURITY_CRITICAL_OPTION: {0}={1}", nameof(obfuscationConfiguration.EnablePassThru), obfuscationConfiguration.EnablePassThru ?? false));
-			EnsureValidConfigurationOnce(this.ObfuscationConfiguration);
+			//OnlyWhen._DEBUG_ThenPrint(string.Format("SECURITY_CRITICAL_OPTION: {0}={1}", nameof(obfuscationSpec.EnablePassThru), obfuscationSpec.EnablePassThru ?? false));
+
+			// calling this more than once kills performance
+			obfuscationSpec.AssertValid();
+			//throw new InvalidOperationException(string.Format("Obfuscation configuration validation failed:\r\n{0}", string.Join("\r\n", messages.Select(m => m.Description).ToArray())));
 		}
 
 		#endregion
@@ -44,8 +45,8 @@ namespace SyncPrem.Infrastructure.Oxymoron
 
 		private const long DEFAULT_HASH_BUCKET_SIZE = long.MaxValue;
 		private const bool SUBSTITUTION_CACHE_ENABLED = true;
-		private readonly IDictionary<int, ColumnConfiguration> fieldCache = new Dictionary<int, ColumnConfiguration>();
-		private readonly ObfuscationConfiguration obfuscationConfiguration;
+		private readonly IDictionary<int, IColumnSpec> fieldCache = new Dictionary<int, IColumnSpec>();
+		private readonly IObfuscationSpec obfuscationSpec;
 		private readonly IDictionary<string, IObfuscationStrategy> obfuscationStrategyCache = new Dictionary<string, IObfuscationStrategy>();
 		private readonly ResolveDictionaryValueDelegate resolveDictionaryValueCallback;
 		private readonly IDictionary<string, IDictionary<object, object>> substitutionCacheRoot = new Dictionary<string, IDictionary<object, object>>();
@@ -55,7 +56,7 @@ namespace SyncPrem.Infrastructure.Oxymoron
 
 		#region Properties/Indexers/Events
 
-		private IDictionary<int, ColumnConfiguration> FieldCache
+		private IDictionary<int, IColumnSpec> FieldCache
 		{
 			get
 			{
@@ -63,11 +64,11 @@ namespace SyncPrem.Infrastructure.Oxymoron
 			}
 		}
 
-		public ObfuscationConfiguration ObfuscationConfiguration
+		public IObfuscationSpec ObfuscationSpec
 		{
 			get
 			{
-				return this.obfuscationConfiguration;
+				return this.obfuscationSpec;
 			}
 		}
 
@@ -110,33 +111,6 @@ namespace SyncPrem.Infrastructure.Oxymoron
 		#endregion
 
 		#region Methods/Operators
-
-		/// <summary>
-		/// NOTE: Calling this more than once kills performance.
-		/// </summary>
-		/// <param name="configurationObject"> </param>
-		private static void EnsureValidConfigurationOnce(ConfigurationObject configurationObject)
-		{
-			IEnumerable<Message> messages;
-
-			if ((object)configurationObject == null)
-				throw new ArgumentNullException(nameof(configurationObject));
-
-			messages = configurationObject.Validate();
-
-			if (messages.Any())
-				throw new InvalidOperationException(string.Format("Obfuscation configuration validation failed:\r\n{0}", string.Join("\r\n", messages.Select(m => m.Description).ToArray())));
-		}
-
-		public static TConfiguration FromJsonFile<TConfiguration>(string jsonFilePath)
-			where TConfiguration : class, IConfigurationObject, new()
-		{
-			TConfiguration configuration;
-
-			configuration = JsonSerializationStrategy.Instance.GetObjectFromFile<TConfiguration>(jsonFilePath);
-
-			return configuration;
-		}
 
 		private static long? GetHash(long? multiplier, long? size, long? seed, object value)
 		{
@@ -204,46 +178,38 @@ namespace SyncPrem.Infrastructure.Oxymoron
 			JsonSerializationStrategy.Instance.SetObjectToFile<IEnumerable<IRecord>>(jsonFilePath, records);
 		}
 
-		public static void ToJsonFile<TConfiguration>(TConfiguration configuration, string jsonFilePath)
-			where TConfiguration : class, IConfigurationObject, new()
-		{
-			JsonSerializationStrategy.Instance.SetObjectToFile<TConfiguration>(jsonFilePath, configuration);
-		}
-
 		private object _GetObfuscatedValue(IField field, object originalFieldValue)
 		{
 			IObfuscationStrategy obfuscationStrategy;
-			ColumnConfiguration columnConfiguration;
+			IColumnSpec columnSpec;
 			object obfuscatedFieldValue;
 
 			if ((object)field == null)
 				throw new ArgumentNullException(nameof(field));
 
-			// KILLS performance - not sure why
-			//EnsureValidConfigurationOnce(this.TableConfiguration);
-			//columnConfiguration = this.TableConfiguration.ColumnConfigurations.SingleOrDefault(c => c.ColumnName.SafeToString().Trim().ToLower() == columnName.SafeToString().Trim().ToLower());
-
-			if (!this.FieldCache.TryGetValue(field.FieldIndex, out columnConfiguration))
+			if (!this.FieldCache.TryGetValue(field.FieldIndex, out columnSpec))
 			{
-				columnConfiguration = this.ObfuscationConfiguration.TableConfiguration.ColumnConfigurations.SingleOrDefault(c => c.ColumnName.SafeToString().Trim().ToLower() == field.FieldName.SafeToString().Trim().ToLower());
-				//columnConfiguration = this.TableConfiguration.ColumnConfigurations.SingleOrDefault(c => c.ColumnName == columnName);
-				this.FieldCache.Add(field.FieldIndex, columnConfiguration);
+				columnSpec = this.ObfuscationSpec.TableSpec.ColumnSpecs.SingleOrDefault(c => c.ColumnName.SafeToString().Trim().ToLower() == field.FieldName.SafeToString().Trim().ToLower());
+				this.FieldCache.Add(field.FieldIndex, columnSpec);
 			}
 
-			if ((object)columnConfiguration == null)
-				return originalFieldValue; // do nothing when no matching column configuration
+			if ((object)columnSpec == null)
+				return originalFieldValue; // do nothing when no matching column spec
 
-			if (!this.ObfuscationStrategyCache.TryGetValue(columnConfiguration.ObfuscationStrategyAqtn, out obfuscationStrategy))
+			if ((object)columnSpec.ObfuscationStrategyType == null)
+				return originalFieldValue; // do nothing when strategy type not set
+
+			if (!this.ObfuscationStrategyCache.TryGetValue(columnSpec.ObfuscationStrategyType.AssemblyQualifiedName, out obfuscationStrategy))
 			{
-				obfuscationStrategy = columnConfiguration.GetObfuscationStrategyInstance();
+				obfuscationStrategy = (IObfuscationStrategy)Activator.CreateInstance(columnSpec.ObfuscationStrategyType);
 
 				if ((object)obfuscationStrategy == null)
-					throw new InvalidOperationException(string.Format("Unknown obfuscation strategy '{0}' specified for column '{1}'.", columnConfiguration.ObfuscationStrategyAqtn, field.FieldName));
+					throw new InvalidOperationException(string.Format("Unknown obfuscation strategy '{0}' specified for column '{1}'.", columnSpec.ObfuscationStrategyType.AssemblyQualifiedName, field.FieldName));
 
-				this.ObfuscationStrategyCache.Add(columnConfiguration.ObfuscationStrategyAqtn, obfuscationStrategy);
+				this.ObfuscationStrategyCache.Add(columnSpec.ObfuscationStrategyType.AssemblyQualifiedName, obfuscationStrategy);
 			}
 
-			obfuscatedFieldValue = obfuscationStrategy.GetObfuscatedValue(this, columnConfiguration, field, originalFieldValue);
+			obfuscatedFieldValue = obfuscationStrategy.GetObfuscatedValue(this, columnSpec, field, originalFieldValue);
 
 			return obfuscatedFieldValue;
 		}
@@ -277,9 +243,9 @@ namespace SyncPrem.Infrastructure.Oxymoron
 		{
 			long? hash;
 
-			hash = GetHash(this.ObfuscationConfiguration.HashConfiguration.Multiplier,
+			hash = GetHash(this.ObfuscationSpec.HashSpec.Multiplier,
 				size,
-				this.ObfuscationConfiguration.HashConfiguration.Seed,
+				this.ObfuscationSpec.HashSpec.Seed,
 				value.SafeToString());
 
 			if ((object)hash == null)
@@ -298,12 +264,20 @@ namespace SyncPrem.Infrastructure.Oxymoron
 			if ((object)columnValue == DBNull.Value)
 				columnValue = null;
 
-			if ((this.ObfuscationConfiguration.EnablePassThru ?? false))
-				return columnValue; // pass-thru
+			if ((this.ObfuscationSpec.EnablePassThru ?? false))
+				return columnValue; // pass-thru (saftey switch)
 
 			value = this._GetObfuscatedValue(field, columnValue);
 
 			return value;
+		}
+
+		public IEnumerable<IResult> GetObfuscatedValues(IEnumerable<IResult> results)
+		{
+			if ((object)results == null)
+				throw new ArgumentNullException(nameof(results));
+
+			return results.GetWrappedEnumerable(r => r.ApplyWrap(this.GetObfuscatedValues));
 		}
 
 		public IEnumerable<IRecord> GetObfuscatedValues(IEnumerable<IRecord> records)
@@ -328,7 +302,7 @@ namespace SyncPrem.Infrastructure.Oxymoron
 					fieldIndex = 0;
 					foreach (KeyValuePair<string, object> item in record)
 					{
-						IField field;
+						IField field; // TODO: should be provided to constructor
 
 						fieldName = item.Key;
 						originalFieldValue = record[item.Key];
@@ -369,10 +343,10 @@ namespace SyncPrem.Infrastructure.Oxymoron
 			return hash;
 		}
 
-		private object ResolveDictionaryValue(DictionaryConfiguration dictionaryConfiguration, object surrogateKey)
+		private object ResolveDictionaryValue(IDictionarySpec dictionarySpec, object surrogateKey)
 		{
-			if ((object)dictionaryConfiguration == null)
-				throw new ArgumentNullException(nameof(dictionaryConfiguration));
+			if ((object)dictionarySpec == null)
+				throw new ArgumentNullException(nameof(dictionarySpec));
 
 			if ((object)surrogateKey == null)
 				throw new ArgumentNullException(nameof(surrogateKey));
@@ -380,36 +354,36 @@ namespace SyncPrem.Infrastructure.Oxymoron
 			if ((object)this.ResolveDictionaryValueCallback == null)
 				return null;
 
-			return this.ResolveDictionaryValueCallback(dictionaryConfiguration, surrogateKey);
+			return this.ResolveDictionaryValueCallback(dictionarySpec, surrogateKey);
 		}
 
-		bool IObfuscationContext.TryGetSurrogateValue(DictionaryConfiguration dictionaryConfiguration, object surrogateKey, out object surrogateValue)
+		bool IObfuscationContext.TryGetSurrogateValue(IDictionarySpec dictionarySpec, object surrogateKey, out object surrogateValue)
 		{
 			IDictionary<object, object> dictionaryCache;
 
-			if ((object)dictionaryConfiguration == null)
-				throw new ArgumentNullException(nameof(dictionaryConfiguration));
+			if ((object)dictionarySpec == null)
+				throw new ArgumentNullException(nameof(dictionarySpec));
 
-			if (!this.ObfuscationConfiguration.DisableEngineCaches ?? false)
+			if (!this.ObfuscationSpec.DisableEngineCaches ?? false)
 			{
-				if (!this.SubstitutionCacheRoot.TryGetValue(dictionaryConfiguration.DictionaryId, out dictionaryCache))
+				if (!this.SubstitutionCacheRoot.TryGetValue(dictionarySpec.DictionaryId, out dictionaryCache))
 				{
 					dictionaryCache = new Dictionary<object, object>();
-					this.SubstitutionCacheRoot.Add(dictionaryConfiguration.DictionaryId, dictionaryCache);
+					this.SubstitutionCacheRoot.Add(dictionarySpec.DictionaryId, dictionaryCache);
 				}
 
 				if (!dictionaryCache.TryGetValue(surrogateKey, out surrogateValue))
 				{
-					if (dictionaryConfiguration.PreloadEnabled)
-						throw new InvalidOperationException(string.Format("Cache miss when dictionary preload enabled for dictionary ID '{0}'; current cache slot item count: {1}.", dictionaryConfiguration.DictionaryId, dictionaryCache.Count));
+					if (dictionarySpec.PreloadEnabled)
+						throw new InvalidOperationException(string.Format("Cache miss when dictionary preload enabled for dictionary ID '{0}'; current cache slot item count: {1}.", dictionarySpec.DictionaryId, dictionaryCache.Count));
 
-					surrogateValue = this.ResolveDictionaryValue(dictionaryConfiguration, surrogateKey);
+					surrogateValue = this.ResolveDictionaryValue(dictionarySpec, surrogateKey);
 					dictionaryCache.Add(surrogateKey, surrogateValue);
 				}
 			}
 			else
 			{
-				surrogateValue = this.ResolveDictionaryValue(dictionaryConfiguration, surrogateKey);
+				surrogateValue = this.ResolveDictionaryValue(dictionarySpec, surrogateKey);
 			}
 
 			return true;

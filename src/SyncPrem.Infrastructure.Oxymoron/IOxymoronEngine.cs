@@ -18,6 +18,8 @@ namespace SyncPrem.Infrastructure.Oxymoron
 
 		IEnumerable<IRecord> GetObfuscatedValues(IEnumerable<IRecord> records);
 
+		IEnumerable<IResult> GetObfuscatedValues(IEnumerable<IResult> results);
+
 		#endregion
 	}
 }

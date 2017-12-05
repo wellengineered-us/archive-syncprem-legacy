@@ -4,12 +4,8 @@
 */
 
 using System;
-using System.Collections.Generic;
 
 using SyncPrem.Infrastructure.Data.Primitives;
-using SyncPrem.Infrastructure.Oxymoron.Configuration;
-
-using TextMetal.Middleware.Solder.Primitives;
 
 namespace SyncPrem.Infrastructure.Oxymoron.Strategies
 {
@@ -17,11 +13,9 @@ namespace SyncPrem.Infrastructure.Oxymoron.Strategies
 	{
 		#region Methods/Operators
 
-		object GetObfuscatedValue(IObfuscationContext obfuscationContext, ColumnConfiguration columnConfiguration, IField field, object originalFieldValue);
+		object GetObfuscatedValue(IObfuscationContext obfuscationContext, IColumnSpec columnSpec, IField field, object originalFieldValue);
 
-		Type GetObfuscationStrategySpecificConfigurationType();
-
-		IEnumerable<Message> ValidateObfuscationStrategySpecificConfiguration(ColumnConfiguration columnConfiguration, int? fieldIndex);
+		Type GetObfuscationStrategySpecificSpecType();
 
 		#endregion
 	}

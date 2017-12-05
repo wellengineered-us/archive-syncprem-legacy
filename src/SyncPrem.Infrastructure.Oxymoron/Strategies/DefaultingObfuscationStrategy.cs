@@ -6,8 +6,6 @@
 using System;
 
 using SyncPrem.Infrastructure.Data.Primitives;
-using SyncPrem.Infrastructure.Oxymoron.Configuration;
-using SyncPrem.Infrastructure.Oxymoron.Strategies.Configuration;
 
 using TextMetal.Middleware.Solder.Extensions;
 
@@ -17,7 +15,7 @@ namespace SyncPrem.Infrastructure.Oxymoron.Strategies
 	/// Returns an alternate value that is always null if NULL or the default value if NOT NULL.
 	/// DATA TYPE: any
 	/// </summary>
-	public sealed class DefaultingObfuscationStrategy : ObfuscationStrategy<DefaultingObfuscationStrategyConfiguration>
+	public sealed class DefaultingObfuscationStrategy : ObfuscationStrategy<DefaultingObfuscationStrategy.Spec>
 	{
 		#region Constructors/Destructors
 
@@ -43,25 +41,62 @@ namespace SyncPrem.Infrastructure.Oxymoron.Strategies
 			return SolderFascadeAccessor.DataTypeFascade.DefaultValue(valueType);
 		}
 
-		protected override object CoreGetObfuscatedValue(IObfuscationContext obfuscationContext, ColumnConfiguration<DefaultingObfuscationStrategyConfiguration> columnConfiguration, IField field, object columnValue)
+		protected override object CoreGetObfuscatedValue(IObfuscationContext obfuscationContext, IColumnSpec<Spec> columnSpec, IField field, object columnValue)
 		{
 			object value;
 
 			if ((object)obfuscationContext == null)
 				throw new ArgumentNullException(nameof(obfuscationContext));
 
-			if ((object)columnConfiguration == null)
-				throw new ArgumentNullException(nameof(columnConfiguration));
+			if ((object)columnSpec == null)
+				throw new ArgumentNullException(nameof(columnSpec));
 
 			if ((object)field == null)
 				throw new ArgumentNullException(nameof(field));
 
-			if ((object)columnConfiguration.ObfuscationStrategySpecificConfiguration == null)
-				throw new InvalidOperationException(string.Format("Configuration missing: '{0}'.", nameof(columnConfiguration.ObfuscationStrategySpecificConfiguration)));
+			if ((object)columnSpec.ObfuscationStrategySpec == null)
+				throw new InvalidOperationException(string.Format("Specification missing: '{0}'.", nameof(columnSpec.ObfuscationStrategySpec)));
 
-			value = GetDefault(field.IsFieldOptional && (columnConfiguration.ObfuscationStrategySpecificConfiguration.DefaultingCanBeNull ?? false), field.FieldType);
+			value = GetDefault(field.IsFieldOptional && (columnSpec.ObfuscationStrategySpec.DefaultingCanBeNull ?? false), field.FieldType);
 
 			return value;
+		}
+
+		#endregion
+
+		#region Classes/Structs/Interfaces/Enums/Delegates
+
+		public sealed class Spec : IObfuscationStrategySpec
+		{
+			#region Constructors/Destructors
+
+			public Spec()
+			{
+			}
+
+			#endregion
+
+			#region Fields/Constants
+
+			private bool? defaultingCanBeNull;
+
+			#endregion
+
+			#region Properties/Indexers/Events
+
+			public bool? DefaultingCanBeNull
+			{
+				get
+				{
+					return this.defaultingCanBeNull;
+				}
+				set
+				{
+					this.defaultingCanBeNull = value;
+				}
+			}
+
+			#endregion
 		}
 
 		#endregion

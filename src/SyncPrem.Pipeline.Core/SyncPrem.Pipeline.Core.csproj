@@ -8,6 +8,7 @@
   <ItemGroup>
     <ProjectReference Include="..\SyncPrem.Infrastructure.Data.AdoNet\SyncPrem.Infrastructure.Data.AdoNet.csproj" />
     <ProjectReference Include="..\SyncPrem.Infrastructure.Data.Primitives\SyncPrem.Infrastructure.Data.Primitives.csproj" />
+    <ProjectReference Include="..\SyncPrem.Infrastructure.Oxymoron\SyncPrem.Infrastructure.Oxymoron.csproj" />
     <ProjectReference Include="..\SyncPrem.Infrastructure.Textual\SyncPrem.Infrastructure.Textual.csproj" />
     <ProjectReference Include="..\SyncPrem.Pipeline.Abstractions\SyncPrem.Pipeline.Abstractions.csproj" />
     <ProjectReference Include="..\TextMetal.Imports.NUnit\TextMetal.Imports.NUnit.csproj" />

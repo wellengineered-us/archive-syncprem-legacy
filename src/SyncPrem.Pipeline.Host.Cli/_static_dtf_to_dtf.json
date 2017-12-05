@@ -66,6 +66,12 @@
 
 	"TransformerFilterConfigurations":
 	[
+		{
+			"FilterAqtn": "SyncPrem.Pipeline.Core.Filters.Oxymoron.OxymoronTransformerPipelineFilter, SyncPrem.Pipeline.Core",
+			"FilterSpecificConfiguration":
+			{
+			}
+		}
 	],
 
 	"ConsumerFilterConfiguration":

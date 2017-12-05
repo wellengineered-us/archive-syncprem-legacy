@@ -5,5 +5,7 @@
 
 namespace SyncPrem.Infrastructure.Oxymoron
 {
-	public delegate object ResolveDictionaryValueDelegate(IDictionarySpec dictionarySpec, object surrogateKey);
+	public interface IObfuscationStrategySpec
+	{
+	}
 }

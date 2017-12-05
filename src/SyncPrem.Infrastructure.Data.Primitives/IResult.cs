@@ -6,9 +6,11 @@
 using System;
 using System.Collections.Generic;
 
+using SyncPrem.Infrastructure.Wrappers;
+
 namespace SyncPrem.Infrastructure.Data.Primitives
 {
-	public interface IResult
+	public interface IResult : IApplyWrap<IResult, IRecord>
 	{
 		#region Properties/Indexers/Events
 
@@ -26,16 +28,6 @@ namespace SyncPrem.Infrastructure.Data.Primitives
 		{
 			get;
 		}
-
-		#endregion
-
-		#region Methods/Operators
-
-		/// <summary>
-		/// Feels kind of hack-ish.
-		/// </summary>
-		/// <param name="wrapperCallback"> </param>
-		IResult ApplyWrap(Func<IEnumerable<IRecord>, IEnumerable<IRecord>> wrapperCallback);
 
 		#endregion
 	}

@@ -28,7 +28,7 @@ namespace SyncPrem.Pipeline.Core.Messages
 
 		#region Fields/Constants
 
-		private readonly IEnumerable<IResult> results;
+		private IEnumerable<IResult> results;
 
 		#endregion
 
@@ -40,6 +40,24 @@ namespace SyncPrem.Pipeline.Core.Messages
 			{
 				return this.results;
 			}
+			private set
+			{
+				this.results = value;
+			}
+		}
+
+		#endregion
+
+		#region Methods/Operators
+
+		public IPipelineMessage ApplyWrap(Func<IEnumerable<IResult>, IEnumerable<IResult>> wrapperCallback)
+		{
+			if ((object)wrapperCallback == null)
+				throw new ArgumentNullException(nameof(wrapperCallback));
+
+			this.Results = wrapperCallback(this.Results);
+
+			return this; // fluent API
 		}
 
 		#endregion

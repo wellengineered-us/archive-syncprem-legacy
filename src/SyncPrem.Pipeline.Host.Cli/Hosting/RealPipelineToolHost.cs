@@ -8,12 +8,14 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 
-using SyncPrem.Infrastructure.Oxymoron;
+using SyncPrem.Infrastructure.Configuration;
+using SyncPrem.Infrastructure.Data.Primitives;
 using SyncPrem.Pipeline.Abstractions;
 using SyncPrem.Pipeline.Abstractions.Configurations;
 
 using TextMetal.Middleware.Solder.Injection;
 using TextMetal.Middleware.Solder.Primitives;
+using TextMetal.Middleware.Solder.Serialization;
 
 namespace SyncPrem.Pipeline.Host.Cli.Hosting
 {
@@ -29,6 +31,36 @@ namespace SyncPrem.Pipeline.Host.Cli.Hosting
 		#endregion
 
 		#region Methods/Operators
+
+		private static TConfiguration FromJsonFile<TConfiguration>(string jsonFilePath)
+			where TConfiguration : class, IConfigurationObject, new()
+		{
+			TConfiguration configuration;
+
+			configuration = JsonSerializationStrategy.Instance.GetObjectFromFile<TConfiguration>(jsonFilePath);
+
+			return configuration;
+		}
+
+		private static IEnumerable<IRecord> RecordsFromJsonFile(string jsonFilePath)
+		{
+			IEnumerable<IRecord> records;
+
+			records = JsonSerializationStrategy.Instance.GetObjectFromFile<Record[]>(jsonFilePath);
+
+			return records;
+		}
+
+		private static void RecordsToJsonFile(IEnumerable<IRecord> records, string jsonFilePath)
+		{
+			JsonSerializationStrategy.Instance.SetObjectToFile<IEnumerable<IRecord>>(jsonFilePath, records);
+		}
+
+		private static void ToJsonFile<TConfiguration>(TConfiguration configuration, string jsonFilePath)
+			where TConfiguration : class, IConfigurationObject, new()
+		{
+			JsonSerializationStrategy.Instance.SetObjectToFile<TConfiguration>(jsonFilePath, configuration);
+		}
 
 		public void Host(RealPipelineConfiguration realPipelineConfiguration)
 		{
@@ -74,7 +106,7 @@ namespace SyncPrem.Pipeline.Host.Cli.Hosting
 			RealPipelineConfiguration realPipelineConfiguration;
 
 			sourceFilePath = Path.GetFullPath(sourceFilePath);
-			realPipelineConfiguration = OxymoronEngine.FromJsonFile<RealPipelineConfiguration>(sourceFilePath);
+			realPipelineConfiguration = FromJsonFile<RealPipelineConfiguration>(sourceFilePath);
 
 			this.Host(realPipelineConfiguration);
 		}

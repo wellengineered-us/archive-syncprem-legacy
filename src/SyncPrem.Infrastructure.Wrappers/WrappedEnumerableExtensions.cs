@@ -18,9 +18,23 @@ namespace SyncPrem.Infrastructure.Wrappers
 
 		#region Methods/Operators
 
-		public static IEnumerable<T> GetWrappedEnumerableForMetricCallback<T>(this IEnumerable<T> enumerable, string source, Func<T, T> itemCallback, Action<string, long, bool, double> processingCallback)
+		public static IEnumerable<T> GetWrappedEnumerable<T>(this IEnumerable<T> enumerable, Func<T, T> itemCallback)
 		{
-			long itemCount = 0;
+			if ((object)enumerable == null)
+				throw new ArgumentNullException(nameof(enumerable));
+
+			foreach (T item in enumerable)
+			{
+				if ((object)itemCallback != null)
+					yield return itemCallback(item);
+				else
+					yield return item;
+			}
+		}
+
+		public static IEnumerable<T> GetMetricsWrappedEnumerable<T>(this IEnumerable<T> enumerable, string source, Func<T, T> itemCallback, Action<string, ulong, bool, double> processingCallback)
+		{
+			ulong itemCount = 0;
 			DateTime startUtc;
 
 			startUtc = DateTime.UtcNow;

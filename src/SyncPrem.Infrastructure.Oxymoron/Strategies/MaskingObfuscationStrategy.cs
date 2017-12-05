@@ -7,8 +7,6 @@ using System;
 using System.Text;
 
 using SyncPrem.Infrastructure.Data.Primitives;
-using SyncPrem.Infrastructure.Oxymoron.Configuration;
-using SyncPrem.Infrastructure.Oxymoron.Strategies.Configuration;
 
 using TextMetal.Middleware.Solder.Extensions;
 
@@ -18,7 +16,7 @@ namespace SyncPrem.Infrastructure.Oxymoron.Strategies
 	/// Returns an alternate value that is a +/- (%) mask of the original value.
 	/// DATA TYPE: string
 	/// </summary>
-	public sealed class MaskingObfuscationStrategy : ObfuscationStrategy<MaskingObfuscationStrategyConfiguration>
+	public sealed class MaskingObfuscationStrategy : ObfuscationStrategy<MaskingObfuscationStrategy.Spec>
 	{
 		#region Constructors/Destructors
 
@@ -78,7 +76,7 @@ namespace SyncPrem.Infrastructure.Oxymoron.Strategies
 			return buffer.ToString();
 		}
 
-		protected override object CoreGetObfuscatedValue(IObfuscationContext obfuscationContext, ColumnConfiguration<MaskingObfuscationStrategyConfiguration> columnConfiguration, IField field, object columnValue)
+		protected override object CoreGetObfuscatedValue(IObfuscationContext obfuscationContext, IColumnSpec<Spec> columnSpec, IField field, object columnValue)
 		{
 			object value;
 			double maskingFactor;
@@ -86,20 +84,57 @@ namespace SyncPrem.Infrastructure.Oxymoron.Strategies
 			if ((object)obfuscationContext == null)
 				throw new ArgumentNullException(nameof(obfuscationContext));
 
-			if ((object)columnConfiguration == null)
-				throw new ArgumentNullException(nameof(columnConfiguration));
+			if ((object)columnSpec == null)
+				throw new ArgumentNullException(nameof(columnSpec));
 
 			if ((object)field == null)
 				throw new ArgumentNullException(nameof(field));
 
-			if ((object)columnConfiguration.ObfuscationStrategySpecificConfiguration == null)
-				throw new InvalidOperationException(string.Format("Configuration missing: '{0}'.", nameof(columnConfiguration.ObfuscationStrategySpecificConfiguration)));
+			if ((object)columnSpec.ObfuscationStrategySpec == null)
+				throw new InvalidOperationException(string.Format("Specification missing: '{0}'.", nameof(columnSpec.ObfuscationStrategySpec)));
 
-			maskingFactor = (columnConfiguration.ObfuscationStrategySpecificConfiguration.MaskingPercentValue.GetValueOrDefault() / 100.0);
+			maskingFactor = (columnSpec.ObfuscationStrategySpec.MaskingPercentValue.GetValueOrDefault() / 100.0);
 
 			value = GetMask(maskingFactor, columnValue);
 
 			return value;
+		}
+
+		#endregion
+
+		#region Classes/Structs/Interfaces/Enums/Delegates
+
+		public sealed class Spec : IObfuscationStrategySpec
+		{
+			#region Constructors/Destructors
+
+			public Spec()
+			{
+			}
+
+			#endregion
+
+			#region Fields/Constants
+
+			private double? maskingPercentValue;
+
+			#endregion
+
+			#region Properties/Indexers/Events
+
+			public double? MaskingPercentValue
+			{
+				get
+				{
+					return this.maskingPercentValue;
+				}
+				set
+				{
+					this.maskingPercentValue = value;
+				}
+			}
+
+			#endregion
 		}
 
 		#endregion

@@ -84,20 +84,20 @@
 //			return callback(columnValue);
 //		}
 
-//		protected override object CoreGetObfuscatedValue(IOxymoronEngine oxymoronEngine, ColumnConfiguration<ScriptObfuscationStrategyConfiguration> columnConfiguration, IColumn column, object columnValue)
+//		protected override object CoreGetObfuscatedValue(IOxymoronEngine oxymoronEngine, ColumnConfiguration<ScriptObfuscationStrategyConfiguration> columnSpec, IColumn column, object columnValue)
 //		{
 //if ((object)oxymoronEngine == null)
 //throw new ArgumentNullException(nameof(oxymoronEngine));
-//			if ((object)columnConfiguration == null)
-//				throw new ArgumentNullException(nameof(columnConfiguration));
+//			if ((object)columnSpec == null)
+//				throw new ArgumentNullException(nameof(columnSpec));
 
 //			if ((object)column == null)
 //				throw new ArgumentNullException(nameof(column));
 
-//			if ((object)columnConfiguration.ObfuscationStrategySpecificConfiguration == null)
-//				throw new InvalidOperationException(string.Format("Configuration missing: '{0}'.", nameof(columnConfiguration.ObfuscationStrategySpecificConfiguration)));
+//			if ((object)columnSpec.ObfuscationStrategySpecificConfiguration == null)
+//				throw new InvalidOperationException(string.Format("Specification missing: '{0}'.", nameof(columnSpec.ObfuscationStrategySpecificConfiguration)));
 
-//			return CompileCSharpCode(columnValue, columnConfiguration.ObfuscationStrategySpecificConfiguration.SourceCode);
+//			return CompileCSharpCode(columnValue, columnSpec.ObfuscationStrategySpecificConfiguration.SourceCode);
 //		}
 
 //		#endregion

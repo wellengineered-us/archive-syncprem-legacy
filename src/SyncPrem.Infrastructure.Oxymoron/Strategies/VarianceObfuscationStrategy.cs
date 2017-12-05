@@ -6,8 +6,6 @@
 using System;
 
 using SyncPrem.Infrastructure.Data.Primitives;
-using SyncPrem.Infrastructure.Oxymoron.Configuration;
-using SyncPrem.Infrastructure.Oxymoron.Strategies.Configuration;
 
 namespace SyncPrem.Infrastructure.Oxymoron.Strategies
 {
@@ -17,7 +15,7 @@ namespace SyncPrem.Infrastructure.Oxymoron.Strategies
 	/// Returns an alternate value within +/- (x%:365.25d) of the original value.
 	/// DATA TYPE: temporal
 	/// </summary>
-	public sealed class VarianceObfuscationStrategy : ObfuscationStrategy<VarianceObfuscationStrategyConfiguration>
+	public sealed class VarianceObfuscationStrategy : ObfuscationStrategy<VarianceObfuscationStrategy.Spec>
 	{
 		#region Constructors/Destructors
 
@@ -89,7 +87,7 @@ namespace SyncPrem.Infrastructure.Oxymoron.Strategies
 			return value;
 		}
 
-		protected override object CoreGetObfuscatedValue(IObfuscationContext obfuscationContext, ColumnConfiguration<VarianceObfuscationStrategyConfiguration> columnConfiguration, IField field, object columnValue)
+		protected override object CoreGetObfuscatedValue(IObfuscationContext obfuscationContext, IColumnSpec<Spec> columnSpec, IField field, object columnValue)
 		{
 			long signHash, valueHash;
 			object value;
@@ -98,22 +96,59 @@ namespace SyncPrem.Infrastructure.Oxymoron.Strategies
 			if ((object)obfuscationContext == null)
 				throw new ArgumentNullException(nameof(obfuscationContext));
 
-			if ((object)columnConfiguration == null)
-				throw new ArgumentNullException(nameof(columnConfiguration));
+			if ((object)columnSpec == null)
+				throw new ArgumentNullException(nameof(columnSpec));
 
 			if ((object)field == null)
 				throw new ArgumentNullException(nameof(field));
 
-			if ((object)columnConfiguration.ObfuscationStrategySpecificConfiguration == null)
-				throw new InvalidOperationException(string.Format("Configuration missing: '{0}'.", nameof(columnConfiguration.ObfuscationStrategySpecificConfiguration)));
+			if ((object)columnSpec.ObfuscationStrategySpec == null)
+				throw new InvalidOperationException(string.Format("Specification missing: '{0}'.", nameof(columnSpec.ObfuscationStrategySpec)));
 
 			signHash = obfuscationContext.GetSignHash(columnValue);
-			valueHash = obfuscationContext.GetValueHash(columnConfiguration.ObfuscationStrategySpecificConfiguration.VariancePercentValue, columnValue);
+			valueHash = obfuscationContext.GetValueHash(columnSpec.ObfuscationStrategySpec.VariancePercentValue, columnValue);
 			varianceFactor = ((((valueHash <= 0 ? 1 : valueHash)) * ((signHash % 2 == 0 ? 1.0 : -1.0))) / 100.0);
 
 			value = GetVariance(varianceFactor, columnValue);
 
 			return value;
+		}
+
+		#endregion
+
+		#region Classes/Structs/Interfaces/Enums/Delegates
+
+		public sealed class Spec : IObfuscationStrategySpec
+		{
+			#region Constructors/Destructors
+
+			public Spec()
+			{
+			}
+
+			#endregion
+
+			#region Fields/Constants
+
+			private long? variancePercentValue;
+
+			#endregion
+
+			#region Properties/Indexers/Events
+
+			public long? VariancePercentValue
+			{
+				get
+				{
+					return this.variancePercentValue;
+				}
+				set
+				{
+					this.variancePercentValue = value;
+				}
+			}
+
+			#endregion
 		}
 
 		#endregion

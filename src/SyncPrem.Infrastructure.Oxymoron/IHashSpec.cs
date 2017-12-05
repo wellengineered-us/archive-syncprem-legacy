@@ -5,5 +5,22 @@
 
 namespace SyncPrem.Infrastructure.Oxymoron
 {
-	public delegate object ResolveDictionaryValueDelegate(IDictionarySpec dictionarySpec, object surrogateKey);
+	public interface IHashSpec
+	{
+		#region Properties/Indexers/Events
+
+		long? Multiplier
+		{
+			get;
+			set;
+		}
+
+		long? Seed
+		{
+			get;
+			set;
+		}
+
+		#endregion
+	}
 }

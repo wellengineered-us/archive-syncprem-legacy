@@ -4,18 +4,13 @@
 */
 
 using System;
-using System.Collections.Generic;
 
 using SyncPrem.Infrastructure.Data.Primitives;
-using SyncPrem.Infrastructure.Oxymoron.Configuration;
-using SyncPrem.Infrastructure.Oxymoron.Strategies.Configuration;
-
-using TextMetal.Middleware.Solder.Primitives;
 
 namespace SyncPrem.Infrastructure.Oxymoron.Strategies
 {
-	public abstract class ObfuscationStrategy<TObfuscationStrategyConfiguration> : IObfuscationStrategy
-		where TObfuscationStrategyConfiguration : ObfuscationStrategyConfiguration, new()
+	public abstract class ObfuscationStrategy<TObfuscationStrategySpec> : IObfuscationStrategy
+		where TObfuscationStrategySpec : class, IObfuscationStrategySpec
 	{
 		#region Constructors/Destructors
 
@@ -27,18 +22,18 @@ namespace SyncPrem.Infrastructure.Oxymoron.Strategies
 
 		#region Methods/Operators
 
-		protected abstract object CoreGetObfuscatedValue(IObfuscationContext obfuscationContext, ColumnConfiguration<TObfuscationStrategyConfiguration> columnConfiguration, IField field, object columnValue);
+		protected abstract object CoreGetObfuscatedValue(IObfuscationContext obfuscationContext, IColumnSpec<TObfuscationStrategySpec> columnSpec, IField field, object columnValue);
 
-		public object GetObfuscatedValue(IObfuscationContext obfuscationContext, ColumnConfiguration columnConfiguration, IField field, object originalFieldValue)
+		public object GetObfuscatedValue(IObfuscationContext obfuscationContext, IColumnSpec columnSpec, IField field, object originalFieldValue)
 		{
-			ColumnConfiguration<TObfuscationStrategyConfiguration> _columnConfiguration;
+			IColumnSpec<TObfuscationStrategySpec> _columnSpec;
 			object value;
 
 			if ((object)obfuscationContext == null)
 				throw new ArgumentNullException(nameof(obfuscationContext));
 
-			if ((object)columnConfiguration == null)
-				throw new ArgumentNullException(nameof(columnConfiguration));
+			if ((object)columnSpec == null)
+				throw new ArgumentNullException(nameof(columnSpec));
 
 			if ((object)field == null)
 				throw new ArgumentNullException(nameof(field));
@@ -46,40 +41,22 @@ namespace SyncPrem.Infrastructure.Oxymoron.Strategies
 			if ((object)originalFieldValue == DBNull.Value)
 				originalFieldValue = null;
 
-			if ((object)columnConfiguration.ObfuscationStrategySpecificConfiguration == null)
-				throw new InvalidOperationException(string.Format("Configuration missing: '{0}'.", nameof(columnConfiguration.ObfuscationStrategySpecificConfiguration)));
+			if ((object)columnSpec.ObfuscationStrategySpec == null)
+				throw new InvalidOperationException(string.Format("Specification missing: '{0}'.", nameof(columnSpec.ObfuscationStrategySpec)));
 
-			_columnConfiguration = new ColumnConfiguration<TObfuscationStrategyConfiguration>(columnConfiguration);
+			_columnSpec = new ColumnSpec<TObfuscationStrategySpec>(columnSpec);
 
-			if ((object)_columnConfiguration.ObfuscationStrategySpecificConfiguration == null)
-				throw new InvalidOperationException(string.Format("Configuration missing: '{0}'.", nameof(_columnConfiguration.ObfuscationStrategySpecificConfiguration)));
+			if ((object)_columnSpec.ObfuscationStrategySpec == null)
+				throw new InvalidOperationException(string.Format("Specification missing: '{0}'.", nameof(_columnSpec.ObfuscationStrategySpec)));
 
-			value = this.CoreGetObfuscatedValue(obfuscationContext, _columnConfiguration, field, originalFieldValue);
+			value = this.CoreGetObfuscatedValue(obfuscationContext, _columnSpec, field, originalFieldValue);
 
 			return value;
 		}
 
-		public Type GetObfuscationStrategySpecificConfigurationType()
+		public Type GetObfuscationStrategySpecificSpecType()
 		{
-			return typeof(TObfuscationStrategyConfiguration);
-		}
-
-		public IEnumerable<Message> ValidateObfuscationStrategySpecificConfiguration(ColumnConfiguration columnConfiguration, int? colummIndex)
-		{
-			ColumnConfiguration<TObfuscationStrategyConfiguration> _columnConfiguration;
-
-			if ((object)columnConfiguration == null)
-				throw new ArgumentNullException(nameof(columnConfiguration));
-
-			if ((object)columnConfiguration.ObfuscationStrategySpecificConfiguration == null)
-				throw new InvalidOperationException(string.Format("Configuration missing: '{0}'.", nameof(columnConfiguration.ObfuscationStrategySpecificConfiguration)));
-
-			_columnConfiguration = new ColumnConfiguration<TObfuscationStrategyConfiguration>(columnConfiguration);
-
-			if ((object)_columnConfiguration.ObfuscationStrategySpecificConfiguration == null)
-				throw new InvalidOperationException(string.Format("Configuration missing: '{0}'.", nameof(_columnConfiguration.ObfuscationStrategySpecificConfiguration)));
-
-			return _columnConfiguration.ObfuscationStrategySpecificConfiguration.Validate(colummIndex);
+			return typeof(TObfuscationStrategySpec);
 		}
 
 		#endregion

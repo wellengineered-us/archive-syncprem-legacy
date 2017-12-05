@@ -3,8 +3,6 @@
 	Distributed under the MIT license: http://www.opensource.org/licenses/mit-license.php
 */
 
-using SyncPrem.Infrastructure.Oxymoron.Configuration;
-
 namespace SyncPrem.Infrastructure.Oxymoron
 {
 	public interface IObfuscationContext
@@ -15,7 +13,7 @@ namespace SyncPrem.Infrastructure.Oxymoron
 
 		long GetValueHash(long? size, object value);
 
-		bool TryGetSurrogateValue(DictionaryConfiguration dictionaryConfiguration, object surrogateKey, out object surrogateValue);
+		bool TryGetSurrogateValue(IDictionarySpec dictionarySpec, object surrogateKey, out object surrogateValue);
 
 		#endregion
 	}

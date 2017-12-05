@@ -9,8 +9,6 @@ using System.Security.Cryptography;
 using System.Text;
 
 using SyncPrem.Infrastructure.Data.Primitives;
-using SyncPrem.Infrastructure.Oxymoron.Configuration;
-using SyncPrem.Infrastructure.Oxymoron.Strategies.Configuration;
 
 namespace SyncPrem.Infrastructure.Oxymoron.Strategies
 {
@@ -18,7 +16,7 @@ namespace SyncPrem.Infrastructure.Oxymoron.Strategies
 	/// Returns an alternate value that is a binary encryption of the original value.
 	/// DATA TYPE: string
 	/// </summary>
-	public sealed class CipheringObfuscationStrategy : ObfuscationStrategy<ObfuscationStrategyConfiguration>
+	public sealed class CipheringObfuscationStrategy : ObfuscationStrategy<CipheringObfuscationStrategy.Spec>
 	{
 		#region Constructors/Destructors
 
@@ -89,7 +87,7 @@ namespace SyncPrem.Infrastructure.Oxymoron.Strategies
 			return Encoding.UTF8.GetString(cipherTextBytes);
 		}
 
-		protected override object CoreGetObfuscatedValue(IObfuscationContext obfuscationContext, ColumnConfiguration<ObfuscationStrategyConfiguration> columnConfiguration, IField field, object columnValue)
+		protected override object CoreGetObfuscatedValue(IObfuscationContext obfuscationContext, IColumnSpec<Spec> columnSpec, IField field, object columnValue)
 		{
 			long signHash, valueHash;
 			object value;
@@ -98,14 +96,14 @@ namespace SyncPrem.Infrastructure.Oxymoron.Strategies
 			if ((object)obfuscationContext == null)
 				throw new ArgumentNullException(nameof(obfuscationContext));
 
-			if ((object)columnConfiguration == null)
-				throw new ArgumentNullException(nameof(columnConfiguration));
+			if ((object)columnSpec == null)
+				throw new ArgumentNullException(nameof(columnSpec));
 
 			if ((object)field == null)
 				throw new ArgumentNullException(nameof(field));
 
-			if ((object)columnConfiguration.ObfuscationStrategySpecificConfiguration == null)
-				throw new InvalidOperationException(string.Format("Configuration missing: '{0}'.", nameof(columnConfiguration.ObfuscationStrategySpecificConfiguration)));
+			if ((object)columnSpec.ObfuscationStrategySpec == null)
+				throw new InvalidOperationException(string.Format("Specification missing: '{0}'.", nameof(columnSpec.ObfuscationStrategySpec)));
 
 			signHash = obfuscationContext.GetSignHash(columnValue);
 			valueHash = obfuscationContext.GetValueHash(null, columnValue);
@@ -114,6 +112,21 @@ namespace SyncPrem.Infrastructure.Oxymoron.Strategies
 			value = GetCipher(sharedSecret, columnValue);
 
 			return value;
+		}
+
+		#endregion
+
+		#region Classes/Structs/Interfaces/Enums/Delegates
+
+		public sealed class Spec : IObfuscationStrategySpec
+		{
+			#region Constructors/Destructors
+
+			public Spec()
+			{
+			}
+
+			#endregion
 		}
 
 		#endregion

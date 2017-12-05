@@ -6,18 +6,27 @@
 using System;
 using System.Collections.Generic;
 
-using SyncPrem.Infrastructure.Data.Primitives;
-using SyncPrem.Infrastructure.Wrappers;
-
-namespace SyncPrem.Pipeline.Abstractions.Messages
+namespace SyncPrem.Infrastructure.Oxymoron
 {
-	public interface IPipelineMessage : IPipelineComponent, IApplyWrap<IPipelineMessage, IResult>
+	public interface IColumnSpec
 	{
 		#region Properties/Indexers/Events
 
-		IEnumerable<IResult> Results
+		IDictionary<string, object> ObfuscationStrategySpec
 		{
 			get;
+		}
+
+		string ColumnName
+		{
+			get;
+			set;
+		}
+
+		Type ObfuscationStrategyType
+		{
+			get;
+			set;
 		}
 
 		#endregion

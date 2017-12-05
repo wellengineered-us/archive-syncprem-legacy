@@ -6,8 +6,6 @@
 using System;
 
 using SyncPrem.Infrastructure.Data.Primitives;
-using SyncPrem.Infrastructure.Oxymoron.Configuration;
-using SyncPrem.Infrastructure.Oxymoron.Strategies.Configuration;
 
 using TextMetal.Middleware.Solder.Extensions;
 
@@ -17,7 +15,7 @@ namespace SyncPrem.Infrastructure.Oxymoron.Strategies
 	/// Returns an alternate value using a hashed lookup into a dictionary.
 	/// DATA TYPE: string
 	/// </summary>
-	public sealed class SubstitutionObfuscationStrategy : ObfuscationStrategy<SubstitutionObfuscationStrategyConfiguration>
+	public sealed class SubstitutionObfuscationStrategy : ObfuscationStrategy<SubstitutionObfuscationStrategy.Spec>
 	{
 		#region Constructors/Destructors
 
@@ -29,7 +27,7 @@ namespace SyncPrem.Infrastructure.Oxymoron.Strategies
 
 		#region Methods/Operators
 
-		protected override object CoreGetObfuscatedValue(IObfuscationContext obfuscationContext, ColumnConfiguration<SubstitutionObfuscationStrategyConfiguration> columnConfiguration, IField field, object columnValue)
+		protected override object CoreGetObfuscatedValue(IObfuscationContext obfuscationContext, IColumnSpec<Spec> columnSpec, IField field, object columnValue)
 		{
 			Type valueType;
 			string _columnValue;
@@ -37,19 +35,19 @@ namespace SyncPrem.Infrastructure.Oxymoron.Strategies
 			long surrogateKey;
 			object surrogateValue;
 
-			DictionaryConfiguration dictionaryConfiguration;
+			IDictionarySpec dictionarySpec;
 
 			if ((object)obfuscationContext == null)
 				throw new ArgumentNullException(nameof(obfuscationContext));
 
-			if ((object)columnConfiguration == null)
-				throw new ArgumentNullException(nameof(columnConfiguration));
+			if ((object)columnSpec == null)
+				throw new ArgumentNullException(nameof(columnSpec));
 
 			if ((object)field == null)
 				throw new ArgumentNullException(nameof(field));
 
-			if ((object)columnConfiguration.ObfuscationStrategySpecificConfiguration == null)
-				throw new InvalidOperationException(string.Format("Configuration missing: '{0}'.", nameof(columnConfiguration.ObfuscationStrategySpecificConfiguration)));
+			if ((object)columnSpec.ObfuscationStrategySpec == null)
+				throw new InvalidOperationException(string.Format("Specification missing: '{0}'.", nameof(columnSpec.ObfuscationStrategySpec)));
 
 			if ((object)columnValue == null)
 				return null;
@@ -65,20 +63,57 @@ namespace SyncPrem.Infrastructure.Oxymoron.Strategies
 			if (SolderFascadeAccessor.DataTypeFascade.IsWhiteSpace(_columnValue))
 				return _columnValue;
 
-			dictionaryConfiguration = columnConfiguration.ObfuscationStrategySpecificConfiguration.DictionaryConfiguration;
+			dictionarySpec = columnSpec.ObfuscationStrategySpec.DictionarySpec;
 
-			if ((object)dictionaryConfiguration == null)
+			if ((object)dictionarySpec == null)
 				throw new InvalidOperationException(string.Format("Failed to obtain dictionary."));
 
-			if ((dictionaryConfiguration.RecordCount ?? 0L) <= 0L)
+			if ((dictionarySpec.RecordCount ?? 0L) <= 0L)
 				return null;
 
-			surrogateKey = obfuscationContext.GetValueHash(dictionaryConfiguration.RecordCount, columnValue);
+			surrogateKey = obfuscationContext.GetValueHash(dictionarySpec.RecordCount, columnValue);
 
-			if (!obfuscationContext.TryGetSurrogateValue(dictionaryConfiguration, surrogateKey, out surrogateValue))
+			if (!obfuscationContext.TryGetSurrogateValue(dictionarySpec, surrogateKey, out surrogateValue))
 				throw new InvalidOperationException(string.Format("Failed to obtain surrogate value."));
 
 			return surrogateValue;
+		}
+
+		#endregion
+
+		#region Classes/Structs/Interfaces/Enums/Delegates
+
+		public sealed class Spec : IObfuscationStrategySpec
+		{
+			#region Constructors/Destructors
+
+			public Spec()
+			{
+			}
+
+			#endregion
+
+			#region Fields/Constants
+
+			private IDictionarySpec dictionarySpec;
+
+			#endregion
+
+			#region Properties/Indexers/Events
+
+			public IDictionarySpec DictionarySpec
+			{
+				get
+				{
+					return this.dictionarySpec;
+				}
+				set
+				{
+					this.dictionarySpec = value;
+				}
+			}
+
+			#endregion
 		}
 
 		#endregion
