@@ -3,19 +3,21 @@
 	Distributed under the MIT license: http://www.opensource.org/licenses/mit-license.php
 */
 
-namespace SyncPrem.Infrastructure.Textual.FixedWidth
+using System.Collections.Generic;
+
+namespace SyncPrem.Infrastructure.Textual.FixedLength
 {
-	public interface IFixedWidthTextFieldSpec : IFlatTextFieldSpec
+	public interface IFixedLengthTextSpec : IFlatTextSpec
 	{
 		#region Properties/Indexers/Events
 
-		int FieldWidth
+		IEnumerable<IFixedLengthTextFieldSpec> DelimitedTextFieldSpecs
 		{
 			get;
 			set;
 		}
 
-		int StartPosition
+		int RecordLength
 		{
 			get;
 			set;

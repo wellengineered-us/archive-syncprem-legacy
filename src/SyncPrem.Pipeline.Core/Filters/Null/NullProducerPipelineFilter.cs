@@ -50,11 +50,11 @@ namespace SyncPrem.Pipeline.Core.Filters.Null
 
 		private static IEnumerable<IRecord> GetRandomRecords()
 		{
-			int recordCount;
+			long recordCount;
 
 			recordCount = 10000; //Random.Next(0, 100);
 
-			for (int recordIndex = 0; recordIndex < recordCount; recordIndex++)
+			for (long recordIndex = 0; recordIndex < recordCount; recordIndex++)
 			{
 				IRecord record;
 
@@ -75,9 +75,9 @@ namespace SyncPrem.Pipeline.Core.Filters.Null
 
 			resultCount = 100; //Random.Next(0, 10);
 
-			for (int resultIndex = 0; resultIndex < resultCount; resultIndex++)
+			for (long resultIndex = 0; resultIndex < resultCount; resultIndex++)
 			{
-				yield return new Result(resultIndex) { RecordsAffected = null, Records = GetRandomRecords() };
+				yield return new Result(resultIndex) { RecordsAffected = -1, Records = GetRandomRecords() };
 			}
 		}
 

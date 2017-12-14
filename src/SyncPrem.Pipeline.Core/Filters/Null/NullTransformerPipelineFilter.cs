@@ -24,6 +24,36 @@ namespace SyncPrem.Pipeline.Core.Filters.Null
 
 		#region Methods/Operators
 
+		public static TransformDelegate NullMiddlewareMethod(TransformDelegate next)
+		{
+			TransformDelegate retval;
+
+			System.Console.WriteLine("NullMiddlewareMethod (before GetMiddlewareChain): '{0}'", nameof(NullTransformerPipelineFilter));
+			retval = TransformClosure.GetMiddlewareChain(NullTransformFilterMethod, next);
+			System.Console.WriteLine("NullMiddlewareMethod (after GetMiddlewareChain): '{0}'", nameof(NullTransformerPipelineFilter));
+			return retval;
+		}
+
+		private static IPipelineMessage NullTransformFilterMethod(IPipelineContext ctx, TableConfiguration cfg, IPipelineMessage msg, TransformDelegate next)
+		{
+			if ((object)ctx == null)
+				throw new ArgumentNullException(nameof(ctx));
+
+			if ((object)cfg == null)
+				throw new ArgumentNullException(nameof(cfg));
+
+			if ((object)msg == null)
+				throw new ArgumentNullException(nameof(msg));
+
+			System.Console.WriteLine("NullTransformFilterMethod (before next) transform: '{0}'", nameof(NullTransformerPipelineFilter));
+
+			msg = next(ctx, cfg, msg);
+
+			System.Console.WriteLine("NullTransformFilterMethod (after next) transform: '{0}'", nameof(NullTransformerPipelineFilter));
+
+			return msg;
+		}
+
 		protected override void Create(bool creating)
 		{
 			System.Console.WriteLine("Creating transform: '{0}'", nameof(NullTransformerPipelineFilter));
@@ -45,6 +75,8 @@ namespace SyncPrem.Pipeline.Core.Filters.Null
 
 			if ((object)tableConfiguration == null)
 				throw new ArgumentNullException(nameof(tableConfiguration));
+
+			System.Console.WriteLine("PostProcessMessage transform: '{0}'", nameof(NullTransformerPipelineFilter));
 		}
 
 		protected override void PreProcessMessage(IPipelineContext pipelineContext, TableConfiguration tableConfiguration)
@@ -54,6 +86,8 @@ namespace SyncPrem.Pipeline.Core.Filters.Null
 
 			if ((object)tableConfiguration == null)
 				throw new ArgumentNullException(nameof(tableConfiguration));
+
+			System.Console.WriteLine("PreProcessMessage transform: '{0}'", nameof(NullTransformerPipelineFilter));
 		}
 
 		protected override IPipelineMessage TransformMessage(IPipelineContext pipelineContext, TableConfiguration tableConfiguration, IPipelineMessage pipelineMessage, TransformDelegate next)
@@ -67,7 +101,13 @@ namespace SyncPrem.Pipeline.Core.Filters.Null
 			if ((object)pipelineMessage == null)
 				throw new ArgumentNullException(nameof(pipelineMessage));
 
-			return next(pipelineContext, tableConfiguration, pipelineMessage);
+			System.Console.WriteLine("TransformMessage (before next) transform: '{0}'", nameof(NullTransformerPipelineFilter));
+
+			pipelineMessage = next(pipelineContext, tableConfiguration, pipelineMessage);
+
+			System.Console.WriteLine("TransformMessage (after next) transform: '{0}'", nameof(NullTransformerPipelineFilter));
+
+			return pipelineMessage;
 		}
 
 		#endregion

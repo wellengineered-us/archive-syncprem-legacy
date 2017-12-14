@@ -16,6 +16,18 @@
 			"FilterSpecificConfiguration":
 			{
 			}
+		},
+		{
+			"FilterAqtn": "SyncPrem.Pipeline.Core.Filters.Null.NullTransformerPipelineFilter, SyncPrem.Pipeline.Core",
+			"FilterSpecificConfiguration":
+			{
+			}
+		},
+		{
+			"FilterAqtn": "SyncPrem.Pipeline.Core.Filters.Null.NullTransformerPipelineFilter, SyncPrem.Pipeline.Core",
+			"FilterSpecificConfiguration":
+			{
+			}
 		}
 	],
 

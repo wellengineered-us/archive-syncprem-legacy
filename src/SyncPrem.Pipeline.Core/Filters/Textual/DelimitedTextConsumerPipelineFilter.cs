@@ -105,11 +105,11 @@ namespace SyncPrem.Pipeline.Core.Filters.Textual
 				if (effectiveDelimitedTextSpec.RecordDelimiter == null)
 					effectiveDelimitedTextSpec.RecordDelimiter = srcDts.RecordDelimiter; // fix bug using wrong property
 
-				if (effectiveDelimitedTextSpec.FirstRecordIsHeader == null)
-					effectiveDelimitedTextSpec.FirstRecordIsHeader = srcDts.FirstRecordIsHeader;
+				//if (effectiveDelimitedTextSpec.FirstRecordIsHeader == null)
+					//effectiveDelimitedTextSpec.FirstRecordIsHeader = srcDts.FirstRecordIsHeader;
 
-				if (effectiveDelimitedTextSpec.LastRecordIsFooter == null)
-					effectiveDelimitedTextSpec.LastRecordIsFooter = srcDts.LastRecordIsFooter;
+				//if (effectiveDelimitedTextSpec.LastRecordIsFooter == null)
+					//effectiveDelimitedTextSpec.LastRecordIsFooter = srcDts.LastRecordIsFooter;
 			}
 		}
 
@@ -200,8 +200,8 @@ namespace SyncPrem.Pipeline.Core.Filters.Textual
 
 				effectiveDelimitedTextSpec.RecordDelimiter = fsConfig.DelimitedTextSpecConfiguration.RecordDelimiter;
 				effectiveDelimitedTextSpec.FieldDelimiter = fsConfig.DelimitedTextSpecConfiguration.FieldDelimiter;
-				effectiveDelimitedTextSpec.FirstRecordIsHeader = fsConfig.DelimitedTextSpecConfiguration.FirstRecordIsHeader;
-				effectiveDelimitedTextSpec.LastRecordIsFooter = fsConfig.DelimitedTextSpecConfiguration.LastRecordIsFooter;
+				effectiveDelimitedTextSpec.FirstRecordIsHeader = fsConfig.DelimitedTextSpecConfiguration.FirstRecordIsHeader ?? false;
+				effectiveDelimitedTextSpec.LastRecordIsFooter = fsConfig.DelimitedTextSpecConfiguration.LastRecordIsFooter ?? false;
 				effectiveDelimitedTextSpec.OpenQuoteValue = fsConfig.DelimitedTextSpecConfiguration.OpenQuoteValue;
 				effectiveDelimitedTextSpec.CloseQuoteValue = fsConfig.DelimitedTextSpecConfiguration.CloseQuoteValue;
 

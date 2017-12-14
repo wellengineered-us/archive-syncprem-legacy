@@ -364,7 +364,7 @@ namespace SyncPrem.Infrastructure.Data.AdoNet
 		{
 			IRecord record;
 			int recordsAffected;
-			int recordIndex = 0;
+			long recordIndex = 0;
 			string key;
 			object value;
 
@@ -420,7 +420,7 @@ namespace SyncPrem.Infrastructure.Data.AdoNet
 		/// <returns> An enumerable of result instances, each containing an enumerable of dictionaries with record key/value pairs of data. </returns>
 		public IEnumerable<IResult> GetResultsFromReader(DbDataReader dbDataReader)
 		{
-			int resultIndex = 0;
+			long resultIndex = 0;
 
 			Guid _ = this.__enter();
 
@@ -485,9 +485,9 @@ namespace SyncPrem.Infrastructure.Data.AdoNet
 
 				if ((object)dbColumns != null)
 				{
-					for (int recordIndex = 0; recordIndex < dbColumns.Count; recordIndex++)
+					for (long recordIndex = 0; recordIndex < dbColumns.Count; recordIndex++)
 					{
-						dbColumn = dbColumns[recordIndex];
+						dbColumn = dbColumns[(int)recordIndex];
 
 						propertyInfos = dbColumn.GetType().GetProperties(BindingFlags.Public | BindingFlags.Instance | BindingFlags.GetProperty);
 
@@ -539,7 +539,7 @@ namespace SyncPrem.Infrastructure.Data.AdoNet
 		/// <returns> An enumerable of result instances, each containing an enumerable of dictionaries with record key/value pairs of schema metadata. </returns>
 		public IEnumerable<IResult> GetSchemaResultsFromReader(DbDataReader dbDataReader)
 		{
-			int resultIndex = 0;
+			long resultIndex = 0;
 
 			Guid _ = this.__enter();
 

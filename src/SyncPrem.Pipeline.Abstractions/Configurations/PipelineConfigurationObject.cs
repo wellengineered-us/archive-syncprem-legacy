@@ -21,58 +21,6 @@ namespace SyncPrem.Pipeline.Abstractions.Configurations
 
 		#endregion
 
-		#region Properties/Indexers/Events
-
-		[ConfigurationIgnore]
-		public new IPipelineConfigurationObjectCollection<IPipelineConfigurationObject> Items
-		{
-			get
-			{
-				return (IPipelineConfigurationObjectCollection<IPipelineConfigurationObject>)base.Items;
-			}
-		}
-
-		[ConfigurationIgnore]
-		public new IPipelineConfigurationObject Content
-		{
-			get
-			{
-				return (IPipelineConfigurationObject)base.Content;
-			}
-			set
-			{
-				base.Content = value;
-			}
-		}
-
-		[ConfigurationIgnore]
-		public new IPipelineConfigurationObject Parent
-		{
-			get
-			{
-				return (IPipelineConfigurationObject)base.Parent;
-			}
-			set
-			{
-				base.Parent = value;
-			}
-		}
-
-		[ConfigurationIgnore]
-		public new IPipelineConfigurationObjectCollection Surround
-		{
-			get
-			{
-				return (IPipelineConfigurationObjectCollection)base.Surround;
-			}
-			set
-			{
-				base.Surround = value;
-			}
-		}
-
-		#endregion
-
 		#region Methods/Operators
 
 		protected static Type GetTypeFromString(string aqtn)

@@ -7,11 +7,12 @@ using System;
 
 using SyncPrem.Pipeline.Abstractions.Configurations;
 using SyncPrem.Pipeline.Abstractions.Messages;
-using SyncPrem.Pipeline.Abstractions.Pipes;
 
 namespace SyncPrem.Pipeline.Abstractions.Filters.Transformer
 {
 	public delegate IPipelineMessage TransformDelegate(IPipelineContext pipelineContext, TableConfiguration tableConfiguration, IPipelineMessage pipelineMessage);
+
+	public delegate IPipelineMessage TransformWithNextDelegate(IPipelineContext pipelineContext, TableConfiguration tableConfiguration, IPipelineMessage pipelineMessage, TransformDelegate next);
 
 	public abstract class TransformerPipelineFilter<TFilterSpecificConfiguration> : PipelineFilter<TFilterSpecificConfiguration>, ITransformerPipelineFilter
 		where TFilterSpecificConfiguration : FilterSpecificConfiguration, new()
@@ -25,12 +26,6 @@ namespace SyncPrem.Pipeline.Abstractions.Filters.Transformer
 		#endregion
 
 		#region Methods/Operators
-
-		public void Read(IPipe pipe)
-		{
-			if ((object)pipe == null)
-				throw new ArgumentNullException(nameof(pipe));
-		}
 
 		public IPipelineMessage Transform(IPipelineContext pipelineContext, TableConfiguration tableConfiguration, IPipelineMessage pipelineMessage, TransformDelegate next)
 		{
@@ -54,12 +49,6 @@ namespace SyncPrem.Pipeline.Abstractions.Filters.Transformer
 		}
 
 		protected abstract IPipelineMessage TransformMessage(IPipelineContext pipelineContext, TableConfiguration tableConfiguration, IPipelineMessage pipelineMessage, TransformDelegate next);
-
-		public void Write(IPipe pipe)
-		{
-			if ((object)pipe == null)
-				throw new ArgumentNullException(nameof(pipe));
-		}
 
 		#endregion
 	}

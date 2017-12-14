@@ -19,8 +19,8 @@ namespace SyncPrem.Infrastructure.Textual
 
 		#region Fields/Constants
 
-		private bool? firstRecordIsHeader;
-		private bool? lastRecordIsFooter;
+		private bool firstRecordIsHeader;
+		private bool lastRecordIsFooter;
 		private string recordDelimiter;
 
 		#endregion
@@ -32,7 +32,7 @@ namespace SyncPrem.Infrastructure.Textual
 			get;
 		}
 
-		public bool? FirstRecordIsHeader
+		public bool FirstRecordIsHeader
 		{
 			get
 			{
@@ -44,7 +44,7 @@ namespace SyncPrem.Infrastructure.Textual
 			}
 		}
 
-		public bool? LastRecordIsFooter
+		public bool LastRecordIsFooter
 		{
 			get
 			{

@@ -7,7 +7,6 @@ using System;
 using System.Collections.Generic;
 
 using SyncPrem.Pipeline.Abstractions.Configurations;
-using SyncPrem.Pipeline.Abstractions.Pipes;
 
 namespace SyncPrem.Pipeline.Abstractions
 {
@@ -32,10 +31,6 @@ namespace SyncPrem.Pipeline.Abstractions
 		Type GetPipelineType();
 
 		IReadOnlyCollection<Type> GetStaticFilterChain();
-
-		void ReleasePipe(IPipe pipe);
-
-		IPipe ReservePipe();
 
 		#endregion
 	}

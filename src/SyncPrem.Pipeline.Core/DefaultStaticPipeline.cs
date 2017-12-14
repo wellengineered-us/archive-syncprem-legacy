@@ -9,12 +9,12 @@ using System.Linq;
 
 using SyncPrem.Pipeline.Abstractions;
 using SyncPrem.Pipeline.Abstractions.Configurations;
+using SyncPrem.Pipeline.Abstractions.Filters;
 using SyncPrem.Pipeline.Abstractions.Filters.Consumer;
 using SyncPrem.Pipeline.Abstractions.Filters.Producer;
 using SyncPrem.Pipeline.Abstractions.Filters.Transformer;
 using SyncPrem.Pipeline.Abstractions.Messages;
-using SyncPrem.Pipeline.Abstractions.Pipes;
-using SyncPrem.Pipeline.Core.Pipes;
+using SyncPrem.Pipeline.Core.Filters.Null;
 
 using TextMetal.Middleware.Solder.Injection;
 using TextMetal.Middleware.Solder.Primitives;
@@ -70,14 +70,14 @@ namespace SyncPrem.Pipeline.Core
 
 			Type producerPipelineFilterType;
 			Type consumerPipelineFilterType;
-			IDictionary<Type, FilterConfiguration> transformerPipelineFilterTypeConfigMappings;
+			IDictionary<FilterConfiguration, Type> transformerPipelineFilterTypeConfigMappings;
 
 			if ((object)pipelineContext == null)
 				throw new ArgumentNullException(nameof(pipelineContext));
 
 			producerPipelineFilterType = this.RealPipelineConfiguration.ProducerFilterConfiguration.GetFilterType();
 			consumerPipelineFilterType = this.RealPipelineConfiguration.ConsumerFilterConfiguration.GetFilterType();
-			transformerPipelineFilterTypeConfigMappings = this.RealPipelineConfiguration.TransformerFilterConfigurations.ToDictionary(c => c.GetFilterType(), c => c);
+			transformerPipelineFilterTypeConfigMappings = this.RealPipelineConfiguration.TransformerFilterConfigurations.ToDictionary(c => c, c => c.GetFilterType());
 
 			if ((object)producerPipelineFilterType == null)
 				throw new InvalidOperationException(nameof(producerPipelineFilterType));
@@ -102,55 +102,74 @@ namespace SyncPrem.Pipeline.Core
 
 				using (consumerPipelineFilter)
 				{
-					consumerPipelineFilter.FilterConfiguration = this.RealPipelineConfiguration.ConsumerFilterConfiguration;
-					consumerPipelineFilter.Create();
-
-					TableConfiguration tc = this.RealPipelineConfiguration.TableConfiguration ?? new TableConfiguration();
-					producerPipelineFilter.PreProcess(pipelineContext, tc);
-					consumerPipelineFilter.PreProcess(pipelineContext, tc);
-
-					pipelineMessage = producerPipelineFilter.Produce(pipelineContext, tc);
-
-					//
+					TableConfiguration tableConfiguration;
 
 					TransformDelegate transform;
 					ITransformBuilder transformBuilder;
 
+					consumerPipelineFilter.FilterConfiguration = this.RealPipelineConfiguration.ConsumerFilterConfiguration;
+					consumerPipelineFilter.Create();
+
+					tableConfiguration = this.RealPipelineConfiguration.TableConfiguration ?? new TableConfiguration();
+					producerPipelineFilter.PreProcess(pipelineContext, tableConfiguration);
+					consumerPipelineFilter.PreProcess(pipelineContext, tableConfiguration);
+
+					// --
 					transformBuilder = new TransformBuilder();
 
-					transformBuilder.Use(next =>
-										{
-											return (ctx, cfg, msg) =>
-													{
-														Console.WriteLine("filter1");
-														return next(ctx, cfg, msg);
-													};
-										});
-
-					foreach (KeyValuePair<Type, FilterConfiguration> transformerPipelineFilterType in transformerPipelineFilterTypeConfigMappings)
+					if (false)
 					{
-						transformBuilder.UseMiddleware(transformerPipelineFilterType.Key, transformerPipelineFilterType.Value);
+						// regular methods
+						transformBuilder.Use(NullTransformerPipelineFilter.NullMiddlewareMethod);
+
+						// local functions
+						TransformDelegate _middleware(TransformDelegate next)
+						{
+							IPipelineMessage _filter(IPipelineContext ctx, TableConfiguration cfg, IPipelineMessage msg)
+							{
+								Console.WriteLine("filter_zero");
+								return next(ctx, cfg, msg);
+							}
+
+							return _filter;
+						}
+
+						transformBuilder.Use(_middleware);
+
+						// lambda expressions
+						transformBuilder.Use(next =>
+											{
+												return (ctx, cfg, msg) =>
+														{
+															Console.WriteLine("filter_first");
+															return next(ctx, cfg, msg);
+														};
+											});
 					}
 
-					transformBuilder.Use(next =>
-										{
-											return (ctx, cfg, msg) =>
-													{
-														Console.WriteLine("filter2");
-														return msg;
-													};
-										});
+					foreach (KeyValuePair<FilterConfiguration, Type> transformerPipelineFilterTypeConfigMapping in transformerPipelineFilterTypeConfigMappings)
+					{
+						if ((object)transformerPipelineFilterTypeConfigMapping.Key == null)
+							throw new InvalidOperationException(nameof(transformerPipelineFilterTypeConfigMapping.Key));
+
+						if ((object)transformerPipelineFilterTypeConfigMapping.Value == null)
+							throw new InvalidOperationException(nameof(transformerPipelineFilterTypeConfigMapping.Value));
+
+						transformBuilder.UseMiddleware(transformerPipelineFilterTypeConfigMapping.Value, transformerPipelineFilterTypeConfigMapping.Key);
+					}
 
 					transform = transformBuilder.Build();
 
-					pipelineMessage = transform(pipelineContext, tc, pipelineMessage);
+					// --
 
-					//
+					pipelineMessage = producerPipelineFilter.Produce(pipelineContext, tableConfiguration);
 
-					consumerPipelineFilter.Consume(pipelineContext, tc, pipelineMessage);
+					pipelineMessage = transform(pipelineContext, tableConfiguration, pipelineMessage);
 
-					consumerPipelineFilter.PostProcess(pipelineContext, tc);
-					producerPipelineFilter.PostProcess(pipelineContext, tc);
+					consumerPipelineFilter.Consume(pipelineContext, tableConfiguration, pipelineMessage);
+
+					consumerPipelineFilter.PostProcess(pipelineContext, tableConfiguration);
+					producerPipelineFilter.PostProcess(pipelineContext, tableConfiguration);
 
 					this.__check();
 				}
@@ -169,46 +188,31 @@ namespace SyncPrem.Pipeline.Core
 			return null;
 		}
 
-		public void ReleasePipe(IPipe pipe)
-		{
-			if ((object)pipe == null)
-				throw new ArgumentNullException(nameof(pipe));
-
-			// TODO DI/IoC
-			using (pipe)
-				;
-		}
-
-		public IPipe ReservePipe()
-		{
-			return new DefaultPipe(); // TODO DI/IoC
-		}
-
 		#endregion
 	}
 
-	public interface ITransformBuilder
+	public interface IProcessBuilder
 	{
 		#region Methods/Operators
 
-		TransformDelegate Build();
+		ProcessDelegate Build(bool reverse);
 
-		ITransformBuilder New();
+		IProcessBuilder New();
 
-		ITransformBuilder Use(Func<TransformDelegate, TransformDelegate> middleware);
+		IProcessBuilder Use(ProcessDelegate middleware);
 
 		#endregion
 	}
 
-	public class TransformBuilder : ITransformBuilder
+	public class ProcessBuilder : IProcessBuilder
 	{
 		#region Constructors/Destructors
 
-		public TransformBuilder()
+		public ProcessBuilder()
 		{
 		}
 
-		private TransformBuilder(TransformBuilder transformBuilder)
+		private ProcessBuilder(ProcessBuilder processBuilder)
 		{
 		}
 
@@ -216,13 +220,13 @@ namespace SyncPrem.Pipeline.Core
 
 		#region Fields/Constants
 
-		private readonly IList<Func<TransformDelegate, TransformDelegate>> components = new List<Func<TransformDelegate, TransformDelegate>>();
+		private readonly IList<ProcessDelegate> components = new List<ProcessDelegate>();
 
 		#endregion
 
 		#region Properties/Indexers/Events
 
-		private IList<Func<TransformDelegate, TransformDelegate>> Components
+		private IList<ProcessDelegate> Components
 		{
 			get
 			{
@@ -234,24 +238,25 @@ namespace SyncPrem.Pipeline.Core
 
 		#region Methods/Operators
 
-		public TransformDelegate Build()
+		public ProcessDelegate Build(bool reverse)
 		{
-			TransformDelegate transform = (ctx, cfg, msg) => msg; // simply return original message unmodified
-
-			foreach (Func<TransformDelegate, TransformDelegate> component in this.Components.Reverse())
+			void _process(IPipelineContext ctx, TableConfiguration cfg)
 			{
-				transform = component(transform);
+				foreach (ProcessDelegate component in (reverse ? this.Components.Reverse() : this.Components))
+				{
+					component(ctx, cfg);
+				}
 			}
 
-			return transform;
+			return _process;
 		}
 
-		public ITransformBuilder New()
+		public IProcessBuilder New()
 		{
-			return new TransformBuilder(this);
+			return new ProcessBuilder(this);
 		}
 
-		public ITransformBuilder Use(Func<TransformDelegate, TransformDelegate> middleware)
+		public IProcessBuilder Use(ProcessDelegate middleware)
 		{
 			this.Components.Add(middleware);
 			return this;
@@ -260,14 +265,14 @@ namespace SyncPrem.Pipeline.Core
 		#endregion
 	}
 
-	public static class TransformBuilderExtensions
+	public static class ProcessBuilderExtensions
 	{
 		#region Methods/Operators
 
-		public static ITransformBuilder UseMiddleware(this ITransformBuilder transformBuilder, Type transformerPipelineFilterType, FilterConfiguration filterConfiguration)
+		public static IProcessBuilder UseMiddleware(this IProcessBuilder processBuilder, Type transformerPipelineFilterType, FilterConfiguration filterConfiguration)
 		{
-			if ((object)transformBuilder == null)
-				throw new ArgumentNullException(nameof(transformBuilder));
+			if ((object)processBuilder == null)
+				throw new ArgumentNullException(nameof(processBuilder));
 
 			if ((object)transformerPipelineFilterType == null)
 				throw new ArgumentNullException(nameof(transformerPipelineFilterType));
@@ -275,26 +280,23 @@ namespace SyncPrem.Pipeline.Core
 			if ((object)filterConfiguration == null)
 				throw new ArgumentNullException(nameof(filterConfiguration));
 
-			return transformBuilder.Use(next =>
+			return processBuilder.Use((ctx, cfg) =>
+									{
+										ITransformerPipelineFilter transformerPipelineFilter;
+
+										transformerPipelineFilter = (ITransformerPipelineFilter)Activator.CreateInstance(transformerPipelineFilterType);
+
+										if ((object)transformerPipelineFilter == null)
+											throw new InvalidOperationException(nameof(transformerPipelineFilter));
+
+										using (transformerPipelineFilter)
 										{
-											return (ctx, cfg, msg) =>
-													{
-														ITransformerPipelineFilter transformerPipelineFilter;
+											transformerPipelineFilter.FilterConfiguration = filterConfiguration;
+											transformerPipelineFilter.Create();
 
-														transformerPipelineFilter = (ITransformerPipelineFilter)Activator.CreateInstance(transformerPipelineFilterType);
-
-														if ((object)transformerPipelineFilter == null)
-															throw new InvalidOperationException(nameof(transformerPipelineFilter));
-
-														using (transformerPipelineFilter)
-														{
-															transformerPipelineFilter.FilterConfiguration = filterConfiguration;
-															transformerPipelineFilter.Create();
-
-															return transformerPipelineFilter.Transform(ctx, cfg, msg, next);
-														}
-													};
-										});
+											transformerPipelineFilter.PreProcess(ctx, cfg);
+										}
+									});
 		}
 
 		#endregion

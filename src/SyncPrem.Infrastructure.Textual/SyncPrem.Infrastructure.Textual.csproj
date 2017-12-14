@@ -6,10 +6,6 @@
   <Import Project="..\common.props" />
 
   <ItemGroup>
-    <Folder Include="Segmented\" />
-  </ItemGroup>
-
-  <ItemGroup>
     <ProjectReference Include="..\SyncPrem.Infrastructure.Data.Primitives\SyncPrem.Infrastructure.Data.Primitives.csproj" />
     <ProjectReference Include="..\SyncPrem.Infrastructure.Wrappers\SyncPrem.Infrastructure.Wrappers.csproj" />
     <ProjectReference Include="..\TextMetal.Middleware.Solder.Extensions\TextMetal.Middleware.Solder.Extensions.csproj" />

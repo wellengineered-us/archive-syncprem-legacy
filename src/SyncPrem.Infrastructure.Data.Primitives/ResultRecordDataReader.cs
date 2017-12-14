@@ -157,7 +157,7 @@ namespace SyncPrem.Infrastructure.Data.Primitives
 		{
 			get
 			{
-				return this.TargetResultsEnumerator.Current.RecordsAffected ?? -1;
+				return this.TargetResultsEnumerator.Current.RecordsAffected;
 			}
 		}
 

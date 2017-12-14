@@ -102,6 +102,30 @@ namespace SyncPrem.Pipeline.Core.Configurations.Textual
 			}
 		}
 
+		bool IFlatTextSpec.FirstRecordIsHeader
+		{
+			get
+			{
+				return this.FirstRecordIsHeader ?? false;
+			}
+			set
+			{
+				this.FirstRecordIsHeader = value;
+			}
+		}
+
+		bool IFlatTextSpec.LastRecordIsFooter
+		{
+			get
+			{
+				return this.LastRecordIsFooter ?? false;
+			}
+			set
+			{
+				this.LastRecordIsFooter = value;
+			}
+		}
+
 		public bool? FirstRecordIsHeader
 		{
 			get

@@ -19,12 +19,12 @@ namespace SyncPrem.Infrastructure.Data.Primitives
 			get;
 		}
 
-		int? RecordsAffected
+		int RecordsAffected
 		{
 			get;
 		}
 
-		int ResultIndex
+		long ResultIndex
 		{
 			get;
 		}

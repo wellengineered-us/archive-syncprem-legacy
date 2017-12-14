@@ -9,6 +9,8 @@ using SyncPrem.Pipeline.Abstractions.Configurations;
 
 namespace SyncPrem.Pipeline.Abstractions.Filters
 {
+	public delegate void ProcessDelegate(IPipelineContext pipelineContext, TableConfiguration tableConfiguration);
+
 	public abstract class PipelineFilter : PipelineComponent, IPipelineFilter
 	{
 		#region Constructors/Destructors

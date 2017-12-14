@@ -130,7 +130,10 @@ namespace SyncPrem.Infrastructure.Configuration
 			return this.Validate(null);
 		}
 
-		public abstract IEnumerable<Message> Validate(object context);
+		public virtual IEnumerable<Message> Validate(object context)
+		{
+			return new Message[] { };
+		}
 
 		#endregion
 	}

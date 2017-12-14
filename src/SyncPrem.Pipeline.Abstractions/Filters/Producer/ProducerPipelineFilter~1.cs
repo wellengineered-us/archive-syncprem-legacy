@@ -7,7 +7,6 @@ using System;
 
 using SyncPrem.Pipeline.Abstractions.Configurations;
 using SyncPrem.Pipeline.Abstractions.Messages;
-using SyncPrem.Pipeline.Abstractions.Pipes;
 
 namespace SyncPrem.Pipeline.Abstractions.Filters.Producer
 {
@@ -40,12 +39,6 @@ namespace SyncPrem.Pipeline.Abstractions.Filters.Producer
 		}
 
 		protected abstract IPipelineMessage ProduceMessage(IPipelineContext pipelineContext, TableConfiguration tableConfiguration);
-
-		public void Write(IPipe pipe)
-		{
-			if ((object)pipe == null)
-				throw new ArgumentNullException(nameof(pipe));
-		}
 
 		#endregion
 	}

@@ -3,17 +3,22 @@
 	Distributed under the MIT license: http://www.opensource.org/licenses/mit-license.php
 */
 
-using System;
-
-namespace SyncPrem.Pipeline.Abstractions.Pipes
+namespace SyncPrem.Infrastructure.Textual.FixedLength
 {
-	public interface IPipe : IPipelineComponent
+	public interface IFixedLengthTextFieldSpec : IFlatTextFieldSpec
 	{
 		#region Properties/Indexers/Events
 
-		Guid CorrelationId
+		int FieldLength
 		{
 			get;
+			set;
+		}
+
+		int StartPosition
+		{
+			get;
+			set;
 		}
 
 		#endregion

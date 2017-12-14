@@ -9,8 +9,8 @@ using System.Collections.ObjectModel;
 
 namespace SyncPrem.Infrastructure.Configuration
 {
-	public class ConfigurationObjectCollection<TConfigurationObject> : Collection<TConfigurationObject>, IConfigurationObjectCollection<TConfigurationObject>, IConfigurationObjectCollection
-		where TConfigurationObject : IConfigurationObject
+	public class ConfigurationObjectCollection<TItemConfigurationObject> : Collection<TItemConfigurationObject>, IConfigurationObjectCollection<TItemConfigurationObject>, IConfigurationObjectCollection
+		where TItemConfigurationObject : IConfigurationObject
 	{
 		#region Constructors/Destructors
 
@@ -45,12 +45,12 @@ namespace SyncPrem.Infrastructure.Configuration
 
 		#region Methods/Operators
 
-		public void AddRange(IEnumerable<TConfigurationObject> items)
+		public void AddRange(IEnumerable<TItemConfigurationObject> items)
 		{
 			if ((object)items == null)
 				throw new ArgumentNullException(nameof(items));
 
-			foreach (TConfigurationObject item in items)
+			foreach (TItemConfigurationObject item in items)
 			{
 				this.Add(item);
 			}
@@ -61,7 +61,7 @@ namespace SyncPrem.Infrastructure.Configuration
 		/// </summary>
 		protected override void ClearItems()
 		{
-			foreach (TConfigurationObject item in this.Items)
+			foreach (TItemConfigurationObject item in this.Items)
 			{
 				item.Surround = null;
 				item.Parent = null;
@@ -75,7 +75,7 @@ namespace SyncPrem.Infrastructure.Configuration
 		/// </summary>
 		/// <param name="index"> The zero-based index at which item should be inserted. </param>
 		/// <param name="item"> The object to insert. The value can be null for reference types. </param>
-		protected override void InsertItem(int index, TConfigurationObject item)
+		protected override void InsertItem(int index, TItemConfigurationObject item)
 		{
 			if ((object)item == null)
 				throw new ArgumentNullException(nameof(item));
@@ -92,11 +92,11 @@ namespace SyncPrem.Infrastructure.Configuration
 		/// <param name="index"> The zero-based index of the element to remove. </param>
 		protected override void RemoveItem(int index)
 		{
-			TConfigurationObject item;
+			TItemConfigurationObject item;
 
 			item = base[index];
 
-			if ((object)item == null)
+			if ((object)item != null)
 			{
 				item.Surround = null;
 				item.Parent = null;
@@ -110,7 +110,7 @@ namespace SyncPrem.Infrastructure.Configuration
 		/// </summary>
 		/// <param name="index"> The zero-based index of the element to replace. </param>
 		/// <param name="item"> The new value for the element at the specified index. The value can be null for reference types. </param>
-		protected override void SetItem(int index, TConfigurationObject item)
+		protected override void SetItem(int index, TItemConfigurationObject item)
 		{
 			if ((object)item == null)
 				throw new ArgumentNullException(nameof(item));

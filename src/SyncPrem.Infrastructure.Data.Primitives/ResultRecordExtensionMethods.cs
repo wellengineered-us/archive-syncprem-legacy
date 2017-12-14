@@ -45,7 +45,7 @@ namespace SyncPrem.Infrastructure.Data.Primitives
 
 			results = new IResult[]
 					{
-						new Result(0) { Records = records, RecordsAffected = null }
+						new Result(0) { Records = records, RecordsAffected = -1 }
 					};
 
 			return results;

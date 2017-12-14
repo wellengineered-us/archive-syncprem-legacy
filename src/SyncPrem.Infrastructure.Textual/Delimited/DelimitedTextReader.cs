@@ -201,7 +201,7 @@ namespace SyncPrem.Infrastructure.Textual.Delimited
 
 					// check field array and field index validity
 					if ((object)delimitedTextFieldSpecs == null ||
-						this.ParserState.fieldIndex >= delimitedTextFieldSpecs.Length)
+						this.ParserState.fieldIndex >= delimitedTextFieldSpecs.LongLength)
 						throw new InvalidOperationException(string.Format("Delimited text reader parse state failure: field index '{0}' exceeded known field indices '{1}' at character index '{2}'.", this.ParserState.fieldIndex, (object)delimitedTextFieldSpecs != null ? (delimitedTextFieldSpecs.Length - 1) : (int?)null, this.ParserState.characterIndex));
 
 					delimitedTextFieldSpec = delimitedTextFieldSpecs[this.ParserState.fieldIndex];
@@ -302,7 +302,7 @@ namespace SyncPrem.Infrastructure.Textual.Delimited
 		public override IEnumerable<IField> ReadHeaderFields()
 		{
 			if (this.ParserState.recordIndex == 0 &&
-				(this.DelimitedTextSpec.FirstRecordIsHeader ?? false))
+				this.DelimitedTextSpec.FirstRecordIsHeader)
 			{
 				IRecord headerRecord;
 				IEnumerable<IRecord> headerRecords = this.ResumableParserMainLoop(true);
@@ -337,7 +337,7 @@ namespace SyncPrem.Infrastructure.Textual.Delimited
 
 		private void ResetParserState()
 		{
-			const int DEFAULT_INDEX = 0;
+			const long DEFAULT_INDEX = 0;
 
 			this.ParserState.record = new Record(DEFAULT_INDEX);
 			this.ParserState.transientStringBuilder = new StringBuilder();
@@ -386,7 +386,7 @@ namespace SyncPrem.Infrastructure.Textual.Delimited
 				}
 
 				// eval on every loop
-				this.ParserState.isHeaderRecord = this.ParserState.recordIndex == 0 && (this.DelimitedTextSpec.FirstRecordIsHeader ?? false);
+				this.ParserState.isHeaderRecord = this.ParserState.recordIndex == 0 && this.DelimitedTextSpec.FirstRecordIsHeader;
 				this.ParserState.isFooterRecord = false; //this.ParserState.recordIndex == 0 && (this.DelimitedTextSpec.LastRecordIsFooter ?? false);
 
 				// peek the next byte
@@ -407,13 +407,14 @@ namespace SyncPrem.Infrastructure.Textual.Delimited
 						}
 						else
 						{
-							// cache
-							this.ParserState.headerRecord = this.ParserState.record;
+							this.ParserState.headerRecord = this.ParserState.record; // cache elsewhere
+							this.ParserState.record = null; // pretend it was a blank line
+							//this.ParserState.recordIndex--; // adjust down to zero
 						}
 					}
 
 					// sanity check - should never get here with zero record index
-					if (this.ParserState.recordIndex == 0)
+					if (/*!this.ParserState.isHeaderRecord &&*/ this.ParserState.recordIndex == 0)
 						throw new InvalidOperationException(string.Format("Delimited text reader parse state failure: zero record index unexpected."));
 
 					// create a new record for the next index; will be used later
@@ -435,7 +436,7 @@ namespace SyncPrem.Infrastructure.Textual.Delimited
 
 			public long characterIndex;
 			public long contentIndex;
-			public int fieldIndex;
+			public long fieldIndex;
 			public IRecord headerRecord;
 			public bool isEOF;
 			public bool isFooterRecord;
@@ -444,9 +445,9 @@ namespace SyncPrem.Infrastructure.Textual.Delimited
 			public char peekNextCharacter;
 			public char readCurrentCharacter;
 			public IRecord record;
-			public int recordIndex;
+			public long recordIndex;
 			public StringBuilder transientStringBuilder;
-			public int valueIndex;
+			public long valueIndex;
 
 			#endregion
 		}

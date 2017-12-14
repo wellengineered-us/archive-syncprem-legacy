@@ -6,42 +6,22 @@
 using System;
 using System.Collections.Generic;
 
+using SyncPrem.Infrastructure.Data.Primitives;
 using SyncPrem.Infrastructure.Oxymoron;
+using SyncPrem.Infrastructure.Wrappers;
 using SyncPrem.Pipeline.Abstractions;
 using SyncPrem.Pipeline.Abstractions.Configurations;
 using SyncPrem.Pipeline.Abstractions.Filters.Transformer;
 using SyncPrem.Pipeline.Abstractions.Messages;
 
-namespace SyncPrem.Pipeline.Core.Filters.Oxymoron
+namespace SyncPrem.Pipeline.Core.Filters.Standard
 {
-	public class OxymoronTransformerPipelineFilter : TransformerPipelineFilter<FilterSpecificConfiguration>
+	public class MessageReshapeTransformerPipelineFilter : TransformerPipelineFilter<FilterSpecificConfiguration>
 	{
 		#region Constructors/Destructors
 
-		public OxymoronTransformerPipelineFilter()
+		public MessageReshapeTransformerPipelineFilter()
 		{
-		}
-
-		#endregion
-
-		#region Fields/Constants
-
-		private IOxymoronEngine oxymoronEngine;
-
-		#endregion
-
-		#region Properties/Indexers/Events
-
-		protected IOxymoronEngine OxymoronEngine
-		{
-			get
-			{
-				return this.oxymoronEngine;
-			}
-			private set
-			{
-				this.oxymoronEngine = value;
-			}
 		}
 
 		#endregion
@@ -67,11 +47,6 @@ namespace SyncPrem.Pipeline.Core.Filters.Oxymoron
 
 			if ((object)tableConfiguration == null)
 				throw new ArgumentNullException(nameof(tableConfiguration));
-
-			if ((object)this.OxymoronEngine != null)
-				this.OxymoronEngine.Dispose();
-
-			this.OxymoronEngine = null;
 		}
 
 		protected override void PreProcessMessage(IPipelineContext pipelineContext, TableConfiguration tableConfiguration)
@@ -84,11 +59,45 @@ namespace SyncPrem.Pipeline.Core.Filters.Oxymoron
 
 			if ((object)tableConfiguration == null)
 				throw new ArgumentNullException(nameof(tableConfiguration));
+		}
 
-			resolveDictionaryValueCallback = (spec, key) => key;
-			obfuscationSpec = new __XX();
+		private IEnumerable<IRecord> ReshapeRecords(IPipelineContext pipelineContext, IEnumerable<IRecord> records)
+		{
+			int fieldIndex;
+			string fieldName;
+			object recordValue;
 
-			this.OxymoronEngine = new OxymoronEngine(resolveDictionaryValueCallback, obfuscationSpec);
+			if ((object)records == null)
+				throw new ArgumentNullException(nameof(records));
+
+			foreach (IField x in pipelineContext.MetadataChain.Peek().UpstreamFields)
+			{
+			}
+
+			//char[] charArray = fieldName.ToCharArray();
+			//Array.Reverse(charArray);
+			//fieldName = new string(charArray);
+
+			foreach (IRecord record in records)
+			{
+				Record reshapedRecord = null;
+
+				if ((object)record != null)
+				{
+					reshapedRecord = new Record(record.RecordIndex) { ContextData = record };
+
+					fieldIndex = 0;
+					foreach (KeyValuePair<string, object> item in record)
+					{
+						fieldName = item.Key;
+						recordValue = record[item.Key];
+
+						reshapedRecord.Add(fieldName, recordValue);
+					}
+				}
+
+				yield return reshapedRecord;
+			}
 		}
 
 		protected override IPipelineMessage TransformMessage(IPipelineContext pipelineContext, TableConfiguration tableConfiguration, IPipelineMessage pipelineMessage, TransformDelegate next)
@@ -102,8 +111,10 @@ namespace SyncPrem.Pipeline.Core.Filters.Oxymoron
 			if ((object)pipelineMessage == null)
 				throw new ArgumentNullException(nameof(pipelineMessage));
 
+			Func<IEnumerable<IRecord>, IEnumerable<IRecord>> reshapeRecords = (r) => this.ReshapeRecords(pipelineContext, r);
+
 			// simply wrap
-			pipelineMessage.ApplyWrap(this.OxymoronEngine.GetObfuscatedValues);
+			pipelineMessage.ApplyWrap((x) => x.GetWrappedEnumerable(r => r.ApplyWrap(reshapeRecords)));
 
 			return next(pipelineContext, tableConfiguration, pipelineMessage);
 		}
@@ -112,49 +123,12 @@ namespace SyncPrem.Pipeline.Core.Filters.Oxymoron
 
 		#region Classes/Structs/Interfaces/Enums/Delegates
 
-		public class __XX : IObfuscationSpec
+		public enum MessageReshapeOption
 		{
-			#region Properties/Indexers/Events
-
-			public IEnumerable<IDictionarySpec> DictionarySpecs
-			{
-				get;
-				set;
-			}
-
-			public bool? DisableEngineCaches
-			{
-				get;
-				set;
-			}
-
-			public bool? EnablePassThru
-			{
-				get;
-				set;
-			}
-
-			public IHashSpec HashSpec
-			{
-				get;
-				set;
-			}
-
-			public ITableSpec TableSpec
-			{
-				get;
-				set;
-			}
-
-			#endregion
-
-			#region Methods/Operators
-
-			public void AssertValid()
-			{
-			}
-
-			#endregion
+			None = 0,
+			Create,
+			Alter,
+			Drop
 		}
 
 		#endregion

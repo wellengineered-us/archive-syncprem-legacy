@@ -5,13 +5,17 @@
 
 using System;
 
-namespace SyncPrem.Pipeline.Abstractions.Pipes
+namespace SyncPrem.Pipeline.Abstractions.Filters.Transformer
 {
-	public interface IPipeWriter : IDisposable
+	public interface ITransformBuilder
 	{
 		#region Methods/Operators
 
-		void Write(IPipe pipe);
+		TransformDelegate Build();
+
+		ITransformBuilder New();
+
+		ITransformBuilder Use(Func<TransformDelegate, TransformDelegate> middleware);
 
 		#endregion
 	}

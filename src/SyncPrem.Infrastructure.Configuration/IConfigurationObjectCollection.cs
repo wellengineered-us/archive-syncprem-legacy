@@ -10,7 +10,7 @@ namespace SyncPrem.Infrastructure.Configuration
 	/// <summary>
 	/// Represents an configuration object collection.
 	/// </summary>
-	public interface IConfigurationObjectCollection : IList
+	public interface IConfigurationObjectCollection : IList //<IConfigurationObject>
 	{
 		#region Properties/Indexers/Events
 

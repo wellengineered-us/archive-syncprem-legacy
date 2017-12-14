@@ -12,7 +12,7 @@ namespace SyncPrem.Infrastructure.Data.Primitives
 	{
 		#region Constructors/Destructors
 
-		public Result(int resultIndex)
+		public Result(long resultIndex)
 		{
 			this.resultIndex = resultIndex;
 		}
@@ -21,15 +21,15 @@ namespace SyncPrem.Infrastructure.Data.Primitives
 
 		#region Fields/Constants
 
-		private readonly int resultIndex;
+		private readonly long resultIndex;
 		private IEnumerable<IRecord> records;
-		private int? recordsAffected;
+		private int recordsAffected;
 
 		#endregion
 
 		#region Properties/Indexers/Events
 
-		public int ResultIndex
+		public long ResultIndex
 		{
 			get
 			{
@@ -49,7 +49,7 @@ namespace SyncPrem.Infrastructure.Data.Primitives
 			}
 		}
 
-		public int? RecordsAffected
+		public int RecordsAffected
 		{
 			get
 			{

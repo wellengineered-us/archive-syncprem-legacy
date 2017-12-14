@@ -80,7 +80,7 @@ namespace TextMetal.Middleware.Solder.Utilities
 			}
 		}
 
-		public IEnumerable<__IRow> ExecuteRecords(bool schemaOnly, Type connectionType, string connectionString, bool transactional, IsolationLevel isolationLevel, CommandType commandType, string commandText, IEnumerable<DbParameter> commandParameters, Action<int> resultCallback = null)
+		public IEnumerable<__IRow> ExecuteRecords(bool schemaOnly, Type connectionType, string connectionString, bool transactional, IsolationLevel isolationLevel, CommandType commandType, string commandText, IEnumerable<DbParameter> commandParameters, Action<long> resultCallback = null)
 		{
 			DbTransaction dbTransaction;
 			const bool OPEN = true;
@@ -94,7 +94,7 @@ namespace TextMetal.Middleware.Solder.Utilities
 			object COMMAND_TIMEOUT = null; /*int?*/
 
 			CommandBehavior commandBehavior;
-			int resultIndex = 0;
+			long resultIndex = 0;
 
 			ReadOnlyCollection<DbColumn> dbColumns;
 			DbColumn dbColumn;
@@ -191,9 +191,9 @@ namespace TextMetal.Middleware.Solder.Utilities
 							{
 								if ((object)dbColumns != null)
 								{
-									for (int recordIndex = 0; recordIndex < dbColumns.Count; recordIndex++)
+									for (long recordIndex = 0; recordIndex < dbColumns.Count; recordIndex++)
 									{
-										dbColumn = dbColumns[recordIndex];
+										dbColumn = dbColumns[(int)recordIndex];
 
 										propertyInfos = dbColumn.GetType().GetProperties(BindingFlags.Public | BindingFlags.Instance);
 

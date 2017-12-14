@@ -7,7 +7,6 @@ using System;
 
 using SyncPrem.Pipeline.Abstractions.Configurations;
 using SyncPrem.Pipeline.Abstractions.Messages;
-using SyncPrem.Pipeline.Abstractions.Pipes;
 
 namespace SyncPrem.Pipeline.Abstractions.Filters.Consumer
 {
@@ -39,12 +38,6 @@ namespace SyncPrem.Pipeline.Abstractions.Filters.Consumer
 		}
 
 		protected abstract void ConsumeMessage(IPipelineContext pipelineContext, TableConfiguration tableConfiguration, IPipelineMessage pipelineMessage);
-
-		public void Read(IPipe pipe)
-		{
-			if ((object)pipe == null)
-				throw new ArgumentNullException(nameof(pipe));
-		}
 
 		#endregion
 	}

@@ -16,7 +16,7 @@ namespace SyncPrem.Infrastructure.Data.Primitives
 			get;
 		}
 
-		int RecordIndex
+		long RecordIndex
 		{
 			get;
 		}

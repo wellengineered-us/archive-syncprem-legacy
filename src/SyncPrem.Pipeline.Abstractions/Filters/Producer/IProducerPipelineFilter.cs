@@ -7,11 +7,10 @@ using System;
 
 using SyncPrem.Pipeline.Abstractions.Configurations;
 using SyncPrem.Pipeline.Abstractions.Messages;
-using SyncPrem.Pipeline.Abstractions.Pipes;
 
 namespace SyncPrem.Pipeline.Abstractions.Filters.Producer
 {
-	public interface IProducerPipelineFilter : IPipelineFilter, IPipeWriter
+	public interface IProducerPipelineFilter : IPipelineFilter
 	{
 		#region Methods/Operators
 

@@ -16,13 +16,13 @@ namespace SyncPrem.Infrastructure.Textual
 			get;
 		}
 
-		bool? FirstRecordIsHeader
+		bool FirstRecordIsHeader
 		{
 			get;
 			set;
 		}
 
-		bool? LastRecordIsFooter
+		bool LastRecordIsFooter
 		{
 			get;
 			set;

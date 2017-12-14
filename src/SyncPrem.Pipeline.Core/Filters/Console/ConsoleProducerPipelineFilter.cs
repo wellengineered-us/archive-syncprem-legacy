@@ -74,7 +74,7 @@ namespace SyncPrem.Pipeline.Core.Filters.Console
 		private static IEnumerable<IRecord> YieldViaConsole(IEnumerable<IField> fields)
 		{
 			IRecord record;
-			int recordIndex = 0;
+			long recordIndex = 0;
 			string line;
 			string[] fieldValues;
 

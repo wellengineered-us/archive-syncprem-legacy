@@ -125,7 +125,7 @@ namespace SyncPrem.Infrastructure.Textual.Delimited
 			fields = fields ?? this.DelimitedTextSpec.DelimitedTextFieldSpecs;
 
 			if ((object)fields != null &&
-				(this.DelimitedTextSpec.FirstRecordIsHeader ?? false))
+				this.DelimitedTextSpec.FirstRecordIsHeader)
 			{
 				firstFieldInRecord = true;
 				foreach (IDelimitedTextFieldSpec field in fields)

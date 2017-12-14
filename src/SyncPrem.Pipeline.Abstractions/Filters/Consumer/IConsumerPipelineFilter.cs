@@ -7,11 +7,10 @@ using System;
 
 using SyncPrem.Pipeline.Abstractions.Configurations;
 using SyncPrem.Pipeline.Abstractions.Messages;
-using SyncPrem.Pipeline.Abstractions.Pipes;
 
 namespace SyncPrem.Pipeline.Abstractions.Filters.Consumer
 {
-	public interface IConsumerPipelineFilter : IPipelineFilter, IPipeReader
+	public interface IConsumerPipelineFilter : IPipelineFilter
 	{
 		#region Methods/Operators
 
