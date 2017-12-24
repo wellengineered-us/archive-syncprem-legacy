@@ -6,6 +6,7 @@
 using System;
 using System.Collections.Generic;
 
+using TextMetal.Middleware.Solder.Extensions;
 using TextMetal.Middleware.Solder.Primitives;
 
 namespace SyncPrem.Infrastructure.Configuration
@@ -96,6 +97,18 @@ namespace SyncPrem.Infrastructure.Configuration
 		#endregion
 
 		#region Methods/Operators
+
+		protected static Type GetTypeFromString(string aqtn)
+		{
+			Type type;
+
+			if (SolderFascadeAccessor.DataTypeFascade.IsNullOrWhiteSpace(aqtn))
+				return null;
+
+			type = Type.GetType(aqtn, false);
+
+			return type;
+		}
 
 		protected static Message NewError(string description)
 		{

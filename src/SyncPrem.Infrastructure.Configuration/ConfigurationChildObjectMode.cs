@@ -25,6 +25,8 @@ namespace SyncPrem.Infrastructure.Configuration
 		/// <summary>
 		/// This configuration object can have MANY non-well-known child objects. Use the Items property to access the possibly empty list of values.
 		/// </summary>
-		Items = 2
+		Items = 2,
+
+		Value = 3
 	}
 }

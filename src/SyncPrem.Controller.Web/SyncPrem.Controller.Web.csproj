@@ -19,7 +19,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\SyncPrem.Infrastructure.Wrappers\SyncPrem.Infrastructure.Wrappers.csproj" />
+    <ProjectReference Include="..\SyncPrem.StreamingIO.ProxyWrappers\SyncPrem.StreamingIO.ProxyWrappers.csproj" />
   </ItemGroup>
 
 </Project>

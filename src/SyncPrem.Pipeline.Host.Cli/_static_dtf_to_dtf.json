@@ -1,10 +1,10 @@
 {
-	"PipelineAqtn": "SyncPrem.Pipeline.Core.DefaultStaticPipeline, SyncPrem.Pipeline.Core",
+	"PipelineAqtn": "SyncPrem.Pipeline.Core.StaticPipeline, SyncPrem.Pipeline.Core",
 
-	"ProducerFilterConfiguration":
+	"SourceConfiguration":
 	{
-		"FilterAqtn": "SyncPrem.Pipeline.Core.Filters.Textual.DelimitedTextProducerPipelineFilter, SyncPrem.Pipeline.Core",
-		"FilterSpecificConfiguration":
+		"StageAqtn": "SyncPrem.Pipeline.Core.Connectors.FlatText.DelimitedTextSourceConnector, SyncPrem.Pipeline.Core",
+		"StageSpecificConfiguration":
 		{
 			"DelimitedTextFilePath": "d:\\Confidential_Banking_Data.txt",
 
@@ -20,65 +20,65 @@
 				"DelimitedTextFieldConfigurations":
 				[
 					{
-						"HeaderName": "institution",
-						"FieldType": "String"
+						"FieldName": "institution",
+						"FieldTypeAqtn": "System.String"
 					},
 					{
-						"HeaderName": "txid",
-						"FieldType": "Number"
+						"FieldName": "txid",
+						"FieldTypeAqtn": "System.Int32"
 					},
 					{
-						"HeaderName": "number",
-						"FieldType": "String"
+						"FieldName": "number",
+						"FieldTypeAqtn": "System.String"
 					},
 					{
-						"HeaderName": "date",
-						"FieldType": "DateTime"
+						"FieldName": "date",
+						"FieldTypeAqtn": "System.DateTime"
 					},
 					{
-						"HeaderName": "payee",
-						"FieldType": "String"
+						"FieldName": "payee",
+						"FieldTypeAqtn": "System.String"
 					},
 					{
-						"HeaderName": "amount",
-						"FieldType": "Number"
+						"FieldName": "amount",
+						"FieldTypeAqtn": "System.Double"
 					},
 					{
-						"HeaderName": "cleared",
-						"FieldType": "Number"
+						"FieldName": "cleared",
+						"FieldTypeAqtn": "System.Byte"
 					},
 					{
-						"HeaderName": "category",
-						"FieldType": "String"
+						"FieldName": "category",
+						"FieldTypeAqtn": "System.String"
 					},
 					{
-						"HeaderName": "due",
-						"FieldType": "DateTime"
+						"FieldName": "due",
+						"FieldTypeAqtn": "System.DateTime"
 					},
 					{
-						"HeaderName": "comments",
-						"FieldType": "String"
+						"FieldName": "comments",
+						"FieldTypeAqtn": "System.String"
 					}
 				]
 			}
 		}
 	},
 
-	"TransformerFilterConfigurations":
+	"ProcessorConfigurations":
 	[
-		{
-			"FilterAqtn":
-				"SyncPrem.Pipeline.Core.Filters.Standard.MessageReshapeTransformerPipelineFilter, SyncPrem.Pipeline.Core",
-			"FilterSpecificConfiguration":
+		/*{
+			"StageAqtn":
+				"SyncPrem.Pipeline.Core.Processors.MessageReshapeProcessor, SyncPrem.Pipeline.Core",
+			"StageSpecificConfiguration":
 			{
 			}
-		}
+		}*/
 	],
 
-	"ConsumerFilterConfiguration":
+	"DestinationConfiguration":
 	{
-		"FilterAqtn": "SyncPrem.Pipeline.Core.Filters.Textual.DelimitedTextConsumerPipelineFilter, SyncPrem.Pipeline.Core",
-		"FilterSpecificConfiguration":
+		"StageAqtn": "SyncPrem.Pipeline.Core.Connectors.FlatText.DelimitedTextDestinationConnector, SyncPrem.Pipeline.Core",
+		"StageSpecificConfiguration":
 		{
 			"DelimitedTextFilePath": "d:\\Public_Banking_Data.csv",
 

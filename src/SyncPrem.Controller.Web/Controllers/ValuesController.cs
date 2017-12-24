@@ -4,7 +4,7 @@ using System.IO;
 
 using Microsoft.AspNetCore.Mvc;
 
-using SyncPrem.Infrastructure.Wrappers.Internal;
+using SyncPrem.StreamingIO.ProxyWrappers.Internal;
 
 namespace SyncPrem.Controller.Web.Controllers
 {

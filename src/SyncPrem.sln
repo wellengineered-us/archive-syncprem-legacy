@@ -19,13 +19,13 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "SyncPrem.Controller.Web", "
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "SyncPrem.Agent.Cli", "SyncPrem.Agent.Cli\SyncPrem.Agent.Cli.csproj", "{1E2D51E3-068D-494F-8412-641990E095DB}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "SyncPrem.Infrastructure.Wrappers", "SyncPrem.Infrastructure.Wrappers\SyncPrem.Infrastructure.Wrappers.csproj", "{AB63620D-F709-4CF6-906C-62CF51231DE2}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "SyncPrem.StreamingIO.ProxyWrappers", "SyncPrem.StreamingIO.ProxyWrappers\SyncPrem.StreamingIO.ProxyWrappers.csproj", "{AB63620D-F709-4CF6-906C-62CF51231DE2}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "SyncPrem.Infrastructure.Data.Primitives", "SyncPrem.Infrastructure.Data.Primitives\SyncPrem.Infrastructure.Data.Primitives.csproj", "{AB4FBB5E-C8BB-478C-9A33-DAFAFA7B665D}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "SyncPrem.StreamingIO.Primitives", "SyncPrem.StreamingIO.Primitives\SyncPrem.StreamingIO.Primitives.csproj", "{AB4FBB5E-C8BB-478C-9A33-DAFAFA7B665D}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "SyncPrem.Infrastructure.Textual", "SyncPrem.Infrastructure.Textual\SyncPrem.Infrastructure.Textual.csproj", "{2A45F9A0-1C26-4AC1-9F61-8F533D0BBA51}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "SyncPrem.StreamingIO.FlatText", "SyncPrem.StreamingIO.FlatText\SyncPrem.StreamingIO.FlatText.csproj", "{2A45F9A0-1C26-4AC1-9F61-8F533D0BBA51}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "SyncPrem.Infrastructure.Data.AdoNet", "SyncPrem.Infrastructure.Data.AdoNet\SyncPrem.Infrastructure.Data.AdoNet.csproj", "{7A09C651-B7F0-4CBA-AEBB-D39EA860F612}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "SyncPrem.StreamingIO.AdoNet", "SyncPrem.StreamingIO.AdoNet\SyncPrem.StreamingIO.AdoNet.csproj", "{7A09C651-B7F0-4CBA-AEBB-D39EA860F612}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Infrastructure", "Infrastructure", "{F0631787-EED3-4C72-AF8F-D0CAA46C8320}"
 EndProject
@@ -73,7 +73,7 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "SyncPrem.Pipeline.Core", "S
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "SyncPrem.Pipeline.Host.Cli", "SyncPrem.Pipeline.Host.Cli\SyncPrem.Pipeline.Host.Cli.csproj", "{396E7B23-CE3C-41C2-9D5A-FBEADB162542}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "SyncPrem.Infrastructure.Oxymoron", "SyncPrem.Infrastructure.Oxymoron\SyncPrem.Infrastructure.Oxymoron.csproj", "{6B47E4D9-A5B5-420D-A168-26CA70A50763}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "SyncPrem.StreamingIO.DataMasking", "SyncPrem.StreamingIO.DataMasking\SyncPrem.StreamingIO.DataMasking.csproj", "{6B47E4D9-A5B5-420D-A168-26CA70A50763}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

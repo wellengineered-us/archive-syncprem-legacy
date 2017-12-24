@@ -7,7 +7,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\SyncPrem.Infrastructure.Configuration\SyncPrem.Infrastructure.Configuration.csproj" />
-    <ProjectReference Include="..\SyncPrem.Infrastructure.Data.Primitives\SyncPrem.Infrastructure.Data.Primitives.csproj" />
+    <ProjectReference Include="..\SyncPrem.StreamingIO.Primitives\SyncPrem.StreamingIO.Primitives.csproj" />
     <ProjectReference Include="..\TextMetal.Middleware.Solder.Extensions\TextMetal.Middleware.Solder.Extensions.csproj" />
     <ProjectReference Include="..\TextMetal.Middleware.Solder.Primitives\TextMetal.Middleware.Solder.Primitives.csproj" />
   </ItemGroup>

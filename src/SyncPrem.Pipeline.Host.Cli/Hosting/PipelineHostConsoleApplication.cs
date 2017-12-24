@@ -44,7 +44,7 @@ namespace SyncPrem.Pipeline.Host.Cli.Hosting
 				throw new ArgumentNullException(nameof(dependencyManager));
 
 			dependencyManager.AddResolution<ConsoleApplicationFascade>(string.Empty, false, new SingletonWrapperDependencyResolution<ConsoleApplicationFascade>(TransientActivatorAutoWiringDependencyResolution<PipelineHostConsoleApplication>.From(dependencyManager)));
-			dependencyManager.AddResolution<IRealPipelineToolHost>(string.Empty, false, new SingletonWrapperDependencyResolution<IRealPipelineToolHost>(TransientActivatorAutoWiringDependencyResolution<RealPipelineToolHost>.From(dependencyManager)));
+			dependencyManager.AddResolution<IToolHost>(string.Empty, false, new SingletonWrapperDependencyResolution<IToolHost>(TransientActivatorAutoWiringDependencyResolution<ToolHost>.From(dependencyManager)));
 			dependencyManager.AddResolution<IAdoNetBufferingFascade>(string.Empty, false, new SingletonWrapperDependencyResolution<IAdoNetBufferingFascade>(TransientActivatorAutoWiringDependencyResolution<AdoNetBufferingFascade>.From(dependencyManager)));
 		}
 
@@ -110,8 +110,8 @@ namespace SyncPrem.Pipeline.Host.Cli.Hosting
 				}
 			}
 
-			using (IRealPipelineToolHost realPipelineToolHost = AssemblyDomain.Default.DependencyManager.ResolveDependency<IRealPipelineToolHost>(string.Empty, true))
-				realPipelineToolHost.Host(sourceFilePath);
+			using (IToolHost toolHost = AssemblyDomain.Default.DependencyManager.ResolveDependency<IToolHost>(string.Empty, true))
+				toolHost.Host(sourceFilePath);
 
 			return 0;
 		}

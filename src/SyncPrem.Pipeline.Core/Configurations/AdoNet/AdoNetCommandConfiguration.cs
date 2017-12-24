@@ -10,14 +10,13 @@ using System.Data.Common;
 using System.Linq;
 
 using SyncPrem.Infrastructure.Configuration;
-using SyncPrem.Infrastructure.Data.AdoNet.UoW;
-using SyncPrem.Pipeline.Abstractions.Configurations;
+using SyncPrem.StreamingIO.AdoNet.UoW;
 
 using TextMetal.Middleware.Solder.Primitives;
 
 namespace SyncPrem.Pipeline.Core.Configurations.AdoNet
 {
-	public class AdoNetCommandConfiguration : PipelineConfigurationObject
+	public class AdoNetCommandConfiguration : ConfigurationObject
 	{
 		#region Constructors/Destructors
 
@@ -110,11 +109,11 @@ namespace SyncPrem.Pipeline.Core.Configurations.AdoNet
 		}
 
 		[ConfigurationIgnore]
-		public new AdoNetFilterSpecificConfiguration Parent
+		public new AdoNetConnectorSpecificConfiguration Parent
 		{
 			get
 			{
-				return (AdoNetFilterSpecificConfiguration)base.Parent;
+				return (AdoNetConnectorSpecificConfiguration)base.Parent;
 			}
 			set
 			{

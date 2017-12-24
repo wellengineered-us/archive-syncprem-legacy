@@ -15,7 +15,6 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\SyncPrem.Infrastructure.Oxymoron\SyncPrem.Infrastructure.Oxymoron.csproj" />
     <ProjectReference Include="..\SyncPrem.Pipeline.Abstractions\SyncPrem.Pipeline.Abstractions.csproj" />
     <ProjectReference Include="..\SyncPrem.Pipeline.Core\SyncPrem.Pipeline.Core.csproj" />
   </ItemGroup>

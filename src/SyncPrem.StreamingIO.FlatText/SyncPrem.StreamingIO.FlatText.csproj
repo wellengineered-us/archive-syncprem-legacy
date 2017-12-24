@@ -1,0 +1,14 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <TargetFramework>netstandard2.0</TargetFramework>
+  </PropertyGroup>
+
+  <Import Project="..\common.props" />
+
+  <ItemGroup>
+    <ProjectReference Include="..\SyncPrem.StreamingIO.Primitives\SyncPrem.StreamingIO.Primitives.csproj" />
+    <ProjectReference Include="..\SyncPrem.StreamingIO.ProxyWrappers\SyncPrem.StreamingIO.ProxyWrappers.csproj" />
+    <ProjectReference Include="..\TextMetal.Middleware.Solder.Extensions\TextMetal.Middleware.Solder.Extensions.csproj" />
+    <ProjectReference Include="..\TextMetal.Middleware.Solder.Utilities\TextMetal.Middleware.Solder.Utilities.csproj" />
+  </ItemGroup>
+</Project>

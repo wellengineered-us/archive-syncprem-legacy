@@ -163,7 +163,7 @@ namespace TextMetal.Middleware.Solder.Utilities
 
 								while (dbDataReader.Read())
 								{
-									row = new __Row();
+									row = new __Row(StringComparer.OrdinalIgnoreCase);
 
 									for (int fieldIndex = 0; fieldIndex < dbDataReader.FieldCount; fieldIndex++)
 									{
@@ -197,7 +197,7 @@ namespace TextMetal.Middleware.Solder.Utilities
 
 										propertyInfos = dbColumn.GetType().GetProperties(BindingFlags.Public | BindingFlags.Instance);
 
-										row = new __Row();
+										row = new __Row(StringComparer.OrdinalIgnoreCase);
 										row.Add(string.Empty, dbColumn);
 
 										if ((object)propertyInfos != null)

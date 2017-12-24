@@ -6,7 +6,9 @@
   <Import Project="..\common.props" />
 
   <ItemGroup>
+    <ProjectReference Include="..\TextMetal.Middleware.Solder.Extensions\TextMetal.Middleware.Solder.Extensions.csproj" />
     <ProjectReference Include="..\TextMetal.Middleware.Solder.Primitives\TextMetal.Middleware.Solder.Primitives.csproj" />
+    <ProjectReference Include="..\TextMetal.Middleware.Solder.Utilities\TextMetal.Middleware.Solder.Utilities.csproj" />
   </ItemGroup>
 
 </Project>

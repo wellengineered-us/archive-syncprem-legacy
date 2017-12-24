@@ -1,22 +1,22 @@
 {
-	"PipelineAqtn": "SyncPrem.Pipeline.Core.DefaultStaticPipeline, SyncPrem.Pipeline.Core",
+	"PipelineAqtn": "SyncPrem.Pipeline.Core.StaticPipeline, SyncPrem.Pipeline.Core",
 
-	"ProducerFilterConfiguration":
+	"SourceConfiguration":
 	{
-		"FilterAqtn": "SyncPrem.Pipeline.Core.Filters.Console.ConsoleProducerPipelineFilter, SyncPrem.Pipeline.Core",
-		"FilterSpecificConfiguration":
+		"StageAqtn": "SyncPrem.Pipeline.Core.Connectors.Console.ConsoleSourceConnector, SyncPrem.Pipeline.Core",
+		"StageSpecificConfiguration":
 		{
 		}
 	},
 
-	"TransformerFilterConfigurations":
+	"ProcessorConfigurations":
 	[
 	],
 
-	"ConsumerFilterConfiguration":
+	"DestinationConfiguration":
 	{
-		"FilterAqtn": "SyncPrem.Pipeline.Core.Filters.Console.ConsoleConsumerPipelineFilter, SyncPrem.Pipeline.Core",
-		"FilterSpecificConfiguration":
+		"StageAqtn": "SyncPrem.Pipeline.Core.Connectors.Console.ConsoleDestinationConnector, SyncPrem.Pipeline.Core",
+		"StageSpecificConfiguration":
 		{
 		}
 	}

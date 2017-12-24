@@ -4,6 +4,7 @@
 */
 
 using System;
+using System.Diagnostics;
 
 using SyncPrem.Pipeline.Host.Cli.Hosting;
 
@@ -26,6 +27,12 @@ namespace SyncPrem.Pipeline.Host.Cli
 		[STAThread]
 		public static int Main(string[] args)
 		{
+			/*Console.CancelKeyPress += (s, e) =>
+									{
+										Debugger.Launch();
+										e.Cancel = true;
+									};*/
+
 			return ConsoleApplicationFascade.Run<PipelineHostConsoleApplication>(args);
 		}
 

@@ -1,10 +1,10 @@
 {
-	"PipelineAqtn": "SyncPrem.Pipeline.Core.DefaultStaticPipeline, SyncPrem.Pipeline.Core",
+	"PipelineAqtn": "SyncPrem.Pipeline.Core.StaticPipeline, SyncPrem.Pipeline.Core",
 
-	"ProducerFilterConfiguration":
+	"SourceConfiguration":
 	{
-		"FilterAqtn": "SyncPrem.Pipeline.Core.Filters.AdoNet.AdoNetProducerPipelineFilter, SyncPrem.Pipeline.Core",
-		"FilterSpecificConfiguration":
+		"StageAqtn": "SyncPrem.Pipeline.Core.Connectors.AdoNet.AdoNetSourceConnector, SyncPrem.Pipeline.Core",
+		"StageSpecificConfiguration":
 		{
 			"ConnectionAqtn": "System.Data.SqlClient.SqlConnection, System.Data.SqlClient",
 			"ConnectionString":
@@ -30,32 +30,14 @@
 		}
 	},
 
-	"TransformerFilterConfigurations":
+	"ProcessorConfigurations":
 	[
-		{
-			"FilterAqtn": "",
-			"FilterSpecificConfiguration":
-			{
-			}
-		},
-		{
-			"FilterAqtn": "",
-			"FilterSpecificConfiguration":
-			{
-			}
-		},
-		{
-			"FilterAqtn": "",
-			"FilterSpecificConfiguration":
-			{
-			}
-		}
 	],
 
-	"ConsumerFilterConfiguration":
+	"DestinationConfiguration":
 	{
-		"FilterAqtn": "SyncPrem.Pipeline.Core.Filters.AdoNet.SqlBulkCopyConsumerPipelineFilter, SyncPrem.Pipeline.Core",
-		"FilterSpecificConfiguration":
+		"StageAqtn": "SyncPrem.Pipeline.Core.Connectors.AdoNet.SqlBulkCopyDestinationConnector, SyncPrem.Pipeline.Core",
+		"StageSpecificConfiguration":
 		{
 			"ConnectionAqtn": "System.Data.SqlClient.SqlConnection, System.Data.SqlClient",
 			"ConnectionString":
