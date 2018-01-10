@@ -4,13 +4,13 @@
 */
 
 using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
-using System.Linq;
 
 using SyncPrem.Pipeline.Abstractions;
-using SyncPrem.Pipeline.Abstractions.Payload;
+using SyncPrem.Pipeline.Abstractions.Channel;
 using SyncPrem.Pipeline.Abstractions.Runtime;
-using SyncPrem.Pipeline.Core.Payloads;
+using SyncPrem.Pipeline.Core.Channels;
 using SyncPrem.StreamingIO.Primitives;
 using SyncPrem.StreamingIO.ProxyWrappers;
 
@@ -28,17 +28,26 @@ namespace SyncPrem.Pipeline.Core
 
 		#region Fields/Constants
 
-		private readonly Stack<IPipelineMetadata> metadataChain = new Stack<IPipelineMetadata>();
+		private readonly IDictionary<string, object> globalState = new ConcurrentDictionary<string, object>(StringComparer.OrdinalIgnoreCase);
+		private readonly IDictionary<IComponent, IDictionary<string, object>> localState = new ConcurrentDictionary<IComponent, IDictionary<string, object>>();
 
 		#endregion
 
 		#region Properties/Indexers/Events
 
-		public Stack<IPipelineMetadata> MetadataChain
+		public IDictionary<string, object> GlobalState
 		{
 			get
 			{
-				return this.metadataChain;
+				return this.globalState;
+			}
+		}
+
+		public IDictionary<IComponent, IDictionary<string, object>> LocalState
+		{
+			get
+			{
+				return this.localState;
 			}
 		}
 
@@ -46,25 +55,26 @@ namespace SyncPrem.Pipeline.Core
 
 		#region Methods/Operators
 
+		private static T LogItem<T>(T item)
+		{
+			//Console.WriteLine(item.SafeToString(null, "<null>"));
+			return item;
+		}
+
 		private static void LogMetrics(string label, ulong count, bool done, double timing)
 		{
 			Console.WriteLine("{0}: count = {1}, done = {2}, timing = {3}", label, count, done, timing);
 		}
 
-		public IPipelineMessage CreateMessage(IEnumerable<IRecord> records)
+		public IChannel CreateChannel(ISchema schema, IEnumerable<IRecord> records)
 		{
+			if ((object)schema == null)
+				throw new ArgumentNullException(nameof(schema));
+
 			if ((object)records == null)
 				throw new ArgumentNullException(nameof(records));
 
-			return new DefaultPipelineMessage(records.GetMetricsWrappedEnumerable("records", null, LogMetrics)); // TODO DI/IoC
-		}
-
-		public IPipelineMetadata CreateMetadata(IEnumerable<IField> fields)
-		{
-			if ((object)fields == null)
-				throw new ArgumentNullException(nameof(fields));
-
-			return new DefaultPipelineMetadata(fields.GetMetricsWrappedEnumerable("fields", null, LogMetrics)); // TODO DI/IoC
+			return new Channel(schema, records.GetMetricsWrappedEnumerable("records", LogItem, LogMetrics)); // TODO DI/IoC
 		}
 
 		#endregion

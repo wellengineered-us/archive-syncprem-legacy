@@ -8,7 +8,7 @@ using System.Collections.Generic;
 
 using SyncPrem.Infrastructure.Configuration;
 
-using TextMetal.Middleware.Solder.Primitives;
+using _Message = TextMetal.Middleware.Solder.Primitives.Message;
 
 namespace SyncPrem.Pipeline.Abstractions.Configuration
 {
@@ -103,11 +103,11 @@ namespace SyncPrem.Pipeline.Abstractions.Configuration
 			return GetTypeFromString(this.PipelineAqtn);
 		}
 
-		public override IEnumerable<Message> Validate(object context)
+		public override IEnumerable<_Message> Validate(object context)
 		{
-			List<Message> messages;
+			List<_Message> messages;
 
-			messages = new List<Message>();
+			messages = new List<_Message>();
 
 			if ((object)this.SourceConfiguration == null)
 				messages.Add(NewError("SourceConfiguration is required."));

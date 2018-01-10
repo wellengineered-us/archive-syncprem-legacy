@@ -16,19 +16,35 @@ namespace TextMetal.Middleware.Solder.Primitives
 	{
 		#region Fields/Constants
 
-		private readonly static ConcurrentDictionary<Guid, DisposableList<IDisposable>> tracker = new ConcurrentDictionary<Guid, DisposableList<IDisposable>>();
+		private static readonly ConcurrentDictionary<Guid, DisposableList<IDisposable>> tracker = new ConcurrentDictionary<Guid, DisposableList<IDisposable>>();
+
+		#endregion
+
+		#region Properties/Indexers/Events
+
+		private static ConcurrentDictionary<Guid, DisposableList<IDisposable>> Tracker
+		{
+			get
+			{
+				return tracker;
+			}
+		}
 
 		#endregion
 
 		#region Methods/Operators
 
 		[Conditional("DEBUG")]
-		public static void __check(this object obj)
+		public static void __check()
 		{
-			IEnumerable<IDisposable> x = tracker.SelectMany(cd => cd.Value);
+			IEnumerable<IDisposable> x = Tracker.SelectMany(cd => cd.Value);
 			int i;
 
-			if ((i = x.Count()) > 0)
+			if ((i = x.Select(
+				d =>
+				{
+					using(d) return 1;
+				}).Count()) > 0)
 				throw new InvalidOperationException(i.ToString());
 		}
 
@@ -45,7 +61,7 @@ namespace TextMetal.Middleware.Solder.Primitives
 		{
 			DisposableList<IDisposable> disps;
 
-			if (!tracker.TryGetValue(_, out disps) || !disps.Contains(disposable))
+			if (!Tracker.TryGetValue(_, out disps) || !disps.Contains(disposable))
 				throw new InvalidOperationException();
 
 			disps.Remove(disposable);
@@ -114,7 +130,7 @@ namespace TextMetal.Middleware.Solder.Primitives
 #if DEBUG
 			DisposableList<IDisposable> disps;
 
-			if (tracker.TryGetValue(_, out disps))
+			if (Tracker.TryGetValue(_, out disps))
 			{
 				if (disps.Contains(disposable))
 					throw new InvalidOperationException();
@@ -122,7 +138,7 @@ namespace TextMetal.Middleware.Solder.Primitives
 			else
 			{
 				disps = new DisposableList<IDisposable>();
-				tracker.TryAdd(_, disps);
+				Tracker.TryAdd(_, disps);
 			}
 
 			disps.Add(disposable);

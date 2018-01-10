@@ -6,8 +6,8 @@
 using System;
 using System.Collections.Generic;
 
+using SyncPrem.Pipeline.Abstractions.Channel;
 using SyncPrem.Pipeline.Abstractions.Configuration;
-using SyncPrem.Pipeline.Abstractions.Payload;
 using SyncPrem.Pipeline.Abstractions.Runtime;
 using SyncPrem.Pipeline.Abstractions.Stage.Processor;
 using SyncPrem.StreamingIO.DataMasking;
@@ -91,7 +91,7 @@ namespace SyncPrem.Pipeline.Core.Processors
 			this.OxymoronEngine = new OxymoronEngine(resolveDictionaryValueCallback, obfuscationSpec);
 		}
 
-		protected override IPipelineMessage ProcessRecord(IContext context, RecordConfiguration recordConfiguration, IPipelineMessage pipelineMessage, ProcessDelegate next)
+		protected override IChannel ProcessRecord(IContext context, RecordConfiguration recordConfiguration, IChannel channel, ProcessDelegate next)
 		{
 			if ((object)context == null)
 				throw new ArgumentNullException(nameof(context));
@@ -99,13 +99,13 @@ namespace SyncPrem.Pipeline.Core.Processors
 			if ((object)recordConfiguration == null)
 				throw new ArgumentNullException(nameof(recordConfiguration));
 
-			if ((object)pipelineMessage == null)
-				throw new ArgumentNullException(nameof(pipelineMessage));
+			if ((object)channel == null)
+				throw new ArgumentNullException(nameof(channel));
 
 			// simply wrap
-			pipelineMessage.ApplyWrap(this.OxymoronEngine.GetObfuscatedValues);
+			//channel.ApplyWrap(this.OxymoronEngine.GetObfuscatedValues);
 
-			return next(context, recordConfiguration, pipelineMessage);
+			return next(context, recordConfiguration, channel);
 		}
 
 		#endregion

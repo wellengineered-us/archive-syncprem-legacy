@@ -5,8 +5,8 @@
 
 using System;
 
+using SyncPrem.Pipeline.Abstractions.Channel;
 using SyncPrem.Pipeline.Abstractions.Configuration;
-using SyncPrem.Pipeline.Abstractions.Payload;
 using SyncPrem.Pipeline.Abstractions.Runtime;
 
 namespace SyncPrem.Pipeline.Abstractions.Stage.Connector.Source
@@ -24,9 +24,9 @@ namespace SyncPrem.Pipeline.Abstractions.Stage.Connector.Source
 
 		#region Methods/Operators
 
-		public IPipelineMessage Produce(IContext context, RecordConfiguration recordConfiguration)
+		public IChannel Produce(IContext context, RecordConfiguration recordConfiguration)
 		{
-			IPipelineMessage pipelineMessage;
+			IChannel channel;
 
 			if ((object)context == null)
 				throw new ArgumentNullException(nameof(context));
@@ -34,12 +34,12 @@ namespace SyncPrem.Pipeline.Abstractions.Stage.Connector.Source
 			if ((object)recordConfiguration == null)
 				throw new ArgumentNullException(nameof(recordConfiguration));
 
-			pipelineMessage = this.ProduceRecord(context, recordConfiguration);
+			channel = this.ProduceRecord(context, recordConfiguration);
 
-			return pipelineMessage;
+			return channel;
 		}
 
-		protected abstract IPipelineMessage ProduceRecord(IContext context, RecordConfiguration recordConfiguration);
+		protected abstract IChannel ProduceRecord(IContext context, RecordConfiguration recordConfiguration);
 
 		#endregion
 	}

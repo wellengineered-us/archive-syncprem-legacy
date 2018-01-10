@@ -5,8 +5,8 @@
 
 using System;
 
+using SyncPrem.Pipeline.Abstractions.Channel;
 using SyncPrem.Pipeline.Abstractions.Configuration;
-using SyncPrem.Pipeline.Abstractions.Payload;
 using SyncPrem.Pipeline.Abstractions.Runtime;
 
 namespace SyncPrem.Pipeline.Abstractions.Stage.Processor
@@ -24,9 +24,9 @@ namespace SyncPrem.Pipeline.Abstractions.Stage.Processor
 
 		#region Methods/Operators
 
-		public IPipelineMessage Process(IContext context, RecordConfiguration recordConfiguration, IPipelineMessage pipelineMessage, ProcessDelegate next)
+		public IChannel Process(IContext context, RecordConfiguration recordConfiguration, IChannel channel, ProcessDelegate next)
 		{
-			IPipelineMessage transformedPipelineMessage;
+			IChannel transformedStream;
 
 			if ((object)context == null)
 				throw new ArgumentNullException(nameof(context));
@@ -34,18 +34,18 @@ namespace SyncPrem.Pipeline.Abstractions.Stage.Processor
 			if ((object)recordConfiguration == null)
 				throw new ArgumentNullException(nameof(recordConfiguration));
 
-			if ((object)pipelineMessage == null)
-				throw new ArgumentNullException(nameof(pipelineMessage));
+			if ((object)channel == null)
+				throw new ArgumentNullException(nameof(channel));
 
 			//if ((object)next == null)
 			//throw new ArgumentNullException(nameof(next));
 
-			transformedPipelineMessage = this.ProcessRecord(context, recordConfiguration, pipelineMessage, next);
+			transformedStream = this.ProcessRecord(context, recordConfiguration, channel, next);
 
-			return transformedPipelineMessage;
+			return transformedStream;
 		}
 
-		protected abstract IPipelineMessage ProcessRecord(IContext context, RecordConfiguration recordConfiguration, IPipelineMessage pipelineMessage, ProcessDelegate next);
+		protected abstract IChannel ProcessRecord(IContext context, RecordConfiguration recordConfiguration, IChannel channel, ProcessDelegate next);
 
 		#endregion
 	}

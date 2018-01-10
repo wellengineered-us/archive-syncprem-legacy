@@ -15,16 +15,13 @@ using System.Threading.Tasks;
 
 using SyncPrem.StreamingIO.Primitives;
 
-using __IRecord = System.Collections.Generic.IDictionary<string, object>;
-using __Record = System.Collections.Generic.Dictionary<string, object>;
-
 namespace SyncPrem.StreamingIO.AdoNet
 {
 	public class ResultRecordDataReader : DbDataReader
 	{
 		#region Constructors/Destructors
 
-		public ResultRecordDataReader(IEnumerable<IField> fieldMetadata, IEnumerable<IAdoNetResult> targetResultsEnumerable)
+		public ResultRecordDataReader(IEnumerable<IField> fieldMetadata, IEnumerable<IResult> targetResultsEnumerable)
 		{
 			if ((object)fieldMetadata == null)
 				throw new ArgumentNullException(nameof(fieldMetadata));
@@ -53,7 +50,7 @@ namespace SyncPrem.StreamingIO.AdoNet
 				throw new InvalidOperationException(nameof(this.AdvanceResult));
 		}
 
-		public ResultRecordDataReader(IEnumerable<IField> fieldMetadata, IEnumerable<__IRecord> targetRecordsEnumerable)
+		public ResultRecordDataReader(IEnumerable<IField> fieldMetadata, IEnumerable<IRecord> targetRecordsEnumerable)
 			: this(fieldMetadata, targetRecordsEnumerable.ToResults())
 		{
 		}
@@ -64,14 +61,14 @@ namespace SyncPrem.StreamingIO.AdoNet
 
 		private readonly IEnumerable<IField> fieldMetadata;
 		private readonly Dictionary<string, int> ordinalLookupCache;
-		private readonly IEnumerable<IAdoNetResult> targetResultsEnumerable;
-		private readonly IEnumerator<IAdoNetResult> targetResultsEnumerator;
+		private readonly IEnumerable<IResult> targetResultsEnumerable;
+		private readonly IEnumerator<IResult> targetResultsEnumerator;
 		private string[] currentKeys;
 		private object[] currentValues;
 		private bool? isRecordsEnumerableClosed;
 		private bool? isResultsEnumerableClosed;
-		private IEnumerable<__IRecord> targetRecordsEnumerable;
-		private IEnumerator<__IRecord> targetRecordsEnumerator;
+		private IEnumerable<IRecord> targetRecordsEnumerable;
+		private IEnumerator<IRecord> targetRecordsEnumerator;
 		private int visibleFieldCount = default(int);
 
 		#endregion
@@ -166,7 +163,7 @@ namespace SyncPrem.StreamingIO.AdoNet
 			}
 		}
 
-		private IEnumerable<IAdoNetResult> TargetResultsEnumerable
+		private IEnumerable<IResult> TargetResultsEnumerable
 		{
 			get
 			{
@@ -174,7 +171,7 @@ namespace SyncPrem.StreamingIO.AdoNet
 			}
 		}
 
-		private IEnumerator<IAdoNetResult> TargetResultsEnumerator
+		private IEnumerator<IResult> TargetResultsEnumerator
 		{
 			get
 			{
@@ -238,7 +235,7 @@ namespace SyncPrem.StreamingIO.AdoNet
 			}
 		}
 
-		private IEnumerable<__IRecord> TargetRecordsEnumerable
+		private IEnumerable<IRecord> TargetRecordsEnumerable
 		{
 			get
 			{
@@ -250,7 +247,7 @@ namespace SyncPrem.StreamingIO.AdoNet
 			}
 		}
 
-		private IEnumerator<__IRecord> TargetRecordsEnumerator
+		private IEnumerator<IRecord> TargetRecordsEnumerator
 		{
 			get
 			{
@@ -274,7 +271,7 @@ namespace SyncPrem.StreamingIO.AdoNet
 
 				if (retval && this.HasResult)
 				{
-					IAdoNetResult result = this.TargetResultsEnumerator.Current;
+					IResult result = this.TargetResultsEnumerator.Current;
 					this.TargetRecordsEnumerable = result.Records;
 
 					if ((object)this.TargetRecordsEnumerable == null)

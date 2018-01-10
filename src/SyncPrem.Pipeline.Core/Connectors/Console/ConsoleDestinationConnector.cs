@@ -4,16 +4,14 @@
 */
 
 using System;
+using System.Collections.Generic;
 using System.IO;
-using System.Linq;
 
+using SyncPrem.Pipeline.Abstractions.Channel;
 using SyncPrem.Pipeline.Abstractions.Configuration;
-using SyncPrem.Pipeline.Abstractions.Payload;
 using SyncPrem.Pipeline.Abstractions.Runtime;
 using SyncPrem.Pipeline.Abstractions.Stage.Connector.Destination;
 using SyncPrem.StreamingIO.Primitives;
-
-using TextMetal.Middleware.Solder.Extensions;
 
 namespace SyncPrem.Pipeline.Core.Connectors.Console
 {
@@ -47,23 +45,32 @@ namespace SyncPrem.Pipeline.Core.Connectors.Console
 
 		#region Methods/Operators
 
-		protected override void ConsumeRecord(IContext context, RecordConfiguration recordConfiguration, IPipelineMessage pipelineMessage)
+		protected override void ConsumeRecord(IContext context, RecordConfiguration configuration, IChannel channel)
 		{
+			ISchema schema;
+			IEnumerable<IRecord> records;
+
 			if ((object)context == null)
 				throw new ArgumentNullException(nameof(context));
 
-			if ((object)recordConfiguration == null)
-				throw new ArgumentNullException(nameof(recordConfiguration));
+			if ((object)configuration == null)
+				throw new ArgumentNullException(nameof(configuration));
 
-			if ((object)pipelineMessage == null)
-				throw new ArgumentNullException(nameof(pipelineMessage));
+			if ((object)channel == null)
+				throw new ArgumentNullException(nameof(channel));
 
-			foreach (IRecord record in pipelineMessage.Records)
-			{
-				string temp;
-				temp = string.Format("[{0}]\t", 0) + string.Join("|", record.Select(kvp => string.Format("{0}={1}", kvp.Key, kvp.Value.SafeToString("null"))).ToArray());
-				TextWriter.WriteLine(temp);
-			}
+			schema = channel.Schema;
+
+			if ((object)schema == null)
+				throw new SyncPremException(nameof(schema));
+
+			records = channel.Records;
+
+			if ((object)records == null)
+				throw new SyncPremException(nameof(records));
+
+			foreach (IRecord record in records)
+				TextWriter.WriteLine(record);
 		}
 
 		protected override void Create(bool creating)
@@ -78,22 +85,22 @@ namespace SyncPrem.Pipeline.Core.Connectors.Console
 			base.Dispose(disposing);
 		}
 
-		protected override void PostExecuteRecord(IContext context, RecordConfiguration recordConfiguration)
+		protected override void PostExecuteRecord(IContext context, RecordConfiguration configuration)
 		{
 			if ((object)context == null)
 				throw new ArgumentNullException(nameof(context));
 
-			if ((object)recordConfiguration == null)
-				throw new ArgumentNullException(nameof(recordConfiguration));
+			if ((object)configuration == null)
+				throw new ArgumentNullException(nameof(configuration));
 		}
 
-		protected override void PreExecuteRecord(IContext context, RecordConfiguration recordConfiguration)
+		protected override void PreExecuteRecord(IContext context, RecordConfiguration configuration)
 		{
 			if ((object)context == null)
 				throw new ArgumentNullException(nameof(context));
 
-			if ((object)recordConfiguration == null)
-				throw new ArgumentNullException(nameof(recordConfiguration));
+			if ((object)configuration == null)
+				throw new ArgumentNullException(nameof(configuration));
 		}
 
 		#endregion

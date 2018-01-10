@@ -8,7 +8,7 @@ using System.Collections.Generic;
 
 using Newtonsoft.Json.Linq;
 
-using TextMetal.Middleware.Solder.Primitives;
+using _Message = TextMetal.Middleware.Solder.Primitives.Message;
 
 namespace SyncPrem.Pipeline.Abstractions.Configuration
 {
@@ -81,13 +81,13 @@ namespace SyncPrem.Pipeline.Abstractions.Configuration
 			this.StageSpecificConfiguration = null;
 		}
 
-		public override IEnumerable<Message> Validate(object context)
+		public override IEnumerable<_Message> Validate(object context)
 		{
-			List<Message> messages;
+			List<_Message> messages;
 			string stageContext;
 
 			stageContext = context as string;
-			messages = new List<Message>();
+			messages = new List<_Message>();
 			messages.AddRange(base.Validate(stageContext));
 
 			if ((object)this.StageSpecificConfiguration != null)
@@ -96,7 +96,7 @@ namespace SyncPrem.Pipeline.Abstractions.Configuration
 			return messages;
 		}
 
-		public override IEnumerable<Message> ValidateStageSpecificConfiguration(object context)
+		public override IEnumerable<_Message> ValidateStageSpecificConfiguration(object context)
 		{
 			if ((object)this.StageSpecificConfiguration == null)
 				throw new InvalidOperationException(string.Format("Configuration missing: '{0}'.", nameof(this.StageSpecificConfiguration)));

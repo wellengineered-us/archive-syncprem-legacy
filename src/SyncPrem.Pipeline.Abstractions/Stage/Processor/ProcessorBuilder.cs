@@ -45,7 +45,7 @@ namespace SyncPrem.Pipeline.Abstractions.Stage.Processor
 
 		public ProcessDelegate Build()
 		{
-			ProcessDelegate process = (ctx, cfg, msg) => msg; // simply return original message unmodified
+			ProcessDelegate process = (context, configuration, channel) => channel; // simply return original channel unmodified
 
 			foreach (Func<ProcessDelegate, ProcessDelegate> component in this.Components.Reverse())
 			{

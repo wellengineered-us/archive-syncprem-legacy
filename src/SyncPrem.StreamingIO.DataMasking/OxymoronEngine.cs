@@ -10,7 +10,6 @@ using System.Text;
 
 using SyncPrem.StreamingIO.DataMasking.Strategies;
 using SyncPrem.StreamingIO.Primitives;
-using SyncPrem.StreamingIO.ProxyWrappers;
 
 using TextMetal.Middleware.Solder.Extensions;
 using TextMetal.Middleware.Solder.Serialization;
@@ -230,7 +229,7 @@ namespace SyncPrem.StreamingIO.DataMasking
 			this.Close();
 		}
 
-		protected /*virtual*/ void Dispose(bool disposing)
+		private /*protected virtual*/ void Dispose(bool disposing)
 		{
 			if (disposing)
 			{
@@ -274,8 +273,6 @@ namespace SyncPrem.StreamingIO.DataMasking
 
 		public IEnumerable<IRecord> GetObfuscatedValues(IEnumerable<IRecord> records)
 		{
-			long fieldIndex;
-			long recordIndex;
 			string fieldName;
 			Type fieldType;
 			object originalFieldValue, obfuscatedFieldValue;
@@ -284,7 +281,6 @@ namespace SyncPrem.StreamingIO.DataMasking
 			if ((object)records == null)
 				throw new ArgumentNullException(nameof(records));
 
-			recordIndex = 0;
 			foreach (IRecord record in records)
 			{
 				Record obfuscatedRecord = null;
@@ -293,7 +289,6 @@ namespace SyncPrem.StreamingIO.DataMasking
 				{
 					obfuscatedRecord = new Record();
 
-					fieldIndex = 0;
 					foreach (KeyValuePair<string, object> item in record)
 					{
 						IField field; // TODO: should be provided to constructor
@@ -306,13 +301,11 @@ namespace SyncPrem.StreamingIO.DataMasking
 								{
 									FieldName = fieldName,
 									FieldType = fieldType,
-									IsFieldOptional = isFieldOptional
+									IsOptional = isFieldOptional
 								};
 
 						obfuscatedFieldValue = this.GetObfuscatedValue(field, originalFieldValue);
 						obfuscatedRecord.Add(fieldName, obfuscatedFieldValue);
-
-						fieldIndex++;
 					}
 				}
 

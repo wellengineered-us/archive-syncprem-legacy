@@ -6,7 +6,7 @@
 using System;
 using System.Collections.Generic;
 
-using SyncPrem.Pipeline.Abstractions.Payload;
+using SyncPrem.Pipeline.Abstractions.Channel;
 using SyncPrem.StreamingIO.Primitives;
 
 namespace SyncPrem.Pipeline.Abstractions.Runtime
@@ -15,7 +15,12 @@ namespace SyncPrem.Pipeline.Abstractions.Runtime
 	{
 		#region Properties/Indexers/Events
 
-		Stack<IPipelineMetadata> MetadataChain
+		IDictionary<string, object> GlobalState
+		{
+			get;
+		}
+
+		IDictionary<IComponent, IDictionary<string, object>> LocalState
 		{
 			get;
 		}
@@ -24,9 +29,7 @@ namespace SyncPrem.Pipeline.Abstractions.Runtime
 
 		#region Methods/Operators
 
-		IPipelineMessage CreateMessage(IEnumerable<IRecord> records);
-
-		IPipelineMetadata CreateMetadata(IEnumerable<IField> fields);
+		IChannel CreateChannel(ISchema schema, IEnumerable<IRecord> records);
 
 		#endregion
 	}

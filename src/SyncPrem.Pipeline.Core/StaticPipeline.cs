@@ -8,17 +8,16 @@ using System.Collections.Generic;
 using System.Linq;
 
 using SyncPrem.Pipeline.Abstractions;
+using SyncPrem.Pipeline.Abstractions.Channel;
 using SyncPrem.Pipeline.Abstractions.Configuration;
-using SyncPrem.Pipeline.Abstractions.Payload;
 using SyncPrem.Pipeline.Abstractions.Runtime;
-using SyncPrem.Pipeline.Abstractions.Stage;
 using SyncPrem.Pipeline.Abstractions.Stage.Connector.Destination;
 using SyncPrem.Pipeline.Abstractions.Stage.Connector.Source;
 using SyncPrem.Pipeline.Abstractions.Stage.Processor;
-using SyncPrem.Pipeline.Core.Processors;
 
 using TextMetal.Middleware.Solder.Injection;
-using TextMetal.Middleware.Solder.Primitives;
+
+using static TextMetal.Middleware.Solder.Primitives.OnlyWhen;
 
 namespace SyncPrem.Pipeline.Core
 {
@@ -64,7 +63,7 @@ namespace SyncPrem.Pipeline.Core
 
 		public int Execute(IContext context)
 		{
-			IPipelineMessage pipelineMessage;
+			IChannel channel;
 
 			ISourceConnector sourceConnector;
 			IDestinationConnector destinationConnector;
@@ -118,18 +117,18 @@ namespace SyncPrem.Pipeline.Core
 					// --
 					processorBuilder = new ProcessorBuilder();
 
-					if (false)
+					/*if (true)
 					{
 						// regular methods
 						processorBuilder.Use(NullProcessor.NullMiddlewareMethod);
 
 						// local functions
-						ProcessDelegate _middleware(ProcessDelegate next)
+						ProcessDelegate _middleware(ProcessDelegate _next)
 						{
-							IPipelineMessage _processor(IContext ctx, RecordConfiguration cfg, IPipelineMessage msg)
+							IChannel _processor(IContext _context, RecordConfiguration _configuration, IChannel _channel)
 							{
 								Console.WriteLine("processor_zero");
-								return next(ctx, cfg, msg);
+								return _next(_context, _configuration, _channel);
 							}
 
 							return _processor;
@@ -140,13 +139,13 @@ namespace SyncPrem.Pipeline.Core
 						// lambda expressions
 						processorBuilder.Use(next =>
 											{
-												return (ctx, cfg, msg) =>
+												return (_context, _configuration, _channel) =>
 														{
 															Console.WriteLine("processor_first");
-															return next(ctx, cfg, msg);
+															return next(_context, _configuration, _channel);
 														};
 											});
-					}
+					}*/
 
 					foreach (KeyValuePair<StageConfiguration, Type> processorTypeConfigMapping in processorTypeConfigMappings)
 					{
@@ -163,16 +162,16 @@ namespace SyncPrem.Pipeline.Core
 
 					// --
 
-					pipelineMessage = sourceConnector.Produce(context, recordConfiguration);
+					channel = sourceConnector.Produce(context, recordConfiguration);
 
-					pipelineMessage = process(context, recordConfiguration, pipelineMessage);
+					channel = process(context, recordConfiguration, channel);
 
-					destinationConnector.Consume(context, recordConfiguration, pipelineMessage);
+					destinationConnector.Consume(context, recordConfiguration, channel);
 
 					destinationConnector.PostExecute(context, recordConfiguration);
 					sourceConnector.PostExecute(context, recordConfiguration);
 
-					this.__check();
+					__check();
 				}
 			}
 
@@ -187,118 +186,6 @@ namespace SyncPrem.Pipeline.Core
 		public IReadOnlyCollection<Type> GetStaticStageChain()
 		{
 			return null;
-		}
-
-		#endregion
-	}
-
-	public interface IProcessBuilder
-	{
-		#region Methods/Operators
-
-		ExecuteDelegate Build(bool reverse);
-
-		IProcessBuilder New();
-
-		IProcessBuilder Use(ExecuteDelegate middleware);
-
-		#endregion
-	}
-
-	public class ProcessBuilder : IProcessBuilder
-	{
-		#region Constructors/Destructors
-
-		public ProcessBuilder()
-		{
-		}
-
-		private ProcessBuilder(ProcessBuilder processBuilder)
-		{
-		}
-
-		#endregion
-
-		#region Fields/Constants
-
-		private readonly IList<ExecuteDelegate> components = new List<ExecuteDelegate>();
-
-		#endregion
-
-		#region Properties/Indexers/Events
-
-		private IList<ExecuteDelegate> Components
-		{
-			get
-			{
-				return this.components;
-			}
-		}
-
-		#endregion
-
-		#region Methods/Operators
-
-		public ExecuteDelegate Build(bool reverse)
-		{
-			void _process(IContext ctx, RecordConfiguration cfg)
-			{
-				foreach (ExecuteDelegate component in (reverse ? this.Components.Reverse() : this.Components))
-				{
-					component(ctx, cfg);
-				}
-			}
-
-			return _process;
-		}
-
-		public IProcessBuilder New()
-		{
-			return new ProcessBuilder(this);
-		}
-
-		public IProcessBuilder Use(ExecuteDelegate middleware)
-		{
-			this.Components.Add(middleware);
-			return this;
-		}
-
-		#endregion
-	}
-
-	public static class ProcessBuilderExtensions
-	{
-		#region Methods/Operators
-
-		public static IProcessBuilder UseMiddleware(this IProcessBuilder processBuilder, Type processorType, StageConfiguration stageConfiguration)
-		{
-			if ((object)processBuilder == null)
-				throw new ArgumentNullException(nameof(processBuilder));
-
-			if ((object)processorType == null)
-				throw new ArgumentNullException(nameof(processorType));
-
-			if ((object)stageConfiguration == null)
-				throw new ArgumentNullException(nameof(stageConfiguration));
-
-			return processBuilder.Use((ctx, cfg) =>
-									{
-										Type _processorType = processorType; // prevent closure bug
-										IProcessor processor;
-
-										processor = (IProcessor)Activator.CreateInstance(_processorType);
-
-										if ((object)processor == null)
-											throw new InvalidOperationException(nameof(processor));
-
-										using (processor)
-										{
-											processor.StageConfiguration = stageConfiguration;
-											processor.Create();
-
-											processor.PreExecute(ctx, cfg);
-										}
-									});
 		}
 
 		#endregion

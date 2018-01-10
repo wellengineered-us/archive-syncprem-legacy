@@ -5,9 +5,11 @@
 
 using System;
 using System.Collections.Generic;
+using System.Linq;
 
+using SyncPrem.Pipeline.Abstractions;
+using SyncPrem.Pipeline.Abstractions.Channel;
 using SyncPrem.Pipeline.Abstractions.Configuration;
-using SyncPrem.Pipeline.Abstractions.Payload;
 using SyncPrem.Pipeline.Abstractions.Runtime;
 using SyncPrem.Pipeline.Abstractions.Stage.Connector.Source;
 using SyncPrem.StreamingIO.Primitives;
@@ -26,11 +28,13 @@ namespace SyncPrem.Pipeline.Core.Connectors.Null
 
 		#region Fields/Constants
 
-		private const int FIELD_COUNT = 100;
+		private const int FIELD_COUNT = 5;
 
-		private const string FIELD_NAME = "RandomValue_{0:0000}";
+		private const string FIELD_NAME = "RandomValue_{0:00}";
 
 		private static readonly Random random = new Random();
+
+		private static readonly ISchema randomSchema = GetRandomSchema();
 
 		#endregion
 
@@ -44,29 +48,58 @@ namespace SyncPrem.Pipeline.Core.Connectors.Null
 			}
 		}
 
+		private static ISchema RandomSchema
+		{
+			get
+			{
+				return randomSchema;
+			}
+		}
+
 		#endregion
 
 		#region Methods/Operators
 
-		private static IEnumerable<IRecord> GetRandomRecords()
+		private static IEnumerable<IRecord> GetRandomRecords(ISchema schema)
 		{
+			IRecord record;
+			IField[] fields;
+
 			long recordCount;
 
-			recordCount = 10000; //Random.Next(0, 100);
+			if ((object)schema == null)
+				throw new ArgumentNullException(nameof(schema));
+
+			fields = schema.Fields.Values.ToArray();
+			recordCount = Random.Next(0, 100000);
 
 			for (long recordIndex = 0; recordIndex < recordCount; recordIndex++)
 			{
-				IRecord record;
+				record = new Record() { RecordIndex = recordIndex };
 
-				record = new Record();
-
-				for (int fieldIndex = 0; fieldIndex < FIELD_COUNT; fieldIndex++)
+				for (int fieldIndex = 0; fieldIndex < fields.Length; fieldIndex++)
 				{
-					record.Add(string.Format(FIELD_NAME, fieldIndex), Random.NextDouble());
+					record.Add(fields[fieldIndex].FieldName, Random.NextDouble());
 				}
 
 				yield return record;
 			}
+		}
+
+		private static ISchema GetRandomSchema()
+		{
+			SchemaBuilder schemaBuilder;
+
+			schemaBuilder = new SchemaBuilder();
+
+			for (long fieldIndex = 0; fieldIndex < FIELD_COUNT; fieldIndex++)
+			{
+				string fieldName = string.Format(FIELD_NAME, fieldIndex);
+
+				schemaBuilder.AddField(fieldName, typeof(double));
+			}
+
+			return schemaBuilder.Build();
 		}
 
 		protected override void Create(bool creating)
@@ -81,59 +114,70 @@ namespace SyncPrem.Pipeline.Core.Connectors.Null
 			base.Dispose(disposing);
 		}
 
-		protected override void PostExecuteRecord(IContext context, RecordConfiguration recordConfiguration)
+		protected override void PostExecuteRecord(IContext context, RecordConfiguration configuration)
 		{
 			if ((object)context == null)
 				throw new ArgumentNullException(nameof(context));
 
-			if ((object)recordConfiguration == null)
-				throw new ArgumentNullException(nameof(recordConfiguration));
+			if ((object)configuration == null)
+				throw new ArgumentNullException(nameof(configuration));
 		}
 
-		protected override void PreExecuteRecord(IContext context, RecordConfiguration recordConfiguration)
+		protected override void PreExecuteRecord(IContext context, RecordConfiguration configuration)
 		{
-			IField[] fields;
-			IPipelineMetadata pipelineMetadata;
+			ISchema schema;
 
 			if ((object)context == null)
 				throw new ArgumentNullException(nameof(context));
 
-			if ((object)recordConfiguration == null)
-				throw new ArgumentNullException(nameof(recordConfiguration));
+			if ((object)configuration == null)
+				throw new ArgumentNullException(nameof(configuration));
 
-			fields = new IField[FIELD_COUNT];
-			for (long fieldIndex = 0; fieldIndex < FIELD_COUNT; fieldIndex++)
+			schema = RandomSchema;
+
+			if ((object)schema == null)
+				throw new SyncPremException(nameof(schema));
+
+			if (!context.LocalState.TryGetValue(this, out IDictionary<string, object> localState))
 			{
-				fields[fieldIndex] = new Field()
-									{
-										FieldName = string.Format(FIELD_NAME, fieldIndex),
-										FieldType = typeof(double),
-										IsFieldOptional = true,
-										IsFieldKeyComponent = false,
-										FieldIndex = fieldIndex
-				};
+				localState = new Dictionary<string, object>(StringComparer.OrdinalIgnoreCase);
+				context.LocalState.Add(this, localState);
 			}
 
-			pipelineMetadata = context.CreateMetadata(fields);
-			context.MetadataChain.Push(pipelineMetadata);
+			localState.Add(Constants.ContextComponentScopedSchema, schema);
 		}
 
-		protected override IPipelineMessage ProduceRecord(IContext context, RecordConfiguration recordConfiguration)
+		protected override IChannel ProduceRecord(IContext context, RecordConfiguration configuration)
 		{
+			IChannel channel;
+			ISchema schema;
 			IEnumerable<IRecord> records;
-			IPipelineMessage pipelineMessage;
 
 			if ((object)context == null)
 				throw new ArgumentNullException(nameof(context));
 
-			if ((object)recordConfiguration == null)
-				throw new ArgumentNullException(nameof(recordConfiguration));
+			if ((object)configuration == null)
+				throw new ArgumentNullException(nameof(configuration));
 
-			records = GetRandomRecords();
+			if (!context.LocalState.TryGetValue(this, out IDictionary<string, object> localState))
+			{
+				localState = new Dictionary<string, object>(StringComparer.OrdinalIgnoreCase);
+				context.LocalState.Add(this, localState);
+			}
 
-			pipelineMessage = context.CreateMessage(records);
+			schema = localState[Constants.ContextComponentScopedSchema] as ISchema;
 
-			return pipelineMessage;
+			if ((object)schema == null)
+				throw new SyncPremException(nameof(schema));
+
+			records = GetRandomRecords(schema);
+
+			if ((object)records == null)
+				throw new SyncPremException(nameof(records));
+
+			channel = context.CreateChannel(schema, records);
+
+			return channel;
 		}
 
 		#endregion

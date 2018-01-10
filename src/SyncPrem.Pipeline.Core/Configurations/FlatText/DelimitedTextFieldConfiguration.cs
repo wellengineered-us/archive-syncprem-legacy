@@ -51,7 +51,7 @@ namespace SyncPrem.Pipeline.Core.Configurations.FlatText
 			}
 		}
 
-		bool IField.IsFieldKeyComponent
+		bool IField.IsKeyComponent
 		{
 			get
 			{
@@ -59,11 +59,19 @@ namespace SyncPrem.Pipeline.Core.Configurations.FlatText
 			}
 		}
 
-		bool IField.IsFieldOptional
+		bool IField.IsOptional
 		{
 			get
 			{
 				return this.IsFieldOptional ?? true;
+			}
+		}
+
+		ISchema IField.Schema
+		{
+			get
+			{
+				return null;
 			}
 		}
 

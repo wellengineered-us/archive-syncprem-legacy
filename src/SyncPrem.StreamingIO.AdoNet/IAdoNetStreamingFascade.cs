@@ -8,8 +8,7 @@ using System.Collections.Generic;
 using System.Data;
 using System.Data.Common;
 
-using __IRecord = System.Collections.Generic.IDictionary<string, object>;
-using __Record = System.Collections.Generic.Dictionary<string, object>;
+using SyncPrem.StreamingIO.Primitives;
 
 namespace SyncPrem.StreamingIO.AdoNet
 {
@@ -63,7 +62,7 @@ namespace SyncPrem.StreamingIO.AdoNet
 		/// <param name="commandParameters"> The parameters to use during the operation. </param>
 		/// <param name="recordsAffectedCallback"> Executed when the output count of records affected is available to return (post enumeration). </param>
 		/// <returns> An enumerable of result instances, each containing an enumerable of dictionaries with record key/value pairs of schema metadata. </returns>
-		IEnumerable<__IRecord> ExecuteRecords(DbConnection dbConnection, DbTransaction dbTransaction, CommandType commandType, string commandText, IEnumerable<DbParameter> commandParameters, Action<int> recordsAffectedCallback);
+		IEnumerable<IRecord> ExecuteRecords(DbConnection dbConnection, DbTransaction dbTransaction, CommandType commandType, string commandText, IEnumerable<DbParameter> commandParameters, Action<int> recordsAffectedCallback);
 
 		/// <summary>
 		/// Execute a command against a data source, mapping the data reader to an enumerable of results, each with an enumerable of record dictionaries.
@@ -76,7 +75,7 @@ namespace SyncPrem.StreamingIO.AdoNet
 		/// <param name="commandText"> The SQL text or stored procedure name. </param>
 		/// <param name="commandParameters"> The parameters to use during the operation. </param>
 		/// <returns> An enumerable of result instances, each containing an enumerable of dictionaries with record key/value pairs of data. </returns>
-		IEnumerable<IAdoNetResult> ExecuteResults(DbConnection dbConnection, DbTransaction dbTransaction, CommandType commandType, string commandText, IEnumerable<DbParameter> commandParameters);
+		IEnumerable<IResult> ExecuteResults(DbConnection dbConnection, DbTransaction dbTransaction, CommandType commandType, string commandText, IEnumerable<DbParameter> commandParameters);
 
 		/// <summary>
 		/// Execute a command against a data source, mapping the data reader GetSchemaTable() result to an enumerable of enumerable of record dictionaries.
@@ -90,7 +89,7 @@ namespace SyncPrem.StreamingIO.AdoNet
 		/// <param name="commandParameters"> The parameters to use during the operation. </param>
 		/// <param name="recordsAffectedCallback"> Executed when the output count of records affected is available to return (post enumeration). </param>
 		/// <returns> An enumerable of result instances, each containing an enumerable of dictionaries with record key/value pairs of schema metadata. </returns>
-		IEnumerable<__IRecord> ExecuteSchemaRecords(DbConnection dbConnection, DbTransaction dbTransaction, CommandType commandType, string commandText, IEnumerable<DbParameter> commandParameters, Action<int> recordsAffectedCallback);
+		IEnumerable<IRecord> ExecuteSchemaRecords(DbConnection dbConnection, DbTransaction dbTransaction, CommandType commandType, string commandText, IEnumerable<DbParameter> commandParameters, Action<int> recordsAffectedCallback);
 
 		/// <summary>
 		/// Execute a command against a data source, mapping the data reader GetSchemaTable() result to an results, each with an enumerable of record dictionaries.
@@ -103,7 +102,7 @@ namespace SyncPrem.StreamingIO.AdoNet
 		/// <param name="commandText"> The SQL text or stored procedure name. </param>
 		/// <param name="commandParameters"> The parameters to use during the operation. </param>
 		/// <returns> An enumerable of result instances, each containing an enumerable of dictionaries with record key/value pairs of schema metadata. </returns>
-		IEnumerable<IAdoNetResult> ExecuteSchemaResults(DbConnection dbConnection, DbTransaction dbTransaction, CommandType commandType, string commandText, IEnumerable<DbParameter> commandParameters);
+		IEnumerable<IResult> ExecuteSchemaResults(DbConnection dbConnection, DbTransaction dbTransaction, CommandType commandType, string commandText, IEnumerable<DbParameter> commandParameters);
 
 		/// <summary>
 		/// Execute a command against a data source, mapping the data reader to an enumerable of record dictionaries.
@@ -113,7 +112,7 @@ namespace SyncPrem.StreamingIO.AdoNet
 		/// <param name="dbDataReader"> The target data reader. </param>
 		/// <param name="recordsAffectedCallback"> Executed when the output count of records affected is available to return (post enumeration). </param>
 		/// <returns> An enumerable of record dictionary instances, containing key/value pairs of data. </returns>
-		IEnumerable<__IRecord> GetRecordsFromReader(DbDataReader dbDataReader, Action<int> recordsAffectedCallback);
+		IEnumerable<IRecord> GetRecordsFromReader(DbDataReader dbDataReader, Action<int> recordsAffectedCallback);
 
 		/// <summary>
 		/// Execute a command against a data source, mapping the data reader to an enumerable of results, each with an enumerable of records.
@@ -122,7 +121,7 @@ namespace SyncPrem.StreamingIO.AdoNet
 		/// </summary>
 		/// <param name="dbDataReader"> The target data reader. </param>
 		/// <returns> An enumerable of result instances, each containing an enumerable of dictionaries with record key/value pairs of data. </returns>
-		IEnumerable<IAdoNetResult> GetResultsFromReader(DbDataReader dbDataReader);
+		IEnumerable<IResult> GetResultsFromReader(DbDataReader dbDataReader);
 
 		/// <summary>
 		/// Execute a command against a data source, mapping the data reader GetSchemaTable() result to an enumerable of record dictionaries.
@@ -132,7 +131,7 @@ namespace SyncPrem.StreamingIO.AdoNet
 		/// <param name="dbDataReader"> The target data reader. </param>
 		/// <param name="recordsAffectedCallback"> Executed when the output count of records affected is available to return (post enumeration). </param>
 		/// <returns> An enumerable of record dictionary instances, containing key/value pairs of schema metadata. </returns>
-		IEnumerable<__IRecord> GetSchemaRecordsFromReader(DbDataReader dbDataReader, Action<int> recordsAffectedCallback);
+		IEnumerable<IRecord> GetSchemaRecordsFromReader(DbDataReader dbDataReader, Action<int> recordsAffectedCallback);
 
 		/// <summary>
 		/// Execute a command against a data source, mapping the data reader GetSchemaTable() result to an enumerable of results, each with an enumerable of records.
@@ -141,7 +140,7 @@ namespace SyncPrem.StreamingIO.AdoNet
 		/// </summary>
 		/// <param name="dbDataReader"> The target data reader. </param>
 		/// <returns> An enumerable of result instances, each containing an enumerable of dictionaries with record key/value pairs of schema metadata. </returns>
-		IEnumerable<IAdoNetResult> GetSchemaResultsFromReader(DbDataReader dbDataReader);
+		IEnumerable<IResult> GetSchemaResultsFromReader(DbDataReader dbDataReader);
 
 		#endregion
 	}

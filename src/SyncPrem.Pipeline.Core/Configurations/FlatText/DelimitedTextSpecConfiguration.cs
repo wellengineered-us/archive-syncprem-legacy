@@ -83,8 +83,8 @@ namespace SyncPrem.Pipeline.Core.Configurations.FlatText
 																					{
 																						FieldName = f.FieldName,
 																						FieldTypeAqtn = f.FieldType.AssemblyQualifiedName,
-																						IsFieldOptional = f.IsFieldOptional,
-																						IsFieldKeyComponent = f.IsFieldKeyComponent,
+																						IsFieldOptional = f.IsOptional,
+																						IsFieldKeyComponent = f.IsKeyComponent,
 																					}));
 			}
 		}

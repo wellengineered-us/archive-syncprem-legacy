@@ -6,18 +6,15 @@
 using System;
 using System.Collections.Generic;
 
-using SyncPrem.StreamingIO.ProxyWrappers;
-
-using __IRecord = System.Collections.Generic.IDictionary<string, object>;
-using __Record = System.Collections.Generic.Dictionary<string, object>;
+using SyncPrem.StreamingIO.Primitives;
 
 namespace SyncPrem.StreamingIO.AdoNet
 {
-	public interface IAdoNetResult : IApplyWrap<IAdoNetResult, __IRecord>
+	public interface IResult
 	{
 		#region Properties/Indexers/Events
 
-		IEnumerable<__IRecord> Records
+		IEnumerable<IRecord> Records
 		{
 			get;
 		}

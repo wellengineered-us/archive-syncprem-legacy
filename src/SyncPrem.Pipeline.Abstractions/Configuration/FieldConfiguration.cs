@@ -9,7 +9,8 @@ using System.Collections.Generic;
 using SyncPrem.Infrastructure.Configuration;
 
 using TextMetal.Middleware.Solder.Extensions;
-using TextMetal.Middleware.Solder.Primitives;
+
+using _Message = TextMetal.Middleware.Solder.Primitives.Message;
 
 namespace SyncPrem.Pipeline.Abstractions.Configuration
 {
@@ -77,13 +78,13 @@ namespace SyncPrem.Pipeline.Abstractions.Configuration
 			return this.FieldName.SafeToString().ToLower().GetHashCode();
 		}
 
-		public override IEnumerable<Message> Validate(object context)
+		public override IEnumerable<_Message> Validate(object context)
 		{
-			List<Message> messages;
+			List<_Message> messages;
 			int? columnIndex;
 
 			columnIndex = context as int?;
-			messages = new List<Message>();
+			messages = new List<_Message>();
 
 			if (SolderFascadeAccessor.DataTypeFascade.IsNullOrWhiteSpace(this.FieldName))
 				messages.Add(NewError(string.Format("Field[{0}] name is required.", columnIndex)));

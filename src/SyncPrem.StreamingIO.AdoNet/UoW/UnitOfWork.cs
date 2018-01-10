@@ -242,7 +242,7 @@ namespace SyncPrem.StreamingIO.AdoNet.UoW
 			this.Completed = true;
 		}
 
-		protected /*virtual*/ void Dispose(bool disposing)
+		private /*protected virtual*/ void Dispose(bool disposing)
 		{
 			if (disposing)
 			{

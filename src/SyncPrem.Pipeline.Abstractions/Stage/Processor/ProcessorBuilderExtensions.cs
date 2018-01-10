@@ -5,8 +5,8 @@
 
 using System;
 
+using SyncPrem.Pipeline.Abstractions.Channel;
 using SyncPrem.Pipeline.Abstractions.Configuration;
-using SyncPrem.Pipeline.Abstractions.Payload;
 
 namespace SyncPrem.Pipeline.Abstractions.Stage.Processor
 {
@@ -27,21 +27,21 @@ namespace SyncPrem.Pipeline.Abstractions.Stage.Processor
 
 			return processorBuilder.Use(next =>
 										{
-											return (ctx, cfg, msg) =>
+											return (context, configuration, channel) =>
 													{
 														IProcessor _processor = processor; // prevent closure bug
-														IPipelineMessage pipelineMessage;
+														IChannel newChannel;
 
 														using (_processor)
 														{
 															_processor.StageConfiguration = stageConfiguration;
 															_processor.Create();
 
-															_processor.PreExecute(ctx, cfg);
-															pipelineMessage = _processor.Process(ctx, cfg, msg, next);
-															_processor.PostExecute(ctx, cfg);
+															_processor.PreExecute(context, configuration);
+															newChannel = _processor.Process(context, configuration, channel, next);
+															_processor.PostExecute(context, configuration);
 
-															return pipelineMessage;
+															return newChannel;
 														}
 													};
 										});
@@ -60,10 +60,10 @@ namespace SyncPrem.Pipeline.Abstractions.Stage.Processor
 
 			return processorBuilder.Use(next =>
 										{
-											return (ctx, cfg, msg) =>
+											return (context, configuration, channel) =>
 													{
 														IProcessor processor;
-														IPipelineMessage pipelineMessage;
+														IChannel newChannel;
 
 														processor = (IProcessor)Activator.CreateInstance(processorType);
 
@@ -75,11 +75,11 @@ namespace SyncPrem.Pipeline.Abstractions.Stage.Processor
 															processor.StageConfiguration = stageConfiguration;
 															processor.Create();
 
-															processor.PreExecute(ctx, cfg);
-															pipelineMessage = processor.Process(ctx, cfg, msg, next);
-															processor.PostExecute(ctx, cfg);
+															processor.PreExecute(context, configuration);
+															newChannel = processor.Process(context, configuration, channel, next);
+															processor.PostExecute(context, configuration);
 
-															return pipelineMessage;
+															return newChannel;
 														}
 													};
 										});

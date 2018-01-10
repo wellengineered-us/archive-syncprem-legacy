@@ -46,7 +46,6 @@ namespace TextMetal.Middleware.Solder.Injection
 		#region Fields/Constants
 
 		private const string APP_CONFIG_FILE_NAME = "appconfig.json";
-		private static AssemblyDomain @default;
 		private readonly AppDomain appDomain;
 		private readonly IDependencyManager dependencyManager = new DependencyManager();
 		private readonly IDictionary<AssemblyName, Assembly> knownAssemblies = new Dictionary<AssemblyName, Assembly>(___.ByValueEquality.AssemblyName);
@@ -262,7 +261,7 @@ namespace TextMetal.Middleware.Solder.Injection
 			this.Close();
 		}
 
-		protected /*virtual*/ void Dispose(bool disposing)
+		private /*protected virtual*/ void Dispose(bool disposing)
 		{
 			if (disposing)
 			{

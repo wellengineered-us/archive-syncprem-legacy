@@ -8,13 +8,23 @@ using System.Collections.Generic;
 
 using SyncPrem.StreamingIO.Primitives;
 
-namespace SyncPrem.Pipeline.Abstractions.Payload
+namespace SyncPrem.Pipeline.Abstractions.Channel
 {
-	public interface IPipelineMetadata : IComponent
+	public interface IChannel : IComponent
 	{
 		#region Properties/Indexers/Events
 
-		IEnumerable<IField> UpstreamFields
+		IEnumerable<IRecord> Records
+		{
+			get;
+		}
+
+		ISchema Schema
+		{
+			get;
+		}
+
+		DateTimeOffset Timestamp
 		{
 			get;
 		}

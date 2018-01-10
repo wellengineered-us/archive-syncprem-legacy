@@ -180,6 +180,29 @@ namespace TextMetal.Middleware.Solder.Executive
 			this.Disposed = true;
 		}
 
+		/// <summary>
+		/// The event handler for this event is executed on a thread pool thread.
+		/// </summary>
+		/// <param name="sender"></param>
+		/// <param name="args"></param>
+		private void ConsoleOnCancelKeyPress(object sender, ConsoleCancelEventArgs args)
+		{
+			//if ((object)sender == null)
+				//throw new ArgumentNullException(nameof(sender));
+
+			if ((object)args == null)
+				throw new ArgumentNullException(nameof(args));
+
+			args.Cancel = this.OnCancelKeySignal(args.SpecialKey);
+		}
+
+		/// <summary>
+		/// The event handler for this event is executed on a thread pool thread.
+		/// </summary>
+		/// <param name="consoleSpecialKey"></param>
+		/// <returns></returns>
+		protected abstract bool OnCancelKeySignal(ConsoleSpecialKey consoleSpecialKey);
+
 		protected abstract void DisplayArgumentErrorMessage(IEnumerable<Message> argumentMessages);
 
 		protected abstract void DisplayArgumentMapMessage(IDictionary<string, ArgumentSpec> argumentMap);
@@ -197,11 +220,14 @@ namespace TextMetal.Middleware.Solder.Executive
 			this.Close();
 		}
 
+		/// <summary>
+		/// Note: Never change this to call other virtual methods on this type
+		/// like Donkey(), since the state on subclasses has already been
+		/// torn down.  This is the last code to run on cleanup for this type.
+		/// </summary>
+		/// <param name="disposing"> </param>
 		protected virtual void Dispose(bool disposing)
 		{
-			if (this.Disposed)
-				return;
-
 			if (disposing)
 			{
 				// do nothing
@@ -215,13 +241,22 @@ namespace TextMetal.Middleware.Solder.Executive
 		/// <returns> The resulting exit code. </returns>
 		public int EntryPoint(string[] args)
 		{
-			if (this.LaunchDebuggerOnEntryPoint)
-				Debugger.Launch();
+			try
+			{
+				Console.CancelKeyPress += this.ConsoleOnCancelKeyPress;
 
-			if (this.HookUnhandledExceptions)
-				return this.TryStartup(args);
-			else
-				return this.Startup(args);
+				if (this.LaunchDebuggerOnEntryPoint)
+					Debugger.Launch();
+
+				if (this.HookUnhandledExceptions)
+					return this.TryStartup(args);
+				else
+					return this.Startup(args);
+			}
+			finally
+			{
+				Console.CancelKeyPress -= this.ConsoleOnCancelKeyPress;
+			}
 		}
 
 		protected abstract IDictionary<string, ArgumentSpec> GetArgumentMap();

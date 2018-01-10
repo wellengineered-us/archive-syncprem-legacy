@@ -4,13 +4,14 @@
 */
 
 using System;
-using System.Linq;
+using System.Collections.Generic;
 
+using SyncPrem.Pipeline.Abstractions.Channel;
 using SyncPrem.Pipeline.Abstractions.Configuration;
-using SyncPrem.Pipeline.Abstractions.Payload;
 using SyncPrem.Pipeline.Abstractions.Runtime;
 using SyncPrem.Pipeline.Abstractions.Stage.Connector.Destination;
 using SyncPrem.StreamingIO.Primitives;
+using SyncPrem.StreamingIO.ProxyWrappers;
 
 namespace SyncPrem.Pipeline.Core.Connectors.Null
 {
@@ -26,19 +27,32 @@ namespace SyncPrem.Pipeline.Core.Connectors.Null
 
 		#region Methods/Operators
 
-		protected override void ConsumeRecord(IContext context, RecordConfiguration recordConfiguration, IPipelineMessage pipelineMessage)
+		protected override void ConsumeRecord(IContext context, RecordConfiguration configuration, IChannel channel)
 		{
+			ISchema schema;
+			IEnumerable<IRecord> records;
+
 			if ((object)context == null)
 				throw new ArgumentNullException(nameof(context));
 
-			if ((object)recordConfiguration == null)
-				throw new ArgumentNullException(nameof(recordConfiguration));
+			if ((object)configuration == null)
+				throw new ArgumentNullException(nameof(configuration));
 
-			if ((object)pipelineMessage == null)
-				throw new ArgumentNullException(nameof(pipelineMessage));
+			if ((object)channel == null)
+				throw new ArgumentNullException(nameof(channel));
+
+			schema = channel.Schema;
+
+			if ((object)schema == null)
+				throw new SyncPremException(nameof(schema));
+
+			records = channel.Records;
+
+			if ((object)records == null)
+				throw new SyncPremException(nameof(records));
 
 			// force full enumeration
-			pipelineMessage.Records.ToArray();
+			records.ForceEnumeration();
 		}
 
 		protected override void Create(bool creating)
@@ -53,22 +67,22 @@ namespace SyncPrem.Pipeline.Core.Connectors.Null
 			base.Dispose(disposing);
 		}
 
-		protected override void PostExecuteRecord(IContext context, RecordConfiguration recordConfiguration)
+		protected override void PostExecuteRecord(IContext context, RecordConfiguration configuration)
 		{
 			if ((object)context == null)
 				throw new ArgumentNullException(nameof(context));
 
-			if ((object)recordConfiguration == null)
-				throw new ArgumentNullException(nameof(recordConfiguration));
+			if ((object)configuration == null)
+				throw new ArgumentNullException(nameof(configuration));
 		}
 
-		protected override void PreExecuteRecord(IContext context, RecordConfiguration recordConfiguration)
+		protected override void PreExecuteRecord(IContext context, RecordConfiguration configuration)
 		{
 			if ((object)context == null)
 				throw new ArgumentNullException(nameof(context));
 
-			if ((object)recordConfiguration == null)
-				throw new ArgumentNullException(nameof(recordConfiguration));
+			if ((object)configuration == null)
+				throw new ArgumentNullException(nameof(configuration));
 		}
 
 		#endregion

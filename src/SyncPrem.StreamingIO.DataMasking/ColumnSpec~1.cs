@@ -41,7 +41,7 @@ namespace SyncPrem.StreamingIO.DataMasking
 
 		#region Properties/Indexers/Events
 
-		public TObfuscationStrategySpec ObfuscationStrategySpec
+		public new TObfuscationStrategySpec ObfuscationStrategySpec
 		{
 			get
 			{

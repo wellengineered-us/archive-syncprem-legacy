@@ -5,8 +5,8 @@
 
 using System;
 
+using SyncPrem.Pipeline.Abstractions.Channel;
 using SyncPrem.Pipeline.Abstractions.Configuration;
-using SyncPrem.Pipeline.Abstractions.Payload;
 using SyncPrem.Pipeline.Abstractions.Runtime;
 
 namespace SyncPrem.Pipeline.Abstractions.Stage.Connector.Source
@@ -15,7 +15,7 @@ namespace SyncPrem.Pipeline.Abstractions.Stage.Connector.Source
 	{
 		#region Methods/Operators
 
-		IPipelineMessage Produce(IContext context, RecordConfiguration recordConfiguration);
+		IChannel Produce(IContext context, RecordConfiguration recordConfiguration);
 
 		#endregion
 	}

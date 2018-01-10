@@ -7,7 +7,7 @@ using System.Collections.Generic;
 
 using SyncPrem.Infrastructure.Configuration;
 
-using TextMetal.Middleware.Solder.Primitives;
+using _Message = TextMetal.Middleware.Solder.Primitives.Message;
 
 namespace SyncPrem.Pipeline.Abstractions.Configuration
 {
@@ -40,9 +40,9 @@ namespace SyncPrem.Pipeline.Abstractions.Configuration
 
 		#region Methods/Operators
 
-		public override IEnumerable<Message> Validate(object context)
+		public override IEnumerable<_Message> Validate(object context)
 		{
-			return new Message[] { };
+			return new _Message[] { };
 		}
 
 		#endregion

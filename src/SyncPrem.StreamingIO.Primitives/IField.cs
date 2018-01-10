@@ -21,12 +21,17 @@ namespace SyncPrem.StreamingIO.Primitives
 			get;
 		}
 
-		bool IsFieldKeyComponent
+		bool IsKeyComponent
 		{
 			get;
 		}
 
-		bool IsFieldOptional
+		bool IsOptional
+		{
+			get;
+		}
+
+		ISchema Schema
 		{
 			get;
 		}

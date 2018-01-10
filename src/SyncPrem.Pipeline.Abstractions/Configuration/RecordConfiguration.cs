@@ -9,7 +9,7 @@ using System.Linq;
 
 using SyncPrem.Infrastructure.Configuration;
 
-using TextMetal.Middleware.Solder.Primitives;
+using _Message = TextMetal.Middleware.Solder.Primitives.Message;
 
 namespace SyncPrem.Pipeline.Abstractions.Configuration
 {
@@ -57,12 +57,12 @@ namespace SyncPrem.Pipeline.Abstractions.Configuration
 
 		#region Methods/Operators
 
-		public override IEnumerable<Message> Validate(object context)
+		public override IEnumerable<_Message> Validate(object context)
 		{
-			List<Message> messages;
+			List<_Message> messages;
 			int index;
 
-			messages = new List<Message>();
+			messages = new List<_Message>();
 
 			// check for duplicate columns
 			var columnNameSums = this.ColumnConfigurations.GroupBy(c => c.FieldName)

@@ -145,8 +145,8 @@ namespace SyncPrem.StreamingIO.FlatText.Delimited
 															{
 																FieldName = fieldNames[fieldIndex],
 																FieldType = typeof(string),
-																IsFieldKeyComponent = false,
-																IsFieldOptional = true
+																IsKeyComponent = false,
+																IsOptional = true
 															};
 					}
 				}
@@ -221,7 +221,7 @@ namespace SyncPrem.StreamingIO.FlatText.Delimited
 					this.ParserState.record.Add(delimitedTextFieldSpec.FieldName, fieldValue);
 				}
 
-				// handle blank lines (we assume that any records with valid record delimiter is OK)
+				// handle blank lines (we assume that any RECORDS with valid RECORD delimiter is OK)
 				if (string.IsNullOrEmpty(tempStringValue) && this.ParserState.record.Keys.Count == 1)
 					this.ParserState.record = null;
 

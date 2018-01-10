@@ -12,7 +12,8 @@ using SyncPrem.Infrastructure.Configuration;
 using SyncPrem.Pipeline.Abstractions.Stage;
 
 using TextMetal.Middleware.Solder.Extensions;
-using TextMetal.Middleware.Solder.Primitives;
+
+using _Message = TextMetal.Middleware.Solder.Primitives.Message;
 
 namespace SyncPrem.Pipeline.Abstractions.Configuration
 {
@@ -87,14 +88,14 @@ namespace SyncPrem.Pipeline.Abstractions.Configuration
 			}
 		}
 
-		public Type GetStageType()
-		{
-			return GetTypeFromString(this.StageAqtn);
-		}
-
 		public virtual Type GetStageSpecificConfigurationType()
 		{
 			return typeof(StageSpecificConfiguration);
+		}
+
+		public Type GetStageType()
+		{
+			return GetTypeFromString(this.StageAqtn);
 		}
 
 		public virtual void ResetStageSpecificConfiguration()
@@ -103,15 +104,15 @@ namespace SyncPrem.Pipeline.Abstractions.Configuration
 			this.UntypedStageSpecificConfiguration = null;
 		}
 
-		public override IEnumerable<Message> Validate(object context)
+		public override IEnumerable<_Message> Validate(object context)
 		{
-			List<Message> messages;
+			List<_Message> messages;
 			Type stageType;
 			IStage stage;
 			string stageContext;
 
 			stageContext = context as string;
-			messages = new List<Message>();
+			messages = new List<_Message>();
 
 			if (SolderFascadeAccessor.DataTypeFascade.IsNullOrWhiteSpace(this.StageAqtn))
 				messages.Add(NewError(string.Format("{0} stage AQTN is required.", stageContext)));
@@ -141,7 +142,7 @@ namespace SyncPrem.Pipeline.Abstractions.Configuration
 			return messages;
 		}
 
-		public virtual IEnumerable<Message> ValidateStageSpecificConfiguration(object context)
+		public virtual IEnumerable<_Message> ValidateStageSpecificConfiguration(object context)
 		{
 			if ((object)this.StageSpecificConfiguration == null)
 				throw new InvalidOperationException(string.Format("Configuration missing: '{0}'.", nameof(this.StageSpecificConfiguration)));

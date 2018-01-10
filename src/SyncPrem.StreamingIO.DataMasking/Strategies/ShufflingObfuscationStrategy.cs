@@ -116,10 +116,7 @@ namespace SyncPrem.StreamingIO.DataMasking.Strategies
 			fidelityMap = new Dictionary<int, char>();
 
 			if (string.IsNullOrWhiteSpace(value))
-			{
-				value = value;
 				return fidelityMap;
-			}
 
 			sb = new StringBuilder();
 

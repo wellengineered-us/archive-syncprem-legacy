@@ -9,10 +9,9 @@ using System.Data;
 using System.Data.Common;
 using System.Linq;
 
-using TextMetal.Middleware.Solder.Extensions;
+using SyncPrem.StreamingIO.Primitives;
 
-using __IRecord = System.Collections.Generic.IDictionary<string, object>;
-using __Record = System.Collections.Generic.Dictionary<string, object>;
+using TextMetal.Middleware.Solder.Extensions;
 
 namespace SyncPrem.StreamingIO.AdoNet.UoW
 {
@@ -75,9 +74,9 @@ namespace SyncPrem.StreamingIO.AdoNet.UoW
 			return dbParameter;
 		}
 
-		public static IEnumerable<__IRecord> ExecuteRecords(this IUnitOfWork unitOfWork, CommandType commandType, string commandText, IEnumerable<DbParameter> commandParameters, Action<int> rowsAffectedCallback)
+		public static IEnumerable<IRecord> ExecuteRecords(this IUnitOfWork unitOfWork, CommandType commandType, string commandText, IEnumerable<DbParameter> commandParameters, Action<int> rowsAffectedCallback)
 		{
-			IEnumerable<__IRecord> records;
+			IEnumerable<IRecord> records;
 
 			if ((object)unitOfWork == null)
 				throw new ArgumentNullException(nameof(unitOfWork));
@@ -97,9 +96,9 @@ namespace SyncPrem.StreamingIO.AdoNet.UoW
 		/// <param name="commandText"> The SQL text or stored procedure name. </param>
 		/// <param name="commandParameters"> The parameters to use during the operation. </param>
 		/// <returns> An enumerable of result instances, each containing an enumerable of records with (key/value pairs of data). </returns>
-		public static IEnumerable<IAdoNetResult> ExecuteResults(this IUnitOfWork unitOfWork, CommandType commandType, string commandText, IEnumerable<DbParameter> commandParameters)
+		public static IEnumerable<IResult> ExecuteResults(this IUnitOfWork unitOfWork, CommandType commandType, string commandText, IEnumerable<DbParameter> commandParameters)
 		{
-			IEnumerable<IAdoNetResult> results;
+			IEnumerable<IResult> results;
 
 			if ((object)unitOfWork == null)
 				throw new ArgumentNullException(nameof(unitOfWork));
@@ -112,8 +111,8 @@ namespace SyncPrem.StreamingIO.AdoNet.UoW
 
 		public static TValue ExecuteScalar<TValue>(this IUnitOfWork unitOfWork, CommandType commandType, string commandText, IEnumerable<DbParameter> commandParameters)
 		{
-			IEnumerable<__IRecord> records;
-			__IRecord record;
+			IEnumerable<IRecord> records;
+			IRecord record;
 
 			object dbValue;
 
@@ -141,9 +140,9 @@ namespace SyncPrem.StreamingIO.AdoNet.UoW
 			return dbValue.ChangeType<TValue>();
 		}
 
-		public static IEnumerable<__IRecord> ExecuteSchemaRecords(this IUnitOfWork unitOfWork, CommandType commandType, string commandText, IEnumerable<DbParameter> commandParameters, Action<int> rowsAffectedCallback)
+		public static IEnumerable<IRecord> ExecuteSchemaRecords(this IUnitOfWork unitOfWork, CommandType commandType, string commandText, IEnumerable<DbParameter> commandParameters, Action<int> rowsAffectedCallback)
 		{
-			IEnumerable<__IRecord> records;
+			IEnumerable<IRecord> records;
 
 			if ((object)unitOfWork == null)
 				throw new ArgumentNullException(nameof(unitOfWork));
@@ -163,9 +162,9 @@ namespace SyncPrem.StreamingIO.AdoNet.UoW
 		/// <param name="commandText"> The SQL text or stored procedure name. </param>
 		/// <param name="commandParameters"> The parameters to use during the operation. </param>
 		/// <returns> An enumerable of result instances, each containing an enumerable of records with (key/value pairs of schema metadata). </returns>
-		public static IEnumerable<IAdoNetResult> ExecuteSchemaResults(this IUnitOfWork unitOfWork, CommandType commandType, string commandText, IEnumerable<DbParameter> commandParameters)
+		public static IEnumerable<IResult> ExecuteSchemaResults(this IUnitOfWork unitOfWork, CommandType commandType, string commandText, IEnumerable<DbParameter> commandParameters)
 		{
-			IEnumerable<IAdoNetResult> results;
+			IEnumerable<IResult> results;
 
 			if ((object)unitOfWork == null)
 				throw new ArgumentNullException(nameof(unitOfWork));

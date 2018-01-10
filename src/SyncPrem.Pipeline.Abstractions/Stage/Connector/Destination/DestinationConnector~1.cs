@@ -5,8 +5,8 @@
 
 using System;
 
+using SyncPrem.Pipeline.Abstractions.Channel;
 using SyncPrem.Pipeline.Abstractions.Configuration;
-using SyncPrem.Pipeline.Abstractions.Payload;
 using SyncPrem.Pipeline.Abstractions.Runtime;
 
 namespace SyncPrem.Pipeline.Abstractions.Stage.Connector.Destination
@@ -24,7 +24,7 @@ namespace SyncPrem.Pipeline.Abstractions.Stage.Connector.Destination
 
 		#region Methods/Operators
 
-		public void Consume(IContext context, RecordConfiguration recordConfiguration, IPipelineMessage pipelineMessage)
+		public void Consume(IContext context, RecordConfiguration recordConfiguration, IChannel channel)
 		{
 			if ((object)context == null)
 				throw new ArgumentNullException(nameof(context));
@@ -32,13 +32,13 @@ namespace SyncPrem.Pipeline.Abstractions.Stage.Connector.Destination
 			if ((object)recordConfiguration == null)
 				throw new ArgumentNullException(nameof(recordConfiguration));
 
-			if ((object)pipelineMessage == null)
-				throw new ArgumentNullException(nameof(pipelineMessage));
+			if ((object)channel == null)
+				throw new ArgumentNullException(nameof(channel));
 
-			this.ConsumeRecord(context, recordConfiguration, pipelineMessage);
+			this.ConsumeRecord(context, recordConfiguration, channel);
 		}
 
-		protected abstract void ConsumeRecord(IContext context, RecordConfiguration recordConfiguration, IPipelineMessage pipelineMessage);
+		protected abstract void ConsumeRecord(IContext context, RecordConfiguration recordConfiguration, IChannel channel);
 
 		#endregion
 	}

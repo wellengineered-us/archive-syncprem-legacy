@@ -6,16 +6,15 @@
 using System;
 using System.Collections.Generic;
 
-using __IRecord = System.Collections.Generic.IDictionary<string, object>;
-using __Record = System.Collections.Generic.Dictionary<string, object>;
+using SyncPrem.StreamingIO.Primitives;
 
 namespace SyncPrem.StreamingIO.AdoNet
 {
-	public sealed class AdoNetResult : IAdoNetResult
+	public sealed class Result : IResult
 	{
 		#region Constructors/Destructors
 
-		public AdoNetResult(long resultIndex)
+		public Result(long resultIndex)
 		{
 			this.resultIndex = resultIndex;
 		}
@@ -25,7 +24,7 @@ namespace SyncPrem.StreamingIO.AdoNet
 		#region Fields/Constants
 
 		private readonly long resultIndex;
-		private IEnumerable<__IRecord> records;
+		private IEnumerable<IRecord> records;
 		private int recordsAffected;
 
 		#endregion
@@ -40,7 +39,7 @@ namespace SyncPrem.StreamingIO.AdoNet
 			}
 		}
 
-		public IEnumerable<__IRecord> Records
+		public IEnumerable<IRecord> Records
 		{
 			get
 			{
@@ -62,20 +61,6 @@ namespace SyncPrem.StreamingIO.AdoNet
 			{
 				this.recordsAffected = value;
 			}
-		}
-
-		#endregion
-
-		#region Methods/Operators
-
-		public IAdoNetResult ApplyWrap(Func<IEnumerable<__IRecord>, IEnumerable<__IRecord>> wrapperCallback)
-		{
-			if ((object)wrapperCallback == null)
-				throw new ArgumentNullException(nameof(wrapperCallback));
-
-			this.Records = wrapperCallback(this.Records);
-
-			return this; // fluent API
 		}
 
 		#endregion

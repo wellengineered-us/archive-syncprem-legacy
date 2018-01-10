@@ -14,12 +14,7 @@ using SyncPrem.Pipeline.Abstractions.Runtime;
 using SyncPrem.Pipeline.Core.Configurations.AdoNet;
 using SyncPrem.StreamingIO.AdoNet;
 using SyncPrem.StreamingIO.AdoNet.UoW;
-
-using IField = SyncPrem.StreamingIO.Primitives.IField;
-using Field = SyncPrem.StreamingIO.Primitives.Field;
-
-using __IRecord = System.Collections.Generic.IDictionary<string, object>;
-using __Record = System.Collections.Generic.Dictionary<string, object>;
+using SyncPrem.StreamingIO.ProxyWrappers;
 
 using TextMetal.Middleware.Solder.Extensions;
 
@@ -39,7 +34,7 @@ namespace SyncPrem.Pipeline.Core.Connectors.AdoNet
 
 		protected override void ConsumeMessageReader(IContext context, RecordConfiguration recordConfiguration, DbDataReader sourceDataReader, out long rowsCopied)
 		{
-			IEnumerable<IAdoNetResult> results;
+			IEnumerable<IResult> results;
 			IEnumerable<DbParameter> dbParameters;
 			long _rowsCopied = 0;
 
@@ -83,7 +78,7 @@ namespace SyncPrem.Pipeline.Core.Connectors.AdoNet
 
 					results = this.DestinationUnitOfWork.ExecuteResults(fsConfig.ExecuteCommand.CommandType ?? CommandType.Text, fsConfig.ExecuteCommand.CommandText, dbParameters);
 
-					results.ToArray(); // force execution
+					results.ForceEnumeration(); // force execution
 
 					_rowsCopied++;
 				}

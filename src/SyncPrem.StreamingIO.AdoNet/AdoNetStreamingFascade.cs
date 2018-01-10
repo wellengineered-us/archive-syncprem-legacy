@@ -11,91 +11,14 @@ using System.Data.Common;
 using System.Linq;
 using System.Reflection;
 
+using SyncPrem.StreamingIO.Primitives;
 using SyncPrem.StreamingIO.ProxyWrappers;
 
 using TextMetal.Middleware.Solder.Extensions;
 using TextMetal.Middleware.Solder.Primitives;
 
-using __IRecord = System.Collections.Generic.IDictionary<string, object>;
-using __Record = System.Collections.Generic.Dictionary<string, object>;
-
 namespace SyncPrem.StreamingIO.AdoNet
 {
-	public interface IStruct
-	{
-		IReadOnlyList<object> Values
-		{
-			get;
-		}
-
-		IReadOnlyList<string> Fields
-		{
-			get;
-		}
-
-	}
-
-	public interface IStructFactory<TStruct>
-		where TStruct : IStruct
-	{
-		#region Methods/Operators
-
-		TStruct CreateStruct(long fieldCount, string[] fieldNames, object[] fieldValues);
-
-		#endregion
-	}
-
-	public class MapStructFactory : IStructFactory<__IRecord>
-	{
-		#region Methods/Operators
-
-		public __IRecord CreateStruct(long fieldCount, string[] fieldNames, object[] fieldValues)
-		{
-			Dictionary<string, object> tuple;
-
-			tuple = new Dictionary<string, object>(StringComparer.OrdinalIgnoreCase);
-
-			for (long fieldIndex = 0; fieldIndex < fieldCount; fieldIndex++)
-			{
-				tuple.Add(fieldNames[fieldIndex], fieldValues[fieldIndex]);
-			}
-
-			return tuple;
-		}
-
-		#endregion
-	}
-
-	public class __AdoNetStreamingFascade<TRecord>
-	{
-		#region Constructors/Destructors
-
-		public __AdoNetStreamingFascade(IStructFactory<TRecord> structFactory)
-		{
-			if ((object)this.StructFactory == null)
-				throw new ArgumentNullException(nameof(structFactory));
-
-			this.structFactory = structFactory;
-		}
-
-		private readonly IStructFactory<TRecord> structFactory;
-
-		public IStructFactory<TRecord> StructFactory
-		{
-			get
-			{
-				return this.structFactory;
-			}
-		}
-
-		public IEnumerable<TRecord> Test()
-		{
-			yield return this.StructFactory.CreateStruct(0, null, null);
-		}
-
-		#endregion
-	}
-
 	public class AdoNetStreamingFascade : IAdoNetStreamingFascade
 	{
 		#region Constructors/Destructors
@@ -105,24 +28,6 @@ namespace SyncPrem.StreamingIO.AdoNet
 		/// </summary>
 		internal AdoNetStreamingFascade()
 		{
-		}
-
-		#endregion
-
-		#region Fields/Constants
-
-		private const string PROPERTY_RECORD_INDEX = "$RecordIndex";
-
-		#endregion
-
-		#region Properties/Indexers/Events
-
-		public static string PropertyRecordIndex
-		{
-			get
-			{
-				return PROPERTY_RECORD_INDEX;
-			}
 		}
 
 		#endregion
@@ -249,9 +154,9 @@ namespace SyncPrem.StreamingIO.AdoNet
 		/// <param name="commandParameters"> The parameters to use during the operation. </param>
 		/// <param name="rowsAffectedCallback"> Executed when the output count of records affected is available to return (post enumeration). </param>
 		/// <returns> An enumerable of result instances, each containing an enumerable of dictionaries with record key/value pairs of schema metadata. </returns>
-		public IEnumerable<__IRecord> ExecuteRecords(DbConnection dbConnection, DbTransaction dbTransaction, CommandType commandType, string commandText, IEnumerable<DbParameter> commandParameters, Action<int> rowsAffectedCallback)
+		public IEnumerable<IRecord> ExecuteRecords(DbConnection dbConnection, DbTransaction dbTransaction, CommandType commandType, string commandText, IEnumerable<DbParameter> commandParameters, Action<int> rowsAffectedCallback)
 		{
-			IEnumerable<__IRecord> records;
+			IEnumerable<IRecord> records;
 			DbDataReader dbDataReader;
 
 			// force no preparation
@@ -275,7 +180,7 @@ namespace SyncPrem.StreamingIO.AdoNet
 
 				this.__trace(_, "before yield loop");
 
-				foreach (__IRecord record in records)
+				foreach (IRecord record in records)
 				{
 					this.__trace(_, "on yield item");
 
@@ -301,9 +206,9 @@ namespace SyncPrem.StreamingIO.AdoNet
 		/// <param name="commandText"> The SQL text or stored procedure name. </param>
 		/// <param name="commandParameters"> The parameters to use during the operation. </param>
 		/// <returns> An enumerable of result instances, each containing an enumerable of dictionaries with record key/value pairs of data. </returns>
-		public IEnumerable<IAdoNetResult> ExecuteResults(DbConnection dbConnection, DbTransaction dbTransaction, CommandType commandType, string commandText, IEnumerable<DbParameter> commandParameters)
+		public IEnumerable<IResult> ExecuteResults(DbConnection dbConnection, DbTransaction dbTransaction, CommandType commandType, string commandText, IEnumerable<DbParameter> commandParameters)
 		{
-			IEnumerable<IAdoNetResult> results;
+			IEnumerable<IResult> results;
 			DbDataReader dbDataReader;
 
 			// force no preparation
@@ -327,7 +232,7 @@ namespace SyncPrem.StreamingIO.AdoNet
 
 				this.__trace(_, "before yield loop");
 
-				foreach (IAdoNetResult result in results)
+				foreach (IResult result in results)
 				{
 					this.__trace(_, "on yield item");
 
@@ -354,9 +259,9 @@ namespace SyncPrem.StreamingIO.AdoNet
 		/// <param name="commandParameters"> The parameters to use during the operation. </param>
 		/// <param name="recordsAffectedCallback"> Executed when the output count of records affected is available to return (post enumeration). </param>
 		/// <returns> An enumerable of result instances, each containing an enumerable of dictionaries with record key/value pairs of schema metadata. </returns>
-		public IEnumerable<__IRecord> ExecuteSchemaRecords(DbConnection dbConnection, DbTransaction dbTransaction, CommandType commandType, string commandText, IEnumerable<DbParameter> commandParameters, Action<int> recordsAffectedCallback)
+		public IEnumerable<IRecord> ExecuteSchemaRecords(DbConnection dbConnection, DbTransaction dbTransaction, CommandType commandType, string commandText, IEnumerable<DbParameter> commandParameters, Action<int> recordsAffectedCallback)
 		{
-			IEnumerable<__IRecord> records;
+			IEnumerable<IRecord> records;
 			DbDataReader dbDataReader;
 
 			// force no preparation
@@ -380,7 +285,7 @@ namespace SyncPrem.StreamingIO.AdoNet
 
 				this.__trace(_, "before yield loop");
 
-				foreach (__IRecord record in records)
+				foreach (IRecord record in records)
 				{
 					this.__trace(_, "on yield item");
 
@@ -406,9 +311,9 @@ namespace SyncPrem.StreamingIO.AdoNet
 		/// <param name="commandText"> The SQL text or stored procedure name. </param>
 		/// <param name="commandParameters"> The parameters to use during the operation. </param>
 		/// <returns> An enumerable of result instances, each containing an enumerable of dictionaries with record key/value pairs of schema metadata. </returns>
-		public IEnumerable<IAdoNetResult> ExecuteSchemaResults(DbConnection dbConnection, DbTransaction dbTransaction, CommandType commandType, string commandText, IEnumerable<DbParameter> commandParameters)
+		public IEnumerable<IResult> ExecuteSchemaResults(DbConnection dbConnection, DbTransaction dbTransaction, CommandType commandType, string commandText, IEnumerable<DbParameter> commandParameters)
 		{
-			IEnumerable<IAdoNetResult> results;
+			IEnumerable<IResult> results;
 			DbDataReader dbDataReader;
 
 			// force no preparation
@@ -432,7 +337,7 @@ namespace SyncPrem.StreamingIO.AdoNet
 
 				this.__trace(_, "before yield loop");
 
-				foreach (IAdoNetResult result in results)
+				foreach (IResult result in results)
 				{
 					this.__trace(_, "on yield item");
 
@@ -455,9 +360,9 @@ namespace SyncPrem.StreamingIO.AdoNet
 		/// <param name="dbDataReader"> The target data reader. </param>
 		/// <param name="recordsAffectedCallback"> Executed when the output count of records affected is available to return (post enumeration). </param>
 		/// <returns> An enumerable of record dictionary instances, containing key/value pairs of data. </returns>
-		public IEnumerable<__IRecord> GetRecordsFromReader(DbDataReader dbDataReader, Action<int> recordsAffectedCallback)
+		public IEnumerable<IRecord> GetRecordsFromReader(DbDataReader dbDataReader, Action<int> recordsAffectedCallback)
 		{
-			__IRecord record;
+			IRecord record;
 			int recordsAffected;
 			long recordIndex = 0;
 			string key;
@@ -474,8 +379,7 @@ namespace SyncPrem.StreamingIO.AdoNet
 
 				while (dbDataReader.Read())
 				{
-					record = new __Record(StringComparer.OrdinalIgnoreCase);
-					record.Add(PropertyRecordIndex, recordIndex);
+					record = new Record() { RecordIndex = recordIndex };
 
 					for (int fieldIndex = 0; fieldIndex < dbDataReader.FieldCount; fieldIndex++)
 					{
@@ -515,7 +419,7 @@ namespace SyncPrem.StreamingIO.AdoNet
 		/// </summary>
 		/// <param name="dbDataReader"> The target data reader. </param>
 		/// <returns> An enumerable of result instances, each containing an enumerable of dictionaries with record key/value pairs of data. </returns>
-		public IEnumerable<IAdoNetResult> GetResultsFromReader(DbDataReader dbDataReader)
+		public IEnumerable<IResult> GetResultsFromReader(DbDataReader dbDataReader)
 		{
 			long resultIndex = 0;
 
@@ -530,13 +434,13 @@ namespace SyncPrem.StreamingIO.AdoNet
 
 				do
 				{
-					IEnumerable<__IRecord> records;
-					AdoNetResult result;
+					IEnumerable<IRecord> records;
+					Result result;
 
-					result = new AdoNetResult(resultIndex);
+					result = new Result(resultIndex);
 					records = this.GetSchemaRecordsFromReader(dbDataReader, (ra) =>
 																			{
-																				AdoNetResult _result = result; // prevent modified closure
+																				Result _result = result; // prevent modified closure
 																				_result.RecordsAffected = ra;
 																			});
 					result.Records = records;
@@ -564,13 +468,13 @@ namespace SyncPrem.StreamingIO.AdoNet
 		/// <param name="dbDataReader"> The target data reader. </param>
 		/// <param name="recordsAffectedCallback"> Executed when the output count of records affected is available to return (post enumeration). </param>
 		/// <returns> An enumerable of record dictionary instances, containing key/value pairs of schema metadata. </returns>
-		public IEnumerable<__IRecord> GetSchemaRecordsFromReader(DbDataReader dbDataReader, Action<int> recordsAffectedCallback)
+		public IEnumerable<IRecord> GetSchemaRecordsFromReader(DbDataReader dbDataReader, Action<int> recordsAffectedCallback)
 		{
 			ReadOnlyCollection<DbColumn> dbColumns;
 			DbColumn dbColumn;
 			PropertyInfo[] propertyInfos;
 			PropertyInfo propertyInfo;
-			__Record record;
+			IRecord record;
 			int recordsAffected;
 			string key;
 			object value;
@@ -597,8 +501,7 @@ namespace SyncPrem.StreamingIO.AdoNet
 
 						propertyInfos = dbColumn.GetType().GetProperties(BindingFlags.Public | BindingFlags.Instance | BindingFlags.GetProperty);
 
-						record = new __Record(StringComparer.OrdinalIgnoreCase);
-						record.Add(PropertyRecordIndex, recordIndex);
+						record = new Record() { RecordIndex = recordIndex };
 
 						if ((object)propertyInfos != null)
 						{
@@ -643,7 +546,7 @@ namespace SyncPrem.StreamingIO.AdoNet
 		/// </summary>
 		/// <param name="dbDataReader"> The target data reader. </param>
 		/// <returns> An enumerable of result instances, each containing an enumerable of dictionaries with record key/value pairs of schema metadata. </returns>
-		public IEnumerable<IAdoNetResult> GetSchemaResultsFromReader(DbDataReader dbDataReader)
+		public IEnumerable<IResult> GetSchemaResultsFromReader(DbDataReader dbDataReader)
 		{
 			long resultIndex = 0;
 
@@ -658,13 +561,13 @@ namespace SyncPrem.StreamingIO.AdoNet
 
 				do
 				{
-					IEnumerable<__IRecord> records;
-					AdoNetResult result;
+					IEnumerable<IRecord> records;
+					Result result;
 
-					result = new AdoNetResult(resultIndex);
+					result = new Result(resultIndex);
 					records = this.GetSchemaRecordsFromReader(dbDataReader, (ra) =>
 																			{
-																				AdoNetResult _result = result; // prevent modified closure
+																				Result _result = result; // prevent modified closure
 																				_result.RecordsAffected = ra;
 																			});
 					result.Records = records;

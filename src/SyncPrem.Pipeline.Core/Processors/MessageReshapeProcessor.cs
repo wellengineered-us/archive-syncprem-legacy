@@ -6,13 +6,11 @@
 using System;
 using System.Collections.Generic;
 
+using SyncPrem.Pipeline.Abstractions.Channel;
 using SyncPrem.Pipeline.Abstractions.Configuration;
-using SyncPrem.Pipeline.Abstractions.Payload;
 using SyncPrem.Pipeline.Abstractions.Runtime;
 using SyncPrem.Pipeline.Abstractions.Stage.Processor;
-using SyncPrem.StreamingIO.DataMasking;
 using SyncPrem.StreamingIO.Primitives;
-using SyncPrem.StreamingIO.ProxyWrappers;
 
 using TextMetal.Middleware.Solder.Extensions;
 
@@ -60,7 +58,7 @@ namespace SyncPrem.Pipeline.Core.Processors
 				throw new ArgumentNullException(nameof(recordConfiguration));
 		}
 
-		protected override IPipelineMessage ProcessRecord(IContext context, RecordConfiguration recordConfiguration, IPipelineMessage pipelineMessage, ProcessDelegate next)
+		protected override IChannel ProcessRecord(IContext context, RecordConfiguration recordConfiguration, IChannel channel, ProcessDelegate next)
 		{
 			if ((object)context == null)
 				throw new ArgumentNullException(nameof(context));
@@ -68,15 +66,15 @@ namespace SyncPrem.Pipeline.Core.Processors
 			if ((object)recordConfiguration == null)
 				throw new ArgumentNullException(nameof(recordConfiguration));
 
-			if ((object)pipelineMessage == null)
-				throw new ArgumentNullException(nameof(pipelineMessage));
+			if ((object)channel == null)
+				throw new ArgumentNullException(nameof(channel));
 
-			Func<IEnumerable<IRecord>, IEnumerable<IRecord>> reshapeRecords = (r) => this.ReshapeRecords(context, r);
+			//Func<IEnumerable<IMessage>, IEnumerable<IMessage>> reshapeRecords = (r) => this.ReshapeRecords(context, r);
 
 			// simply wrap
-			pipelineMessage.ApplyWrap(reshapeRecords);
+			//channel.ApplyWrap(reshapeRecords);
 
-			return next(context, recordConfiguration, pipelineMessage);
+			return next(context, recordConfiguration, channel);
 		}
 
 		private IEnumerable<IRecord> ReshapeRecords(IContext context, IEnumerable<IRecord> records)
@@ -89,9 +87,9 @@ namespace SyncPrem.Pipeline.Core.Processors
 			if ((object)records == null)
 				throw new ArgumentNullException(nameof(records));
 
-			foreach (IField x in context.MetadataChain.Peek().UpstreamFields)
-			{
-			}
+			//foreach (IField x in context.MetadataChain.Peek().UpstreamFields)
+			//{
+			//}
 
 			recordIndex = 0;
 			foreach (IRecord record in records)

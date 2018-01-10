@@ -12,11 +12,22 @@ namespace SyncPrem.StreamingIO.ProxyWrappers
 	{
 		#region Fields/Constants
 
-		private const int PROCESSING_CALLBACK_WINDOW_SIZE = 5;
+		private const int PROCESSING_CALLBACK_WINDOW_SIZE = 1000;
 
 		#endregion
 
 		#region Methods/Operators
+
+		public static void ForceEnumeration<T>(this IEnumerable<T> enumerable)
+		{
+			if ((object)enumerable == null)
+				throw new ArgumentNullException(nameof(enumerable));
+
+			foreach (T item in enumerable)
+			{
+				// do nothing
+			}
+		}
 
 		public static IEnumerable<T> GetMetricsWrappedEnumerable<T>(this IEnumerable<T> enumerable, string source, Func<T, T> itemCallback, Action<string, ulong, bool, double> processingCallback)
 		{
@@ -35,7 +46,7 @@ namespace SyncPrem.StreamingIO.ProxyWrappers
 				if ((itemCount % PROCESSING_CALLBACK_WINDOW_SIZE) == 0)
 				{
 					if ((object)processingCallback != null)
-						; //processingCallback(source, itemCount, false, (DateTime.UtcNow - startUtc).TotalSeconds);
+						processingCallback(source, itemCount, false, (DateTime.UtcNow - startUtc).TotalSeconds);
 				}
 
 				if ((object)itemCallback != null)

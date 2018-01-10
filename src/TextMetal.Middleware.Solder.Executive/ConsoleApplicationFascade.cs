@@ -38,6 +38,11 @@ namespace TextMetal.Middleware.Solder.Executive
 				return program.EntryPoint(args);
 		}
 
+		protected override bool OnCancelKeySignal(ConsoleSpecialKey consoleSpecialKey)
+		{
+			return false;
+		}
+
 		protected sealed override void DisplayArgumentErrorMessage(IEnumerable<Message> argumentMessages)
 		{
 			ConsoleColor oldConsoleColor = Console.ForegroundColor;

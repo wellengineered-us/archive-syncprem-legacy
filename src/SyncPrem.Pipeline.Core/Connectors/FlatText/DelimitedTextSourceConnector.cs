@@ -7,8 +7,9 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 
+using SyncPrem.Pipeline.Abstractions;
+using SyncPrem.Pipeline.Abstractions.Channel;
 using SyncPrem.Pipeline.Abstractions.Configuration;
-using SyncPrem.Pipeline.Abstractions.Payload;
 using SyncPrem.Pipeline.Abstractions.Runtime;
 using SyncPrem.Pipeline.Abstractions.Stage.Connector.Source;
 using SyncPrem.Pipeline.Core.Configurations.FlatText;
@@ -65,13 +66,13 @@ namespace SyncPrem.Pipeline.Core.Connectors.FlatText
 			base.Dispose(disposing);
 		}
 
-		protected override void PostExecuteRecord(IContext context, RecordConfiguration recordConfiguration)
+		protected override void PostExecuteRecord(IContext context, RecordConfiguration configuration)
 		{
 			if ((object)context == null)
 				throw new ArgumentNullException(nameof(context));
 
-			if ((object)recordConfiguration == null)
-				throw new ArgumentNullException(nameof(recordConfiguration));
+			if ((object)configuration == null)
+				throw new ArgumentNullException(nameof(configuration));
 
 			if ((object)this.StageConfiguration == null)
 				throw new InvalidOperationException(nameof(this.StageConfiguration));
@@ -87,16 +88,17 @@ namespace SyncPrem.Pipeline.Core.Connectors.FlatText
 			this.DelimitedTextReader = null;
 		}
 
-		protected override void PreExecuteRecord(IContext context, RecordConfiguration recordConfiguration)
+		protected override void PreExecuteRecord(IContext context, RecordConfiguration configuration)
 		{
+			SchemaBuilder schemaBuilder;
+			ISchema schema;
 			IEnumerable<IField> fields;
-			IPipelineMetadata pipelineMetadata;
 
 			if ((object)context == null)
 				throw new ArgumentNullException(nameof(context));
 
-			if ((object)recordConfiguration == null)
-				throw new ArgumentNullException(nameof(recordConfiguration));
+			if ((object)configuration == null)
+				throw new ArgumentNullException(nameof(configuration));
 
 			if ((object)this.StageConfiguration == null)
 				throw new InvalidOperationException(nameof(this.StageConfiguration));
@@ -112,27 +114,39 @@ namespace SyncPrem.Pipeline.Core.Connectors.FlatText
 			if (SolderFascadeAccessor.DataTypeFascade.IsNullOrWhiteSpace(fsConfig.DelimitedTextFilePath))
 				throw new InvalidOperationException(string.Format("Configuration missing: '{0}'.", nameof(fsConfig.DelimitedTextFilePath)));
 
+			schemaBuilder = new SchemaBuilder();
+
 			this.DelimitedTextReader = new DelimitedTextReader(new StreamReader(File.Open(fsConfig.DelimitedTextFilePath, FileMode.Open, FileAccess.Read, FileShare.None)), fsConfig.DelimitedTextSpecConfiguration);
 
 			fields = this.DelimitedTextReader.ReadHeaderFields();
 
 			if ((object)fields == null)
-				throw new InvalidOperationException(string.Format("Fields were invalid."));
+				throw new SyncPremException(nameof(fields));
 
-			pipelineMetadata = context.CreateMetadata(fields);
-			context.MetadataChain.Push(pipelineMetadata);
+			schemaBuilder.AddFields(fields);
+
+			schema = schemaBuilder.Build();
+
+			if (!context.LocalState.TryGetValue(this, out IDictionary<string, object> localState))
+			{
+				localState = new Dictionary<string, object>(StringComparer.OrdinalIgnoreCase);
+				context.LocalState.Add(this, localState);
+			}
+
+			localState.Add(Constants.ContextComponentScopedSchema, schema);
 		}
 
-		protected override IPipelineMessage ProduceRecord(IContext context, RecordConfiguration recordConfiguration)
+		protected override IChannel ProduceRecord(IContext context, RecordConfiguration configuration)
 		{
-			IPipelineMessage pipelineMessage;
-			IEnumerable<IRecord> sourceDataEnumerable;
+			IChannel channel;
+			ISchema schema;
+			IEnumerable<IRecord> records;
 
 			if ((object)context == null)
 				throw new ArgumentNullException(nameof(context));
 
-			if ((object)recordConfiguration == null)
-				throw new ArgumentNullException(nameof(recordConfiguration));
+			if ((object)configuration == null)
+				throw new ArgumentNullException(nameof(configuration));
 
 			if ((object)this.StageConfiguration == null)
 				throw new InvalidOperationException(nameof(this.StageConfiguration));
@@ -142,14 +156,25 @@ namespace SyncPrem.Pipeline.Core.Connectors.FlatText
 
 			DelimitedTextConnectorSpecificConfiguration fsConfig = this.StageConfiguration.StageSpecificConfiguration;
 
-			sourceDataEnumerable = this.DelimitedTextReader.ReadRecords();
+			if (!context.LocalState.TryGetValue(this, out IDictionary<string, object> localState))
+			{
+				localState = new Dictionary<string, object>(StringComparer.OrdinalIgnoreCase);
+				context.LocalState.Add(this, localState);
+			}
 
-			if ((object)sourceDataEnumerable == null)
-				throw new InvalidOperationException(string.Format("Records were invalid."));
+			schema = localState[Constants.ContextComponentScopedSchema] as ISchema;
 
-			pipelineMessage = context.CreateMessage(sourceDataEnumerable);
+			if ((object)schema == null)
+				throw new SyncPremException(nameof(schema));
 
-			return pipelineMessage;
+			records = this.DelimitedTextReader.ReadRecords();
+
+			if ((object)records == null)
+				throw new SyncPremException(nameof(records));
+
+			channel = context.CreateChannel(schema, records);
+
+			return channel;
 		}
 
 		#endregion

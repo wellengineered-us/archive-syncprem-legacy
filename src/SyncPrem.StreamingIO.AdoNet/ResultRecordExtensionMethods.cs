@@ -8,8 +8,7 @@ using System.Collections.Generic;
 using System.Data;
 using System.Data.Common;
 
-using __IRecord = System.Collections.Generic.IDictionary<string, object>;
-using __Record = System.Collections.Generic.Dictionary<string, object>;
+using SyncPrem.StreamingIO.Primitives;
 
 namespace SyncPrem.StreamingIO.AdoNet
 {
@@ -17,14 +16,14 @@ namespace SyncPrem.StreamingIO.AdoNet
 	{
 		#region Methods/Operators
 
-		public static __IRecord ToRecord(this IEnumerable<DbParameter> dbParameters)
+		public static IRecord ToRecord(this IEnumerable<DbParameter> dbParameters)
 		{
-			__IRecord record;
+			IRecord record;
 
 			if ((object)dbParameters == null)
 				throw new ArgumentNullException(nameof(dbParameters));
 
-			record = new __Record(StringComparer.OrdinalIgnoreCase);
+			record = new Record();
 
 			foreach (DbParameter dbParameter in dbParameters)
 			{
@@ -39,16 +38,16 @@ namespace SyncPrem.StreamingIO.AdoNet
 			return record;
 		}
 
-		public static IEnumerable<IAdoNetResult> ToResults(this IEnumerable<__IRecord> records)
+		public static IEnumerable<IResult> ToResults(this IEnumerable<IRecord> records)
 		{
-			IEnumerable<IAdoNetResult> results;
+			IEnumerable<IResult> results;
 
 			if ((object)records == null)
 				throw new ArgumentNullException(nameof(records));
 
-			results = new IAdoNetResult[]
+			results = new IResult[]
 					{
-						new AdoNetResult(0) { Records = records, RecordsAffected = -1 }
+						new Result(0) { Records = records, RecordsAffected = -1 }
 					};
 
 			return results;

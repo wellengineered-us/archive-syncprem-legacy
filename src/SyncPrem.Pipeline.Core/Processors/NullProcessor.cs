@@ -5,8 +5,8 @@
 
 using System;
 
+using SyncPrem.Pipeline.Abstractions.Channel;
 using SyncPrem.Pipeline.Abstractions.Configuration;
-using SyncPrem.Pipeline.Abstractions.Payload;
 using SyncPrem.Pipeline.Abstractions.Runtime;
 using SyncPrem.Pipeline.Abstractions.Stage.Processor;
 
@@ -34,24 +34,24 @@ namespace SyncPrem.Pipeline.Core.Processors
 			return retval;
 		}
 
-		private static IPipelineMessage NullProcessorMethod(IContext ctx, RecordConfiguration cfg, IPipelineMessage msg, ProcessDelegate next)
+		private static IChannel NullProcessorMethod(IContext context, RecordConfiguration configuration, IChannel channel, ProcessDelegate next)
 		{
-			if ((object)ctx == null)
-				throw new ArgumentNullException(nameof(ctx));
+			if ((object)context == null)
+				throw new ArgumentNullException(nameof(context));
 
-			if ((object)cfg == null)
-				throw new ArgumentNullException(nameof(cfg));
+			if ((object)configuration == null)
+				throw new ArgumentNullException(nameof(configuration));
 
-			if ((object)msg == null)
-				throw new ArgumentNullException(nameof(msg));
+			if ((object)channel == null)
+				throw new ArgumentNullException(nameof(channel));
 
 			Console.WriteLine("NullProcessorMethod (before next) processor: '{0}'", nameof(NullProcessor));
 
-			msg = next(ctx, cfg, msg);
+			channel = next(context, configuration, channel);
 
 			Console.WriteLine("NullProcessorMethod (after next) processor: '{0}'", nameof(NullProcessor));
 
-			return msg;
+			return channel;
 		}
 
 		protected override void Create(bool creating)
@@ -90,7 +90,7 @@ namespace SyncPrem.Pipeline.Core.Processors
 			Console.WriteLine("PreExecuteRecord processor: '{0}'", nameof(NullProcessor));
 		}
 
-		protected override IPipelineMessage ProcessRecord(IContext context, RecordConfiguration recordConfiguration, IPipelineMessage pipelineMessage, ProcessDelegate next)
+		protected override IChannel ProcessRecord(IContext context, RecordConfiguration recordConfiguration, IChannel channel, ProcessDelegate next)
 		{
 			if ((object)context == null)
 				throw new ArgumentNullException(nameof(context));
@@ -98,16 +98,16 @@ namespace SyncPrem.Pipeline.Core.Processors
 			if ((object)recordConfiguration == null)
 				throw new ArgumentNullException(nameof(recordConfiguration));
 
-			if ((object)pipelineMessage == null)
-				throw new ArgumentNullException(nameof(pipelineMessage));
+			if ((object)channel == null)
+				throw new ArgumentNullException(nameof(channel));
 
 			Console.WriteLine("ProcessRecord (before next) processor: '{0}'", nameof(NullProcessor));
 
-			pipelineMessage = next(context, recordConfiguration, pipelineMessage);
+			channel = next(context, recordConfiguration, channel);
 
 			Console.WriteLine("ProcessRecord (after next) processor: '{0}'", nameof(NullProcessor));
 
-			return pipelineMessage;
+			return channel;
 		}
 
 		#endregion

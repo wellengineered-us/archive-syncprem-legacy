@@ -7,28 +7,35 @@ using System;
 using System.Collections.Generic;
 
 using SyncPrem.Pipeline.Abstractions;
-using SyncPrem.Pipeline.Abstractions.Payload;
+using SyncPrem.Pipeline.Abstractions.Channel;
 using SyncPrem.StreamingIO.Primitives;
 
-namespace SyncPrem.Pipeline.Core.Payloads
+namespace SyncPrem.Pipeline.Core.Channels
 {
-	public sealed class DefaultPipelineMessage : Component, IPipelineMessage
+	public sealed class Channel : Component, IChannel
 	{
 		#region Constructors/Destructors
 
-		public DefaultPipelineMessage(IEnumerable<IRecord> records)
+		public Channel(ISchema schema, IEnumerable<IRecord> records)
 		{
+			if ((object)schema == null)
+				throw new ArgumentNullException(nameof(schema));
+
 			if ((object)records == null)
 				throw new ArgumentNullException(nameof(records));
 
+			this.schema = schema;
 			this.records = records;
+			this.timestamp = DateTimeOffset.UtcNow;
 		}
 
 		#endregion
 
 		#region Fields/Constants
 
-		private IEnumerable<IRecord> records;
+		private readonly IEnumerable<IRecord> records;
+		private readonly ISchema schema;
+		private readonly DateTimeOffset timestamp;
 
 		#endregion
 
@@ -40,24 +47,22 @@ namespace SyncPrem.Pipeline.Core.Payloads
 			{
 				return this.records;
 			}
-			private set
+		}
+
+		public ISchema Schema
+		{
+			get
 			{
-				this.records = value;
+				return this.schema;
 			}
 		}
 
-		#endregion
-
-		#region Methods/Operators
-
-		public IPipelineMessage ApplyWrap(Func<IEnumerable<IRecord>, IEnumerable<IRecord>> wrapperCallback)
+		public DateTimeOffset Timestamp
 		{
-			if ((object)wrapperCallback == null)
-				throw new ArgumentNullException(nameof(wrapperCallback));
-
-			this.Records = wrapperCallback(this.Records);
-
-			return this; // fluent API
+			get
+			{
+				return this.timestamp;
+			}
 		}
 
 		#endregion

@@ -7,21 +7,16 @@ using System;
 using System.Collections.Generic;
 using System.Data;
 using System.Data.Common;
-using System.Linq;
 
+using SyncPrem.Pipeline.Abstractions.Channel;
 using SyncPrem.Pipeline.Abstractions.Configuration;
-using SyncPrem.Pipeline.Abstractions.Payload;
 using SyncPrem.Pipeline.Abstractions.Runtime;
 using SyncPrem.Pipeline.Abstractions.Stage.Connector.Destination;
 using SyncPrem.Pipeline.Core.Configurations.AdoNet;
 using SyncPrem.StreamingIO.AdoNet;
 using SyncPrem.StreamingIO.AdoNet.UoW;
-
-using IField = SyncPrem.StreamingIO.Primitives.IField;
-using Field = SyncPrem.StreamingIO.Primitives.Field;
-
-using __IRecord = System.Collections.Generic.IDictionary<string, object>;
-using __Record = System.Collections.Generic.Dictionary<string, object>;
+using SyncPrem.StreamingIO.Primitives;
+using SyncPrem.StreamingIO.ProxyWrappers;
 
 using TextMetal.Middleware.Solder.Extensions;
 
@@ -61,48 +56,66 @@ namespace SyncPrem.Pipeline.Core.Connectors.AdoNet
 
 		#region Methods/Operators
 
-		protected abstract void ConsumeMessageReader(IContext context, RecordConfiguration recordConfiguration, DbDataReader sourceDataReader, out long rowsCopied);
+		protected abstract void ConsumeMessageReader(IContext context, RecordConfiguration configuration, DbDataReader sourceDataReader, out long rowsCopied);
 
-		protected override void ConsumeRecord(IContext context, RecordConfiguration recordConfiguration, IPipelineMessage pipelineMessage)
+		protected override void ConsumeRecord(IContext context, RecordConfiguration configuration, IChannel channel)
 		{
-			IPipelineMetadata pipelineMetadata;
+			ISchema schema;
+			IEnumerable<IRecord> records;
+
 			DbDataReader sourceDataReader;
 			long rowsCopied;
 
 			if ((object)context == null)
 				throw new ArgumentNullException(nameof(context));
 
-			if ((object)recordConfiguration == null)
-				throw new ArgumentNullException(nameof(recordConfiguration));
+			if ((object)configuration == null)
+				throw new ArgumentNullException(nameof(configuration));
 
-			if ((object)pipelineMessage == null)
-				throw new ArgumentNullException(nameof(pipelineMessage));
+			if ((object)channel == null)
+				throw new ArgumentNullException(nameof(channel));
 
-			pipelineMetadata = context.MetadataChain.Peek();
-			sourceDataReader = new ResultRecordDataReader(pipelineMetadata.UpstreamFields, pipelineMessage.Records);
+			schema = channel.Schema;
+
+			if ((object)schema == null)
+				throw new SyncPremException(nameof(schema));
+
+			records = channel.Records;
+
+			if ((object)records == null)
+				throw new SyncPremException(nameof(records));
+
+			records.ForceEnumeration();
+
+			/*
+
+			sourceDataReader = new ResultRecordDataReader(schema.Fields.Values, records);
 
 			try
 			{
-				this.ConsumeMessageReader(context, recordConfiguration, sourceDataReader, out rowsCopied);
+				this.ConsumeMessageReader(context, configuration, sourceDataReader, out rowsCopied);
 			}
 			finally
 			{
 				// just in case ConsumeMessageReader did not or could not enumerate to completion for disposal...
+				do
+					while (sourceDataReader.Read())
+						;
 				while (sourceDataReader.NextResult())
 					;
-			}
+			}*/
 		}
 
-		protected override void PostExecuteRecord(IContext context, RecordConfiguration recordConfiguration)
+		protected override void PostExecuteRecord(IContext context, RecordConfiguration configuration)
 		{
-			IEnumerable<IAdoNetResult> results;
+			IEnumerable<IResult> results;
 			IEnumerable<DbParameter> dbParameters;
 
 			if ((object)context == null)
 				throw new ArgumentNullException(nameof(context));
 
-			if ((object)recordConfiguration == null)
-				throw new ArgumentNullException(nameof(recordConfiguration));
+			if ((object)configuration == null)
+				throw new ArgumentNullException(nameof(configuration));
 
 			if ((object)this.StageConfiguration == null)
 				throw new InvalidOperationException(nameof(this.StageConfiguration));
@@ -120,9 +133,9 @@ namespace SyncPrem.Pipeline.Core.Connectors.AdoNet
 				results = this.DestinationUnitOfWork.ExecuteSchemaResults(fsConfig.PostExecuteCommand.CommandType ?? CommandType.Text, fsConfig.PostExecuteCommand.CommandText, dbParameters);
 
 				if ((object)results == null)
-					throw new InvalidOperationException(string.Format("Results were invalid."));
+					throw new SyncPremException(nameof(results));
 
-				results.ToArray(); // force execution
+				results.ForceEnumeration(); // force execution
 			}
 
 			if ((object)this.DestinationUnitOfWork != null)
@@ -131,16 +144,16 @@ namespace SyncPrem.Pipeline.Core.Connectors.AdoNet
 			this.DestinationUnitOfWork = null;
 		}
 
-		protected override void PreExecuteRecord(IContext context, RecordConfiguration recordConfiguration)
+		protected override void PreExecuteRecord(IContext context, RecordConfiguration configuration)
 		{
-			IEnumerable<IAdoNetResult> results;
+			IEnumerable<IResult> results;
 			IEnumerable<DbParameter> dbParameters;
 
 			if ((object)context == null)
 				throw new ArgumentNullException(nameof(context));
 
-			if ((object)recordConfiguration == null)
-				throw new ArgumentNullException(nameof(recordConfiguration));
+			if ((object)configuration == null)
+				throw new ArgumentNullException(nameof(configuration));
 
 			if ((object)this.StageConfiguration == null)
 				throw new InvalidOperationException(nameof(this.StageConfiguration));
@@ -160,9 +173,9 @@ namespace SyncPrem.Pipeline.Core.Connectors.AdoNet
 				results = this.DestinationUnitOfWork.ExecuteResults(fsConfig.PreExecuteCommand.CommandType ?? CommandType.Text, fsConfig.PreExecuteCommand.CommandText, dbParameters);
 
 				if ((object)results == null)
-					throw new InvalidOperationException(string.Format("Results were invalid."));
+					throw new SyncPremException(nameof(results));
 
-				results.ToArray(); // force execution
+				results.ForceEnumeration(); // force execution
 			}
 		}
 

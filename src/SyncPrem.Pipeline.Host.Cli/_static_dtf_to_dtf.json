@@ -89,7 +89,51 @@
 				"RecordDelimiter": "\n",
 				"FieldDelimiter": ",",
 				"OpenQuoteValue": "\"",
-				"CloseQuoteValue": "\""
+				"CloseQuoteValue": "\"",
+
+				"DelimitedTextFieldConfigurations":
+				[
+					{
+						"FieldName": "institution",
+						"FieldTypeAqtn": "System.String"
+					},
+					{
+						"FieldName": "txid",
+						"FieldTypeAqtn": "System.Int32"
+					},
+					{
+						"FieldName": "number",
+						"FieldTypeAqtn": "System.String"
+					},
+					{
+						"FieldName": "date",
+						"FieldTypeAqtn": "System.DateTime"
+					},
+					{
+						"FieldName": "payee",
+						"FieldTypeAqtn": "System.String"
+					},
+					{
+						"FieldName": "amount",
+						"FieldTypeAqtn": "System.Double"
+					},
+					{
+						"FieldName": "cleared",
+						"FieldTypeAqtn": "System.Byte"
+					},
+					{
+						"FieldName": "category",
+						"FieldTypeAqtn": "System.String"
+					},
+					{
+						"FieldName": "due",
+						"FieldTypeAqtn": "System.DateTime"
+					},
+					{
+						"FieldName": "comments",
+						"FieldTypeAqtn": "System.String"
+					}
+				]
 			}
 		}
 	}

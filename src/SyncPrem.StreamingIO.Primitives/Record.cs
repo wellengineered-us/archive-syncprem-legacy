@@ -5,6 +5,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Linq;
 
 namespace SyncPrem.StreamingIO.Primitives
 {
@@ -15,6 +16,37 @@ namespace SyncPrem.StreamingIO.Primitives
 		public Record()
 			: base(StringComparer.OrdinalIgnoreCase)
 		{
+		}
+
+		#endregion
+
+		#region Fields/Constants
+
+		private long recordIndex;
+
+		#endregion
+
+		#region Properties/Indexers/Events
+
+		public long RecordIndex
+		{
+			get
+			{
+				return this.recordIndex;
+			}
+			set
+			{
+				this.recordIndex = value;
+			}
+		}
+
+		#endregion
+
+		#region Methods/Operators
+
+		public override string ToString()
+		{
+			return string.Join(", ", this.Select(kv => $"{kv.Key}={kv.Value}"));
 		}
 
 		#endregion

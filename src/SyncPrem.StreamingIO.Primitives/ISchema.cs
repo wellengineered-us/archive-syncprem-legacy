@@ -3,13 +3,26 @@
 	Distributed under the MIT license: http://www.opensource.org/licenses/mit-license.php
 */
 
-namespace SyncPrem.StreamingIO.Primitives.Schema
+using System;
+using System.Collections.Generic;
+
+namespace SyncPrem.StreamingIO.Primitives
 {
-	public interface IArraySchema : ISchema
+	public interface ISchema
 	{
 		#region Properties/Indexers/Events
 
-		ISchema ValueSchema
+		IReadOnlyDictionary<string, IField> Fields
+		{
+			get;
+		}
+
+		string SchemaName
+		{
+			get;
+		}
+
+		int SchemaVersion
 		{
 			get;
 		}

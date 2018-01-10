@@ -7,24 +7,19 @@ using System;
 using System.Collections.Generic;
 using System.Data;
 using System.Data.Common;
-using System.Linq;
 
+using SyncPrem.Pipeline.Abstractions;
+using SyncPrem.Pipeline.Abstractions.Channel;
 using SyncPrem.Pipeline.Abstractions.Configuration;
-using SyncPrem.Pipeline.Abstractions.Payload;
 using SyncPrem.Pipeline.Abstractions.Runtime;
 using SyncPrem.Pipeline.Abstractions.Stage.Connector.Source;
 using SyncPrem.Pipeline.Core.Configurations.AdoNet;
 using SyncPrem.StreamingIO.AdoNet;
 using SyncPrem.StreamingIO.AdoNet.UoW;
-
-using IField = SyncPrem.StreamingIO.Primitives.IField;
-using Field = SyncPrem.StreamingIO.Primitives.Field;
-
-using __IRecord = System.Collections.Generic.IDictionary<string, object>;
-using __Record = System.Collections.Generic.Dictionary<string, object>;
+using SyncPrem.StreamingIO.Primitives;
+using SyncPrem.StreamingIO.ProxyWrappers;
 
 using TextMetal.Middleware.Solder.Extensions;
-using TextMetal.Middleware.Solder.Utilities;
 
 namespace SyncPrem.Pipeline.Core.Connectors.AdoNet
 {
@@ -74,16 +69,16 @@ namespace SyncPrem.Pipeline.Core.Connectors.AdoNet
 			base.Dispose(disposing);
 		}
 
-		protected override void PostExecuteRecord(IContext context, RecordConfiguration recordConfiguration)
+		protected override void PostExecuteRecord(IContext context, RecordConfiguration configuration)
 		{
-			IEnumerable<IAdoNetResult> results;
+			IEnumerable<IResult> results;
 			IEnumerable<DbParameter> dbParameters;
 
 			if ((object)context == null)
 				throw new ArgumentNullException(nameof(context));
 
-			if ((object)recordConfiguration == null)
-				throw new ArgumentNullException(nameof(recordConfiguration));
+			if ((object)configuration == null)
+				throw new ArgumentNullException(nameof(configuration));
 
 			if ((object)this.StageConfiguration == null)
 				throw new InvalidOperationException(nameof(this.StageConfiguration));
@@ -103,9 +98,9 @@ namespace SyncPrem.Pipeline.Core.Connectors.AdoNet
 					dbParameters);
 
 				if ((object)results == null)
-					throw new InvalidOperationException(string.Format("Results were invalid."));
+					throw new SyncPremException(nameof(results));
 
-				results.ToArray(); // force execution
+				results.ForceEnumeration(); // force execution
 			}
 
 			if ((object)this.SourceUnitOfWork != null)
@@ -114,20 +109,20 @@ namespace SyncPrem.Pipeline.Core.Connectors.AdoNet
 			this.SourceUnitOfWork = null;
 		}
 
-		protected override void PreExecuteRecord(IContext context, RecordConfiguration recordConfiguration)
+		protected override void PreExecuteRecord(IContext context, RecordConfiguration configuration)
 		{
-			IEnumerable<IAdoNetResult> results;
-			IEnumerable<__IRecord> records;
-			IEnumerable<DbParameter> dbParameters;
+			SchemaBuilder schemaBuilder;
+			ISchema schema;
+			IEnumerable<IRecord> records;
 
-			IList<Field> fields;
-			IPipelineMetadata pipelineMetadata;
+			IEnumerable<IResult> results;
+			IEnumerable<DbParameter> dbParameters;
 
 			if ((object)context == null)
 				throw new ArgumentNullException(nameof(context));
 
-			if ((object)recordConfiguration == null)
-				throw new ArgumentNullException(nameof(recordConfiguration));
+			if ((object)configuration == null)
+				throw new ArgumentNullException(nameof(configuration));
 
 			if ((object)this.StageConfiguration == null)
 				throw new InvalidOperationException(nameof(this.StageConfiguration));
@@ -137,7 +132,6 @@ namespace SyncPrem.Pipeline.Core.Connectors.AdoNet
 
 			AdoNetConnectorSpecificConfiguration fsConfig = this.StageConfiguration.StageSpecificConfiguration;
 
-			fields = new List<Field>();
 			this.SourceUnitOfWork = fsConfig.GetUnitOfWork();
 
 			if (fsConfig.PreExecuteCommand != null &&
@@ -145,17 +139,18 @@ namespace SyncPrem.Pipeline.Core.Connectors.AdoNet
 			{
 				dbParameters = fsConfig.PreExecuteCommand.GetDbDataParameters(this.SourceUnitOfWork);
 
-				records = this.SourceUnitOfWork.ExecuteRecords(fsConfig.PreExecuteCommand.CommandType ?? CommandType.Text,
+				results = this.SourceUnitOfWork.ExecuteResults(fsConfig.PreExecuteCommand.CommandType ?? CommandType.Text,
 					fsConfig.PreExecuteCommand.CommandText,
-					dbParameters, null);
+					dbParameters);
 
-				if ((object)records == null)
-					throw new InvalidOperationException(string.Format("Records were invalid."));
+				if ((object)results == null)
+					throw new SyncPremException(nameof(results));
 
-				records.ToArray();
+				results.ForceEnumeration();
 			}
 
-			if (fsConfig.ExecuteCommand != null ||
+			// execute schema only
+			if (fsConfig.ExecuteCommand != null &&
 				!SolderFascadeAccessor.DataTypeFascade.IsNullOrWhiteSpace(fsConfig.ExecuteCommand.CommandText))
 			{
 				dbParameters = fsConfig.ExecuteCommand.GetDbDataParameters(this.SourceUnitOfWork);
@@ -165,44 +160,61 @@ namespace SyncPrem.Pipeline.Core.Connectors.AdoNet
 					dbParameters);
 
 				if ((object)results == null)
-					throw new InvalidOperationException(string.Format("Results were invalid."));
+					throw new SyncPremException(nameof(results));
 
-				foreach (IAdoNetResult result in results)
+				foreach (IResult result in results)
 				{
+					schemaBuilder = new SchemaBuilder();
+
 					records = result.Records;
 
 					if ((object)records == null)
-						throw new InvalidOperationException(string.Format("Records were invalid."));
+						throw new SyncPremException(nameof(results));
 
-					long fieldIndex = 0;
-					foreach (__IRecord record in records)
+					foreach (IRecord record in records)
 					{
-						fields.Add(new Field()
-									{
-										FieldName = (string)record[nameof(DbColumn.ColumnName)],
-										FieldType = (Type)record[nameof(DbColumn.DataType)],
-										IsFieldOptional = (bool?)record[nameof(DbColumn.AllowDBNull)] ?? true,
-										FieldIndex = fieldIndex++
-						});
+						string fieldName;
+						Type fieldType;
+						bool isKey;
+						bool isOptional;
+
+						fieldName = (string)record[nameof(DbColumn.ColumnName)];
+						fieldType = (Type)record[nameof(DbColumn.DataType)];
+						isKey = (bool?)record[nameof(DbColumn.IsKey)] ?? true;
+						isOptional = (bool?)record[nameof(DbColumn.AllowDBNull)] ?? true;
+
+						schemaBuilder.AddField(fieldName, fieldType, isKey, isOptional);
 					}
+
+					schema = schemaBuilder.Build();
+
+					if (!context.LocalState.TryGetValue(this, out IDictionary<string, object> localState))
+					{
+						localState = new Dictionary<string, object>(StringComparer.OrdinalIgnoreCase);
+						context.LocalState.Add(this, localState);
+					}
+
+					localState.Add(Constants.ContextComponentScopedSchema, schema);
+
+					break; // first only in this version
 				}
 			}
-
-			pipelineMetadata = context.CreateMetadata(fields);
-			context.MetadataChain.Push(pipelineMetadata);
 		}
 
-		protected override IPipelineMessage ProduceRecord(IContext context, RecordConfiguration recordConfiguration)
+		protected override IChannel ProduceRecord(IContext context, RecordConfiguration configuration)
 		{
-			IPipelineMessage pipelineMessage;
-			IEnumerable<IAdoNetResult> sourceDataEnumerable;
+			IChannel channel = null;
+			ISchema schema;
+			IEnumerable<IRecord> records;
+
+			IEnumerable<IResult> results;
 			IEnumerable<DbParameter> dbParameters;
 
 			if ((object)context == null)
 				throw new ArgumentNullException(nameof(context));
 
-			if ((object)recordConfiguration == null)
-				throw new ArgumentNullException(nameof(recordConfiguration));
+			if ((object)configuration == null)
+				throw new ArgumentNullException(nameof(configuration));
 
 			if ((object)this.StageConfiguration == null)
 				throw new InvalidOperationException(nameof(this.StageConfiguration));
@@ -220,14 +232,35 @@ namespace SyncPrem.Pipeline.Core.Connectors.AdoNet
 
 			dbParameters = fsConfig.ExecuteCommand.GetDbDataParameters(this.SourceUnitOfWork);
 
-			sourceDataEnumerable = this.SourceUnitOfWork.ExecuteResults(fsConfig.ExecuteCommand.CommandType ?? CommandType.Text, fsConfig.ExecuteCommand.CommandText, dbParameters);
+			results = this.SourceUnitOfWork.ExecuteResults(fsConfig.ExecuteCommand.CommandType ?? CommandType.Text, fsConfig.ExecuteCommand.CommandText, dbParameters);
 
-			if ((object)sourceDataEnumerable == null)
-				throw new InvalidOperationException(string.Format("Results were invalid."));
+			if ((object)results == null)
+				throw new SyncPremException(nameof(results));
 
-			pipelineMessage = context.CreateMessage(null /* sourceDataEnumerable */);
+			foreach (IResult result in results)
+			{
+				if (!context.LocalState.TryGetValue(this, out IDictionary<string, object> localState))
+				{
+					localState = new Dictionary<string, object>(StringComparer.OrdinalIgnoreCase);
+					context.LocalState.Add(this, localState);
+				}
 
-			return pipelineMessage;
+				schema = localState[Constants.ContextComponentScopedSchema] as ISchema;
+
+				if ((object)schema == null)
+					throw new SyncPremException(nameof(schema));
+
+				records = result.Records;
+
+				if ((object)records == null)
+					throw new SyncPremException(nameof(records));
+
+				channel = context.CreateChannel(schema, records);
+
+				break; // first only in this version
+			}
+
+			return channel;
 		}
 
 		#endregion
