@@ -22,6 +22,11 @@ namespace SyncPrem.StreamingIO.Primitives
 			get;
 		}
 
+		SchemaType SchemaType
+		{
+			get;
+		}
+
 		int SchemaVersion
 		{
 			get;

@@ -9,5 +9,5 @@ using SyncPrem.Pipeline.Abstractions.Runtime;
 
 namespace SyncPrem.Pipeline.Abstractions.Stage.Processor
 {
-	public delegate IChannel ProcessToNextDelegate(IContext context, RecordConfiguration recordConfiguration, IChannel channel, ProcessDelegate next);
+	public delegate IChannel ProcessToNextDelegate(IContext context, RecordConfiguration configuration, IChannel channel, ProcessDelegate next);
 }

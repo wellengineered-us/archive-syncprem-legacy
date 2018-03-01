@@ -8,7 +8,6 @@ using System.Collections.Generic;
 
 using SyncPrem.Pipeline.Abstractions;
 using SyncPrem.Pipeline.Abstractions.Channel;
-using SyncPrem.StreamingIO.Primitives;
 
 namespace SyncPrem.Pipeline.Core.Channels
 {
@@ -16,17 +15,12 @@ namespace SyncPrem.Pipeline.Core.Channels
 	{
 		#region Constructors/Destructors
 
-		public Channel(ISchema schema, IEnumerable<IRecord> records)
+		public Channel(IEnumerable<IRecord> records)
 		{
-			if ((object)schema == null)
-				throw new ArgumentNullException(nameof(schema));
-
 			if ((object)records == null)
 				throw new ArgumentNullException(nameof(records));
 
-			this.schema = schema;
 			this.records = records;
-			this.timestamp = DateTimeOffset.UtcNow;
 		}
 
 		#endregion
@@ -34,8 +28,6 @@ namespace SyncPrem.Pipeline.Core.Channels
 		#region Fields/Constants
 
 		private readonly IEnumerable<IRecord> records;
-		private readonly ISchema schema;
-		private readonly DateTimeOffset timestamp;
 
 		#endregion
 
@@ -46,22 +38,6 @@ namespace SyncPrem.Pipeline.Core.Channels
 			get
 			{
 				return this.records;
-			}
-		}
-
-		public ISchema Schema
-		{
-			get
-			{
-				return this.schema;
-			}
-		}
-
-		public DateTimeOffset Timestamp
-		{
-			get
-			{
-				return this.timestamp;
 			}
 		}
 

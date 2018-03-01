@@ -7,7 +7,6 @@ using System;
 using System.Collections.Generic;
 
 using SyncPrem.Pipeline.Abstractions.Channel;
-using SyncPrem.StreamingIO.Primitives;
 
 namespace SyncPrem.Pipeline.Abstractions.Runtime
 {
@@ -29,7 +28,7 @@ namespace SyncPrem.Pipeline.Abstractions.Runtime
 
 		#region Methods/Operators
 
-		IChannel CreateChannel(ISchema schema, IEnumerable<IRecord> records);
+		IChannel CreateChannel(IEnumerable<IRecord> records);
 
 		#endregion
 	}

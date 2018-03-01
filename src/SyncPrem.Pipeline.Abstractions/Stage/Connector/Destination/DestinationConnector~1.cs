@@ -24,21 +24,21 @@ namespace SyncPrem.Pipeline.Abstractions.Stage.Connector.Destination
 
 		#region Methods/Operators
 
-		public void Consume(IContext context, RecordConfiguration recordConfiguration, IChannel channel)
+		public void Consume(IContext context, RecordConfiguration configuration, IChannel channel)
 		{
 			if ((object)context == null)
 				throw new ArgumentNullException(nameof(context));
 
-			if ((object)recordConfiguration == null)
-				throw new ArgumentNullException(nameof(recordConfiguration));
+			if ((object)configuration == null)
+				throw new ArgumentNullException(nameof(configuration));
 
 			if ((object)channel == null)
 				throw new ArgumentNullException(nameof(channel));
 
-			this.ConsumeRecord(context, recordConfiguration, channel);
+			this.ConsumeRecord(context, configuration, channel);
 		}
 
-		protected abstract void ConsumeRecord(IContext context, RecordConfiguration recordConfiguration, IChannel channel);
+		protected abstract void ConsumeRecord(IContext context, RecordConfiguration configuration, IChannel channel);
 
 		#endregion
 	}

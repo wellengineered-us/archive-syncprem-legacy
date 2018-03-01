@@ -13,6 +13,7 @@ using SyncPrem.Pipeline.Abstractions.Channel;
 using SyncPrem.Pipeline.Abstractions.Configuration;
 using SyncPrem.Pipeline.Abstractions.Runtime;
 using SyncPrem.Pipeline.Abstractions.Stage.Connector.Source;
+using SyncPrem.Pipeline.Core.Channels;
 using SyncPrem.StreamingIO.Primitives;
 
 namespace SyncPrem.Pipeline.Core.Connectors.Console
@@ -68,9 +69,9 @@ namespace SyncPrem.Pipeline.Core.Connectors.Console
 			base.Dispose(disposing);
 		}
 
-		private IEnumerable<IRecord> GetYieldViaConsole(ISchema schema)
+		private IEnumerable<IPayload> GetYieldViaConsole(ISchema schema)
 		{
-			IRecord record;
+			IPayload payload;
 
 			long recordIndex;
 			string line;
@@ -92,14 +93,14 @@ namespace SyncPrem.Pipeline.Core.Connectors.Console
 
 				fieldValues = line.Split('|');
 
-				record = new Record() { RecordIndex = recordIndex };
+				payload = new Payload();
 
 				for (long fieldIndex = 0; fieldIndex < Math.Min(fieldValues.Length, fields.Length); fieldIndex++)
-					record.Add(fields[fieldIndex].FieldName, fieldValues[fieldIndex]);
+					payload.Add(fields[fieldIndex].FieldName, fieldValues[fieldIndex]);
 
 				recordIndex++;
 
-				yield return record;
+				yield return payload;
 			}
 		}
 
@@ -126,9 +127,9 @@ namespace SyncPrem.Pipeline.Core.Connectors.Console
 			if ((object)configuration == null)
 				throw new ArgumentNullException(nameof(configuration));
 
-			schemaBuilder = new SchemaBuilder();
+			schemaBuilder = SchemaBuilder.Create();
 
-			TextWriter.WriteLine("Enter list of field names separated by pipe character: ");
+			TextWriter.WriteLine("Enter list of schema field names separated by pipe character: ");
 			line = TextReader.ReadLine();
 
 			if ((object)line != null)
@@ -137,8 +138,8 @@ namespace SyncPrem.Pipeline.Core.Connectors.Console
 
 				if ((object)fieldNames == null || fieldNames.Length <= 0)
 				{
-					TextWriter.WriteLine("List of field names was invalid; using default (blank).");
-					schemaBuilder.AddField(string.Empty, typeof(string));
+					TextWriter.WriteLine("List of schema field names was invalid; using default (blank).");
+					schemaBuilder.AddField(string.Empty, typeof(string), false, true);
 				}
 				else
 				{
@@ -151,20 +152,23 @@ namespace SyncPrem.Pipeline.Core.Connectors.Console
 						if ((fieldName ?? string.Empty).Trim() == string.Empty)
 							continue;
 
-						schemaBuilder.AddField(fieldName, typeof(string));
+						schemaBuilder.AddField(fieldName, typeof(string), false, true);
 					}
 
-					TextWriter.WriteLine("Building schema: '{0}'", string.Join(" | ", fieldNames));
+					TextWriter.WriteLine("Building KEY schema: '{0}'", string.Join(" | ", fieldNames));
 				}
 			}
-
-			schema = schemaBuilder.Build();
 
 			if (!context.LocalState.TryGetValue(this, out IDictionary<string, object> localState))
 			{
 				localState = new Dictionary<string, object>(StringComparer.OrdinalIgnoreCase);
 				context.LocalState.Add(this, localState);
 			}
+
+			schema = schemaBuilder.Build();
+
+			if ((object)schema == null)
+				throw new SyncPremException(nameof(schema));
 
 			localState.Add(Constants.ContextComponentScopedSchema, schema);
 		}
@@ -173,7 +177,7 @@ namespace SyncPrem.Pipeline.Core.Connectors.Console
 		{
 			IChannel channel;
 			ISchema schema;
-			IEnumerable<IRecord> records;
+			IEnumerable<IPayload> payloads;
 
 			if ((object)context == null)
 				throw new ArgumentNullException(nameof(context));
@@ -192,12 +196,14 @@ namespace SyncPrem.Pipeline.Core.Connectors.Console
 			if ((object)schema == null)
 				throw new SyncPremException(nameof(schema));
 
-			records = this.GetYieldViaConsole(schema);
+			payloads = this.GetYieldViaConsole(schema);
 
-			if ((object)records == null)
-				throw new SyncPremException(nameof(records));
+			if ((object)payloads == null)
+				throw new SyncPremException(nameof(payloads));
 
-			channel = context.CreateChannel(schema, records);
+			var records = payloads.Select(rec => new Record(schema, rec, string.Empty, 0, new Payload()));
+
+			channel = context.CreateChannel(records);
 
 			return channel;
 		}

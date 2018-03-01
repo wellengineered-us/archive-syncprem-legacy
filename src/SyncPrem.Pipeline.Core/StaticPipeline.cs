@@ -102,7 +102,7 @@ namespace SyncPrem.Pipeline.Core
 
 				using (destinationConnector)
 				{
-					RecordConfiguration recordConfiguration;
+					RecordConfiguration configuration;
 
 					ProcessDelegate process;
 					IProcessorBuilder processorBuilder;
@@ -110,9 +110,9 @@ namespace SyncPrem.Pipeline.Core
 					destinationConnector.StageConfiguration = this.PipelineConfiguration.DestinationConfiguration;
 					destinationConnector.Create();
 
-					recordConfiguration = this.PipelineConfiguration.RecordConfiguration ?? new RecordConfiguration();
-					sourceConnector.PreExecute(context, recordConfiguration);
-					destinationConnector.PreExecute(context, recordConfiguration);
+					configuration = this.PipelineConfiguration.RecordConfiguration ?? new RecordConfiguration();
+					sourceConnector.PreExecute(context, configuration);
+					destinationConnector.PreExecute(context, configuration);
 
 					// --
 					processorBuilder = new ProcessorBuilder();
@@ -162,30 +162,20 @@ namespace SyncPrem.Pipeline.Core
 
 					// --
 
-					channel = sourceConnector.Produce(context, recordConfiguration);
+					channel = sourceConnector.Produce(context, configuration);
 
-					channel = process(context, recordConfiguration, channel);
+					channel = process(context, configuration, channel);
 
-					destinationConnector.Consume(context, recordConfiguration, channel);
+					destinationConnector.Consume(context, configuration, channel);
 
-					destinationConnector.PostExecute(context, recordConfiguration);
-					sourceConnector.PostExecute(context, recordConfiguration);
+					destinationConnector.PostExecute(context, configuration);
+					sourceConnector.PostExecute(context, configuration);
 
 					__check();
 				}
 			}
 
 			return 0;
-		}
-
-		public Type GetPipelineType()
-		{
-			return typeof(StaticPipeline);
-		}
-
-		public IReadOnlyCollection<Type> GetStaticStageChain()
-		{
-			return null;
 		}
 
 		#endregion

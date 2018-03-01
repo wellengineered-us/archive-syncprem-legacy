@@ -17,15 +17,17 @@
 				"OpenQuoteValue": "",
 				"CloseQuoteValue": "",
 
-				"DelimitedTextFieldConfigurations":
+				"DelimitedTextHeaderFieldConfigurations":
 				[
 					{
 						"FieldName": "institution",
-						"FieldTypeAqtn": "System.String"
+						"FieldTypeAqtn": "System.String",
+						"IsKeyComponent": true
 					},
 					{
 						"FieldName": "txid",
-						"FieldTypeAqtn": "System.Int32"
+						"FieldTypeAqtn": "System.Int32",
+						"IsKeyComponent": true
 					},
 					{
 						"FieldName": "number",
@@ -91,7 +93,7 @@
 				"OpenQuoteValue": "\"",
 				"CloseQuoteValue": "\"",
 
-				"DelimitedTextFieldConfigurations":
+				"DelimitedTextHeaderFieldConfigurations":
 				[
 					{
 						"FieldName": "institution",

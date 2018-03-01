@@ -16,30 +16,29 @@ namespace SyncPrem.StreamingIO.Primitives
 			get;
 		}
 
+		string FieldName
+		{
+			get;
+		}
+
+		ISchema FieldSchema
+		{
+			get;
+		}
+
 		Type FieldType
 		{
 			get;
 		}
 
-		bool IsKeyComponent
+		bool IsFieldKeyComponent
 		{
 			get;
 		}
 
-		bool IsOptional
+		bool IsFieldOptional
 		{
 			get;
-		}
-
-		ISchema Schema
-		{
-			get;
-		}
-
-		string FieldName
-		{
-			get;
-			set;
 		}
 
 		#endregion

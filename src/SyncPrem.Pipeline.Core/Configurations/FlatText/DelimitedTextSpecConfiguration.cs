@@ -5,30 +5,28 @@
 
 using System;
 using System.Collections.Generic;
-using System.Linq;
 
 using SyncPrem.Infrastructure.Configuration;
-using SyncPrem.StreamingIO.FlatText;
-using SyncPrem.StreamingIO.FlatText.Delimited;
+using SyncPrem.StreamingIO.Textual.Delimited;
 
 using TextMetal.Middleware.Solder.Primitives;
 
 namespace SyncPrem.Pipeline.Core.Configurations.FlatText
 {
-	public class DelimitedTextSpecConfiguration : ConfigurationObject, IDelimitedTextSpec
+	public class DelimitedTextSpecConfiguration : ConfigurationObject
 	{
 		#region Constructors/Destructors
 
 		public DelimitedTextSpecConfiguration()
 		{
-			this.delimitedTextFieldConfigurations = new ConfigurationObjectCollection<DelimitedTextFieldConfiguration>(this);
+			this.delimitedTextHeaderFieldConfigurations = new ConfigurationObjectCollection<DelimitedTextFieldConfiguration>(this);
 		}
 
 		#endregion
 
 		#region Fields/Constants
 
-		private readonly ConfigurationObjectCollection<DelimitedTextFieldConfiguration> delimitedTextFieldConfigurations;
+		private readonly ConfigurationObjectCollection<DelimitedTextFieldConfiguration> delimitedTextHeaderFieldConfigurations;
 		private string closeQuoteValue;
 		private string fieldDelimiter;
 		private bool? firstRecordIsHeader;
@@ -40,19 +38,11 @@ namespace SyncPrem.Pipeline.Core.Configurations.FlatText
 
 		#region Properties/Indexers/Events
 
-		public ConfigurationObjectCollection<DelimitedTextFieldConfiguration> DelimitedTextFieldConfigurations
+		public ConfigurationObjectCollection<DelimitedTextFieldConfiguration> DelimitedTextHeaderFieldConfigurations
 		{
 			get
 			{
-				return this.delimitedTextFieldConfigurations;
-			}
-		}
-
-		IEnumerable<IFlatTextFieldSpec> IFlatTextSpec.FlatTextFieldSpecs
-		{
-			get
-			{
-				return this.DelimitedTextFieldConfigurations;
+				return this.delimitedTextHeaderFieldConfigurations;
 			}
 		}
 
@@ -68,27 +58,6 @@ namespace SyncPrem.Pipeline.Core.Configurations.FlatText
 			}
 		}
 
-		IEnumerable<IDelimitedTextFieldSpec> IDelimitedTextSpec.DelimitedTextFieldSpecs
-		{
-			get
-			{
-				return this.DelimitedTextFieldConfigurations;
-			}
-			set
-			{
-				this.DelimitedTextFieldConfigurations.Clear();
-
-				if ((object)value != null)
-					this.DelimitedTextFieldConfigurations.AddRange(value.Select(f => new DelimitedTextFieldConfiguration()
-																					{
-																						FieldName = f.FieldName,
-																						FieldTypeAqtn = f.FieldType.AssemblyQualifiedName,
-																						IsFieldOptional = f.IsOptional,
-																						IsFieldKeyComponent = f.IsKeyComponent,
-																					}));
-			}
-		}
-
 		public string FieldDelimiter
 		{
 			get
@@ -101,18 +70,6 @@ namespace SyncPrem.Pipeline.Core.Configurations.FlatText
 			}
 		}
 
-		bool IFlatTextSpec.FirstRecordIsHeader
-		{
-			get
-			{
-				return this.FirstRecordIsHeader ?? false;
-			}
-			set
-			{
-				this.FirstRecordIsHeader = value;
-			}
-		}
-
 		public bool? FirstRecordIsHeader
 		{
 			get
@@ -122,18 +79,6 @@ namespace SyncPrem.Pipeline.Core.Configurations.FlatText
 			set
 			{
 				this.firstRecordIsHeader = value;
-			}
-		}
-
-		bool IFlatTextSpec.LastRecordIsFooter
-		{
-			get
-			{
-				return this.LastRecordIsFooter ?? false;
-			}
-			set
-			{
-				this.LastRecordIsFooter = value;
 			}
 		}
 
@@ -190,10 +135,45 @@ namespace SyncPrem.Pipeline.Core.Configurations.FlatText
 
 		#region Methods/Operators
 
-		void IFlatTextSpec.AssertValid()
+		public static DelimitedTextualSpec ToSpec(DelimitedTextSpecConfiguration delimitedTextSpecConfiguration)
 		{
-			if (this.Validate().Any())
-				throw new InvalidOperationException(string.Format("TODO"));
+			IList<IDelimitedTextualFieldSpec> delimitedTextFieldSpecs;
+			DelimitedTextualSpec delimitedTextualSpec;
+
+			if ((object)delimitedTextSpecConfiguration == null)
+				throw new ArgumentNullException(nameof(delimitedTextSpecConfiguration));
+
+			delimitedTextualSpec = new DelimitedTextualSpec()
+									{
+										CloseQuoteValue = delimitedTextSpecConfiguration.CloseQuoteValue,
+										FieldDelimiter = delimitedTextSpecConfiguration.FieldDelimiter,
+										IsFirstRecordHeader = delimitedTextSpecConfiguration.FirstRecordIsHeader ?? false,
+										IsLastRecordFooter = delimitedTextSpecConfiguration.LastRecordIsFooter ?? false,
+										OpenQuoteValue = delimitedTextSpecConfiguration.OpenQuoteValue,
+										RecordDelimiter = delimitedTextSpecConfiguration.RecordDelimiter
+									};
+
+			delimitedTextFieldSpecs = new List<IDelimitedTextualFieldSpec>();
+
+			foreach (DelimitedTextFieldConfiguration delimitedTextHeaderFieldConfiguration in delimitedTextSpecConfiguration.DelimitedTextHeaderFieldConfigurations)
+			{
+				DelimitedTextualFieldSpec delimitedTextualFieldSpec;
+
+				delimitedTextualFieldSpec = new DelimitedTextualFieldSpec()
+											{
+												FieldTitle = delimitedTextHeaderFieldConfiguration.FieldName,
+												IsFieldIdentity = delimitedTextHeaderFieldConfiguration.IsKeyComponent ?? false,
+												FieldType = delimitedTextHeaderFieldConfiguration.GetFieldType(),
+												IsFieldRequired = delimitedTextHeaderFieldConfiguration.IsOptional ?? false,
+												FieldOrdinal = delimitedTextFieldSpecs.Count
+											};
+
+				delimitedTextFieldSpecs.Add(delimitedTextualFieldSpec);
+			}
+
+			delimitedTextualSpec.DelimitedTextHeaderSpecs = delimitedTextFieldSpecs;
+
+			return delimitedTextualSpec;
 		}
 
 		public override IEnumerable<Message> Validate(object context)

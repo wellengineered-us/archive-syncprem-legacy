@@ -15,7 +15,7 @@ namespace SyncPrem.Pipeline.Abstractions.Stage.Connector.Source
 	{
 		#region Methods/Operators
 
-		IChannel Produce(IContext context, RecordConfiguration recordConfiguration);
+		IChannel Produce(IContext context, RecordConfiguration configuration);
 
 		#endregion
 	}

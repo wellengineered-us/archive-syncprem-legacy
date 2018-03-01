@@ -13,8 +13,8 @@ using SyncPrem.Pipeline.Abstractions.Configuration;
 using SyncPrem.Pipeline.Abstractions.Runtime;
 using SyncPrem.Pipeline.Abstractions.Stage.Connector.Destination;
 using SyncPrem.Pipeline.Core.Configurations.FlatText;
-using SyncPrem.StreamingIO.FlatText.Delimited;
 using SyncPrem.StreamingIO.Primitives;
+using SyncPrem.StreamingIO.Textual.Delimited;
 
 using TextMetal.Middleware.Solder.Extensions;
 
@@ -32,21 +32,21 @@ namespace SyncPrem.Pipeline.Core.Connectors.FlatText
 
 		#region Fields/Constants
 
-		private DelimitedTextWriter delimitedTextWriter;
+		private DelimitedTextualWriter delimitedTextualWriter;
 
 		#endregion
 
 		#region Properties/Indexers/Events
 
-		private DelimitedTextWriter DelimitedTextWriter
+		private DelimitedTextualWriter DelimitedTextualWriter
 		{
 			get
 			{
-				return this.delimitedTextWriter;
+				return this.delimitedTextualWriter;
 			}
 			set
 			{
-				this.delimitedTextWriter = value;
+				this.delimitedTextualWriter = value;
 			}
 		}
 
@@ -56,7 +56,6 @@ namespace SyncPrem.Pipeline.Core.Connectors.FlatText
 
 		protected override void ConsumeRecord(IContext context, RecordConfiguration configuration, IChannel channel)
 		{
-			ISchema schema;
 			IEnumerable<IRecord> records;
 
 			if ((object)context == null)
@@ -68,18 +67,14 @@ namespace SyncPrem.Pipeline.Core.Connectors.FlatText
 			if ((object)channel == null)
 				throw new ArgumentNullException(nameof(channel));
 
-			schema = channel.Schema;
-
-			if ((object)schema == null)
-				throw new SyncPremException(nameof(schema));
-
 			records = channel.Records;
 
 			if ((object)records == null)
 				throw new SyncPremException(nameof(records));
 
-			//this.DelimitedTextWriter.WriteHeaderFields(channel.Schema.Fields.Values);
-			this.DelimitedTextWriter.WriteRecords(channel.Records);
+			var payloads = channel.Records.Select(p => p.Payload);
+
+			this.DelimitedTextualWriter.WriteRecords(payloads);
 		}
 
 		protected override void Create(bool creating)
@@ -110,18 +105,18 @@ namespace SyncPrem.Pipeline.Core.Connectors.FlatText
 
 			DelimitedTextConnectorSpecificConfiguration fsConfig = this.StageConfiguration.StageSpecificConfiguration;
 
-			if ((object)this.DelimitedTextWriter != null)
+			if ((object)this.DelimitedTextualWriter != null)
 			{
-				this.DelimitedTextWriter.Flush();
-				this.DelimitedTextWriter.Dispose();
+				this.DelimitedTextualWriter.Flush();
+				this.DelimitedTextualWriter.Dispose();
 			}
 
-			this.DelimitedTextWriter = null;
+			this.DelimitedTextualWriter = null;
 		}
 
 		protected override void PreExecuteRecord(IContext context, RecordConfiguration configuration)
 		{
-			IDelimitedTextSpec delimitedTextSpec;
+			IDelimitedTextualSpec spec;
 
 			if ((object)context == null)
 				throw new ArgumentNullException(nameof(context));
@@ -140,15 +135,15 @@ namespace SyncPrem.Pipeline.Core.Connectors.FlatText
 			if (SolderFascadeAccessor.DataTypeFascade.IsNullOrWhiteSpace(fsConfig.DelimitedTextFilePath))
 				throw new InvalidOperationException(string.Format("Configuration missing: '{0}'.", nameof(fsConfig.DelimitedTextFilePath)));
 
-			delimitedTextSpec = fsConfig.DelimitedTextSpecConfiguration;
+			spec = DelimitedTextSpecConfiguration.ToSpec(fsConfig.DelimitedTextSpecConfiguration);
 
-			if ((object)delimitedTextSpec == null)
-				throw new SyncPremException(nameof(delimitedTextSpec));
+			if ((object)spec == null)
+				throw new SyncPremException(nameof(spec));
 
-			if (!delimitedTextSpec.DelimitedTextFieldSpecs.Any())
-				throw new InvalidOperationException(string.Format("Configuration missing: [Source and/or Destination]...{0}.{1}", nameof(DelimitedTextSpec), nameof(DelimitedTextSpec.DelimitedTextFieldSpecs)));
+			if (!spec.DelimitedTextHeaderSpecs.Any())
+				throw new InvalidOperationException(string.Format("Configuration missing: [Source and/or Destination]...{0}.{1}", nameof(DelimitedTextualSpec), nameof(DelimitedTextualSpec.DelimitedTextHeaderSpecs)));
 
-			this.DelimitedTextWriter = new DelimitedTextWriter(new StreamWriter(File.Open(fsConfig.DelimitedTextFilePath, FileMode.Create, FileAccess.Write, FileShare.None)), delimitedTextSpec);
+			this.DelimitedTextualWriter = new DelimitedTextualWriter(new StreamWriter(File.Open(fsConfig.DelimitedTextFilePath, FileMode.Create, FileAccess.Write, FileShare.None)), spec);
 		}
 
 		#endregion

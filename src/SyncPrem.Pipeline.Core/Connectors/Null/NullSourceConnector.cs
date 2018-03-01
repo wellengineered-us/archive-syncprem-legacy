@@ -12,6 +12,7 @@ using SyncPrem.Pipeline.Abstractions.Channel;
 using SyncPrem.Pipeline.Abstractions.Configuration;
 using SyncPrem.Pipeline.Abstractions.Runtime;
 using SyncPrem.Pipeline.Abstractions.Stage.Connector.Source;
+using SyncPrem.Pipeline.Core.Channels;
 using SyncPrem.StreamingIO.Primitives;
 
 namespace SyncPrem.Pipeline.Core.Connectors.Null
@@ -29,12 +30,9 @@ namespace SyncPrem.Pipeline.Core.Connectors.Null
 		#region Fields/Constants
 
 		private const int FIELD_COUNT = 5;
-
 		private const string FIELD_NAME = "RandomValue_{0:00}";
-
 		private static readonly Random random = new Random();
-
-		private static readonly ISchema randomSchema = GetRandomSchema();
+		private static readonly ISchema schema = GetSchema();
 
 		#endregion
 
@@ -48,11 +46,11 @@ namespace SyncPrem.Pipeline.Core.Connectors.Null
 			}
 		}
 
-		private static ISchema RandomSchema
+		private static ISchema Schema
 		{
 			get
 			{
-				return randomSchema;
+				return schema;
 			}
 		}
 
@@ -60,9 +58,9 @@ namespace SyncPrem.Pipeline.Core.Connectors.Null
 
 		#region Methods/Operators
 
-		private static IEnumerable<IRecord> GetRandomRecords(ISchema schema)
+		private static IEnumerable<IPayload> GetRandomPayloads(ISchema schema)
 		{
-			IRecord record;
+			IPayload payload;
 			IField[] fields;
 
 			long recordCount;
@@ -75,28 +73,33 @@ namespace SyncPrem.Pipeline.Core.Connectors.Null
 
 			for (long recordIndex = 0; recordIndex < recordCount; recordIndex++)
 			{
-				record = new Record() { RecordIndex = recordIndex };
+				payload = new Payload();
 
 				for (int fieldIndex = 0; fieldIndex < fields.Length; fieldIndex++)
 				{
-					record.Add(fields[fieldIndex].FieldName, Random.NextDouble());
+					if (fields[fieldIndex].IsFieldKeyComponent)
+						payload.Add(fields[fieldIndex].FieldName, Guid.NewGuid());
+					else
+						payload.Add(fields[fieldIndex].FieldName, Random.NextDouble());
 				}
 
-				yield return record;
+				yield return payload;
 			}
 		}
 
-		private static ISchema GetRandomSchema()
+		private static ISchema GetSchema()
 		{
 			SchemaBuilder schemaBuilder;
 
-			schemaBuilder = new SchemaBuilder();
+			schemaBuilder = SchemaBuilder.Create();
+
+			schemaBuilder.AddField(string.Empty, typeof(Guid), false, true);
 
 			for (long fieldIndex = 0; fieldIndex < FIELD_COUNT; fieldIndex++)
 			{
 				string fieldName = string.Format(FIELD_NAME, fieldIndex);
 
-				schemaBuilder.AddField(fieldName, typeof(double));
+				schemaBuilder.AddField(fieldName, typeof(double), false, false);
 			}
 
 			return schemaBuilder.Build();
@@ -133,16 +136,16 @@ namespace SyncPrem.Pipeline.Core.Connectors.Null
 			if ((object)configuration == null)
 				throw new ArgumentNullException(nameof(configuration));
 
-			schema = RandomSchema;
-
-			if ((object)schema == null)
-				throw new SyncPremException(nameof(schema));
-
 			if (!context.LocalState.TryGetValue(this, out IDictionary<string, object> localState))
 			{
 				localState = new Dictionary<string, object>(StringComparer.OrdinalIgnoreCase);
 				context.LocalState.Add(this, localState);
 			}
+
+			schema = Schema;
+
+			if ((object)schema == null)
+				throw new SyncPremException(nameof(schema));
 
 			localState.Add(Constants.ContextComponentScopedSchema, schema);
 		}
@@ -151,7 +154,8 @@ namespace SyncPrem.Pipeline.Core.Connectors.Null
 		{
 			IChannel channel;
 			ISchema schema;
-			IEnumerable<IRecord> records;
+
+			IEnumerable<IPayload> payloads;
 
 			if ((object)context == null)
 				throw new ArgumentNullException(nameof(context));
@@ -170,12 +174,14 @@ namespace SyncPrem.Pipeline.Core.Connectors.Null
 			if ((object)schema == null)
 				throw new SyncPremException(nameof(schema));
 
-			records = GetRandomRecords(schema);
+			payloads = GetRandomPayloads(schema);
 
-			if ((object)records == null)
-				throw new SyncPremException(nameof(records));
+			if ((object)payloads == null)
+				throw new SyncPremException(nameof(payloads));
 
-			channel = context.CreateChannel(schema, records);
+			var records = payloads.Select(rec => new Record(schema, rec, string.Empty, 0, new Payload()));
+
+			channel = context.CreateChannel(records);
 
 			return channel;
 		}

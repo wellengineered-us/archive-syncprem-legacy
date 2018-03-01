@@ -29,9 +29,9 @@ namespace SyncPrem.Pipeline.Abstractions.Stage
 
 		#region Methods/Operators
 
-		void PostExecute(IContext context, RecordConfiguration recordConfiguration);
+		void PostExecute(IContext context, RecordConfiguration configuration);
 
-		void PreExecute(IContext context, RecordConfiguration recordConfiguration);
+		void PreExecute(IContext context, RecordConfiguration configuration);
 
 		#endregion
 	}

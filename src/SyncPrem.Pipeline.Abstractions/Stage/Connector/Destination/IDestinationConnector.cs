@@ -15,7 +15,7 @@ namespace SyncPrem.Pipeline.Abstractions.Stage.Connector.Destination
 	{
 		#region Methods/Operators
 
-		void Consume(IContext context, RecordConfiguration recordConfiguration, IChannel channel);
+		void Consume(IContext context, RecordConfiguration configuration, IChannel channel);
 
 		#endregion
 	}

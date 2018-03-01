@@ -9,6 +9,15 @@
 				"SOLDER_HOOK_UNHANDLED_EXCEPTIONS": "false"
 			}
 		},
+		"test_static_null_to_cout":
+		{
+			"commandName": "Project",
+			"commandLineArgs": "-sourcefile:_static_null_to_cout.json",
+			"environmentVariables":
+			{
+				"SOLDER_HOOK_UNHANDLED_EXCEPTIONS": "false"
+			}
+		},
 		"test_static_cin_to_cout":
 		{
 			"commandName": "Project",

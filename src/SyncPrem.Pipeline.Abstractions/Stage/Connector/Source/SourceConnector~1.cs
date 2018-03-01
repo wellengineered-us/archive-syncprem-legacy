@@ -24,22 +24,22 @@ namespace SyncPrem.Pipeline.Abstractions.Stage.Connector.Source
 
 		#region Methods/Operators
 
-		public IChannel Produce(IContext context, RecordConfiguration recordConfiguration)
+		public IChannel Produce(IContext context, RecordConfiguration configuration)
 		{
 			IChannel channel;
 
 			if ((object)context == null)
 				throw new ArgumentNullException(nameof(context));
 
-			if ((object)recordConfiguration == null)
-				throw new ArgumentNullException(nameof(recordConfiguration));
+			if ((object)configuration == null)
+				throw new ArgumentNullException(nameof(configuration));
 
-			channel = this.ProduceRecord(context, recordConfiguration);
+			channel = this.ProduceRecord(context, configuration);
 
 			return channel;
 		}
 
-		protected abstract IChannel ProduceRecord(IContext context, RecordConfiguration recordConfiguration);
+		protected abstract IChannel ProduceRecord(IContext context, RecordConfiguration configuration);
 
 		#endregion
 	}

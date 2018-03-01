@@ -15,7 +15,7 @@ namespace SyncPrem.Pipeline.Abstractions.Stage.Processor
 	{
 		#region Methods/Operators
 
-		IChannel Process(IContext context, RecordConfiguration recordConfiguration, IChannel channel, ProcessDelegate next);
+		IChannel Process(IContext context, RecordConfiguration configuration, IChannel channel, ProcessDelegate next);
 
 		#endregion
 	}

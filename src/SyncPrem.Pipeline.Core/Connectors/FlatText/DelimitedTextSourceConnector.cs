@@ -6,15 +6,17 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 
 using SyncPrem.Pipeline.Abstractions;
 using SyncPrem.Pipeline.Abstractions.Channel;
 using SyncPrem.Pipeline.Abstractions.Configuration;
 using SyncPrem.Pipeline.Abstractions.Runtime;
 using SyncPrem.Pipeline.Abstractions.Stage.Connector.Source;
+using SyncPrem.Pipeline.Core.Channels;
 using SyncPrem.Pipeline.Core.Configurations.FlatText;
-using SyncPrem.StreamingIO.FlatText.Delimited;
 using SyncPrem.StreamingIO.Primitives;
+using SyncPrem.StreamingIO.Textual.Delimited;
 
 using TextMetal.Middleware.Solder.Extensions;
 
@@ -32,21 +34,21 @@ namespace SyncPrem.Pipeline.Core.Connectors.FlatText
 
 		#region Fields/Constants
 
-		private DelimitedTextReader delimitedTextReader;
+		private DelimitedTextualReader delimitedTextualReader;
 
 		#endregion
 
 		#region Properties/Indexers/Events
 
-		private DelimitedTextReader DelimitedTextReader
+		private DelimitedTextualReader DelimitedTextualReader
 		{
 			get
 			{
-				return this.delimitedTextReader;
+				return this.delimitedTextualReader;
 			}
 			set
 			{
-				this.delimitedTextReader = value;
+				this.delimitedTextualReader = value;
 			}
 		}
 
@@ -82,17 +84,18 @@ namespace SyncPrem.Pipeline.Core.Connectors.FlatText
 
 			DelimitedTextConnectorSpecificConfiguration fsConfig = this.StageConfiguration.StageSpecificConfiguration;
 
-			if ((object)this.DelimitedTextReader != null)
-				this.DelimitedTextReader.Dispose();
+			if ((object)this.DelimitedTextualReader != null)
+				this.DelimitedTextualReader.Dispose();
 
-			this.DelimitedTextReader = null;
+			this.DelimitedTextualReader = null;
 		}
 
 		protected override void PreExecuteRecord(IContext context, RecordConfiguration configuration)
 		{
 			SchemaBuilder schemaBuilder;
 			ISchema schema;
-			IEnumerable<IField> fields;
+			IEnumerable<IDelimitedTextualFieldSpec> headers;
+			DelimitedTextualSpec spec;
 
 			if ((object)context == null)
 				throw new ArgumentNullException(nameof(context));
@@ -114,24 +117,33 @@ namespace SyncPrem.Pipeline.Core.Connectors.FlatText
 			if (SolderFascadeAccessor.DataTypeFascade.IsNullOrWhiteSpace(fsConfig.DelimitedTextFilePath))
 				throw new InvalidOperationException(string.Format("Configuration missing: '{0}'.", nameof(fsConfig.DelimitedTextFilePath)));
 
-			schemaBuilder = new SchemaBuilder();
+			spec = DelimitedTextSpecConfiguration.ToSpec(fsConfig.DelimitedTextSpecConfiguration);
 
-			this.DelimitedTextReader = new DelimitedTextReader(new StreamReader(File.Open(fsConfig.DelimitedTextFilePath, FileMode.Open, FileAccess.Read, FileShare.None)), fsConfig.DelimitedTextSpecConfiguration);
+			if ((object)spec == null)
+				throw new SyncPremException(nameof(spec));
 
-			fields = this.DelimitedTextReader.ReadHeaderFields();
+			this.DelimitedTextualReader = new DelimitedTextualReader(new StreamReader(File.Open(fsConfig.DelimitedTextFilePath, FileMode.Open, FileAccess.Read, FileShare.None)), spec);
 
-			if ((object)fields == null)
-				throw new SyncPremException(nameof(fields));
+			headers = this.DelimitedTextualReader.ReadHeaderFields();
 
-			schemaBuilder.AddFields(fields);
-
-			schema = schemaBuilder.Build();
+			if ((object)headers == null)
+				throw new SyncPremException(nameof(headers));
 
 			if (!context.LocalState.TryGetValue(this, out IDictionary<string, object> localState))
 			{
 				localState = new Dictionary<string, object>(StringComparer.OrdinalIgnoreCase);
 				context.LocalState.Add(this, localState);
 			}
+
+			schemaBuilder = SchemaBuilder.Create();
+
+			foreach (IDelimitedTextualFieldSpec header in spec.DelimitedTextHeaderSpecs)
+				schemaBuilder.AddField(header.FieldTitle, header.FieldType, header.IsFieldRequired, header.IsFieldIdentity);
+
+			schema = schemaBuilder.Build();
+
+			if ((object)schema == null)
+				throw new SyncPremException(nameof(schema));
 
 			localState.Add(Constants.ContextComponentScopedSchema, schema);
 		}
@@ -140,7 +152,8 @@ namespace SyncPrem.Pipeline.Core.Connectors.FlatText
 		{
 			IChannel channel;
 			ISchema schema;
-			IEnumerable<IRecord> records;
+
+			IEnumerable<IPayload> payloads;
 
 			if ((object)context == null)
 				throw new ArgumentNullException(nameof(context));
@@ -167,12 +180,19 @@ namespace SyncPrem.Pipeline.Core.Connectors.FlatText
 			if ((object)schema == null)
 				throw new SyncPremException(nameof(schema));
 
-			records = this.DelimitedTextReader.ReadRecords();
+			schema = localState[Constants.ContextComponentScopedSchema] as ISchema;
 
-			if ((object)records == null)
-				throw new SyncPremException(nameof(records));
+			if ((object)schema == null)
+				throw new SyncPremException(nameof(schema));
 
-			channel = context.CreateChannel(schema, records);
+			payloads = this.DelimitedTextualReader.ReadRecords();
+
+			if ((object)payloads == null)
+				throw new SyncPremException(nameof(payloads));
+
+			var records = payloads.Select(rec => new Record(schema, rec, string.Empty, 0, new Payload()));
+
+			channel = context.CreateChannel(records);
 
 			return channel;
 		}

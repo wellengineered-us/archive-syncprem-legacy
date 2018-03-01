@@ -16,7 +16,7 @@ namespace SyncPrem.StreamingIO.DataMasking
 
 		object GetObfuscatedValue(IField field, object originalFieldValue);
 
-		IEnumerable<IRecord> GetObfuscatedValues(IEnumerable<IRecord> records);
+		IEnumerable<IPayload> GetObfuscatedValues(IEnumerable<IPayload> records);
 
 		#endregion
 	}

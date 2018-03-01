@@ -7,17 +7,19 @@ using System;
 using System.Collections.Generic;
 using System.Data;
 using System.Data.Common;
+using System.Linq;
 
 using SyncPrem.Pipeline.Abstractions;
 using SyncPrem.Pipeline.Abstractions.Channel;
 using SyncPrem.Pipeline.Abstractions.Configuration;
 using SyncPrem.Pipeline.Abstractions.Runtime;
 using SyncPrem.Pipeline.Abstractions.Stage.Connector.Source;
+using SyncPrem.Pipeline.Core.Channels;
 using SyncPrem.Pipeline.Core.Configurations.AdoNet;
-using SyncPrem.StreamingIO.AdoNet;
-using SyncPrem.StreamingIO.AdoNet.UoW;
 using SyncPrem.StreamingIO.Primitives;
 using SyncPrem.StreamingIO.ProxyWrappers;
+using SyncPrem.StreamingIO.Relational;
+using SyncPrem.StreamingIO.Relational.UoW;
 
 using TextMetal.Middleware.Solder.Extensions;
 
@@ -71,7 +73,7 @@ namespace SyncPrem.Pipeline.Core.Connectors.AdoNet
 
 		protected override void PostExecuteRecord(IContext context, RecordConfiguration configuration)
 		{
-			IEnumerable<IResult> results;
+			IEnumerable<IAdoNetStreamingResult> results;
 			IEnumerable<DbParameter> dbParameters;
 
 			if ((object)context == null)
@@ -113,9 +115,9 @@ namespace SyncPrem.Pipeline.Core.Connectors.AdoNet
 		{
 			SchemaBuilder schemaBuilder;
 			ISchema schema;
-			IEnumerable<IRecord> records;
+			IEnumerable<IPayload> records;
 
-			IEnumerable<IResult> results;
+			IEnumerable<IAdoNetStreamingResult> results;
 			IEnumerable<DbParameter> dbParameters;
 
 			if ((object)context == null)
@@ -162,37 +164,41 @@ namespace SyncPrem.Pipeline.Core.Connectors.AdoNet
 				if ((object)results == null)
 					throw new SyncPremException(nameof(results));
 
-				foreach (IResult result in results)
+				foreach (IAdoNetStreamingResult result in results)
 				{
-					schemaBuilder = new SchemaBuilder();
-
 					records = result.Records;
 
 					if ((object)records == null)
 						throw new SyncPremException(nameof(results));
-
-					foreach (IRecord record in records)
-					{
-						string fieldName;
-						Type fieldType;
-						bool isKey;
-						bool isOptional;
-
-						fieldName = (string)record[nameof(DbColumn.ColumnName)];
-						fieldType = (Type)record[nameof(DbColumn.DataType)];
-						isKey = (bool?)record[nameof(DbColumn.IsKey)] ?? true;
-						isOptional = (bool?)record[nameof(DbColumn.AllowDBNull)] ?? true;
-
-						schemaBuilder.AddField(fieldName, fieldType, isKey, isOptional);
-					}
-
-					schema = schemaBuilder.Build();
 
 					if (!context.LocalState.TryGetValue(this, out IDictionary<string, object> localState))
 					{
 						localState = new Dictionary<string, object>(StringComparer.OrdinalIgnoreCase);
 						context.LocalState.Add(this, localState);
 					}
+
+					schemaBuilder = SchemaBuilder.Create();
+
+					foreach (IPayload record in records)
+					{
+						string fieldName;
+						Type fieldType;
+						bool isKey;
+						bool isNullable;
+
+						fieldName = (string)record[nameof(DbColumn.ColumnName)];
+						fieldType = (Type)record[nameof(DbColumn.DataType)];
+						isKey = (bool?)record[nameof(DbColumn.IsKey)] ?? false;
+						isNullable = (bool?)record[nameof(DbColumn.AllowDBNull)] ?? true;
+
+						// TODO ensure nullable type
+						schemaBuilder.AddField(fieldName, fieldType, isNullable, isKey);
+					}
+
+					schema = schemaBuilder.Build();
+
+					if ((object)schema == null)
+						throw new SyncPremException(nameof(schema));
 
 					localState.Add(Constants.ContextComponentScopedSchema, schema);
 
@@ -205,9 +211,9 @@ namespace SyncPrem.Pipeline.Core.Connectors.AdoNet
 		{
 			IChannel channel = null;
 			ISchema schema;
-			IEnumerable<IRecord> records;
 
-			IEnumerable<IResult> results;
+			IEnumerable<IPayload> payloads;
+			IEnumerable<IAdoNetStreamingResult> results;
 			IEnumerable<DbParameter> dbParameters;
 
 			if ((object)context == null)
@@ -237,7 +243,7 @@ namespace SyncPrem.Pipeline.Core.Connectors.AdoNet
 			if ((object)results == null)
 				throw new SyncPremException(nameof(results));
 
-			foreach (IResult result in results)
+			foreach (IAdoNetStreamingResult result in results)
 			{
 				if (!context.LocalState.TryGetValue(this, out IDictionary<string, object> localState))
 				{
@@ -250,12 +256,14 @@ namespace SyncPrem.Pipeline.Core.Connectors.AdoNet
 				if ((object)schema == null)
 					throw new SyncPremException(nameof(schema));
 
-				records = result.Records;
+				payloads = result.Records;
 
-				if ((object)records == null)
-					throw new SyncPremException(nameof(records));
+				if ((object)payloads == null)
+					throw new SyncPremException(nameof(payloads));
 
-				channel = context.CreateChannel(schema, records);
+				var records = payloads.Select(rec => new Record(schema, rec, string.Empty, 0, new Payload()));
+
+				channel = context.CreateChannel(records);
 
 				break; // first only in this version
 			}

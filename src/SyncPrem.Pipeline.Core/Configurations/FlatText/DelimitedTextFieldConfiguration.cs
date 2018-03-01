@@ -7,14 +7,12 @@ using System;
 using System.Collections.Generic;
 
 using SyncPrem.Infrastructure.Configuration;
-using SyncPrem.StreamingIO.FlatText.Delimited;
-using SyncPrem.StreamingIO.Primitives;
 
 using TextMetal.Middleware.Solder.Primitives;
 
 namespace SyncPrem.Pipeline.Core.Configurations.FlatText
 {
-	public class DelimitedTextFieldConfiguration : ConfigurationObject, IDelimitedTextFieldSpec
+	public class DelimitedTextFieldConfiguration : ConfigurationObject
 	{
 		#region Constructors/Destructors
 
@@ -28,52 +26,12 @@ namespace SyncPrem.Pipeline.Core.Configurations.FlatText
 
 		private string fieldName;
 		private string fieldTypeAqtn;
-		private bool? isFieldKeyComponent;
-		private bool? isFieldOptional;
+		private bool? isKeyComponent;
+		private bool? isOptional;
 
 		#endregion
 
 		#region Properties/Indexers/Events
-
-		long IField.FieldIndex
-		{
-			get
-			{
-				return 0;
-			}
-		}
-
-		Type IField.FieldType
-		{
-			get
-			{
-				return this.GetFieldType();
-			}
-		}
-
-		bool IField.IsKeyComponent
-		{
-			get
-			{
-				return this.IsFieldKeyComponent ?? false;
-			}
-		}
-
-		bool IField.IsOptional
-		{
-			get
-			{
-				return this.IsFieldOptional ?? true;
-			}
-		}
-
-		ISchema IField.Schema
-		{
-			get
-			{
-				return null;
-			}
-		}
 
 		public string FieldName
 		{
@@ -99,27 +57,27 @@ namespace SyncPrem.Pipeline.Core.Configurations.FlatText
 			}
 		}
 
-		public bool? IsFieldKeyComponent
+		public bool? IsKeyComponent
 		{
 			get
 			{
-				return this.isFieldKeyComponent;
+				return this.isKeyComponent;
 			}
 			set
 			{
-				this.isFieldKeyComponent = value;
+				this.isKeyComponent = value;
 			}
 		}
 
-		public bool? IsFieldOptional
+		public bool? IsOptional
 		{
 			get
 			{
-				return this.isFieldOptional;
+				return this.isOptional;
 			}
 			set
 			{
-				this.isFieldOptional = value;
+				this.isOptional = value;
 			}
 		}
 

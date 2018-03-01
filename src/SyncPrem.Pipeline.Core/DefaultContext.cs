@@ -11,7 +11,6 @@ using SyncPrem.Pipeline.Abstractions;
 using SyncPrem.Pipeline.Abstractions.Channel;
 using SyncPrem.Pipeline.Abstractions.Runtime;
 using SyncPrem.Pipeline.Core.Channels;
-using SyncPrem.StreamingIO.Primitives;
 using SyncPrem.StreamingIO.ProxyWrappers;
 
 namespace SyncPrem.Pipeline.Core
@@ -66,15 +65,12 @@ namespace SyncPrem.Pipeline.Core
 			Console.WriteLine("{0}: count = {1}, done = {2}, timing = {3}", label, count, done, timing);
 		}
 
-		public IChannel CreateChannel(ISchema schema, IEnumerable<IRecord> records)
+		public IChannel CreateChannel(IEnumerable<IRecord> records)
 		{
-			if ((object)schema == null)
-				throw new ArgumentNullException(nameof(schema));
-
 			if ((object)records == null)
 				throw new ArgumentNullException(nameof(records));
 
-			return new Channel(schema, records.GetMetricsWrappedEnumerable("records", LogItem, LogMetrics)); // TODO DI/IoC
+			return new Channel(records.GetMetricsWrappedEnumerable("records", LogItem, LogMetrics)); // TODO DI/IoC
 		}
 
 		#endregion

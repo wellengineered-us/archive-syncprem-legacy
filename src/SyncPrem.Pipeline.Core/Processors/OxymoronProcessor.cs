@@ -60,13 +60,13 @@ namespace SyncPrem.Pipeline.Core.Processors
 			base.Dispose(disposing);
 		}
 
-		protected override void PostExecuteRecord(IContext context, RecordConfiguration recordConfiguration)
+		protected override void PostExecuteRecord(IContext context, RecordConfiguration configuration)
 		{
 			if ((object)context == null)
 				throw new ArgumentNullException(nameof(context));
 
-			if ((object)recordConfiguration == null)
-				throw new ArgumentNullException(nameof(recordConfiguration));
+			if ((object)configuration == null)
+				throw new ArgumentNullException(nameof(configuration));
 
 			if ((object)this.OxymoronEngine != null)
 				this.OxymoronEngine.Dispose();
@@ -74,7 +74,7 @@ namespace SyncPrem.Pipeline.Core.Processors
 			this.OxymoronEngine = null;
 		}
 
-		protected override void PreExecuteRecord(IContext context, RecordConfiguration recordConfiguration)
+		protected override void PreExecuteRecord(IContext context, RecordConfiguration configuration)
 		{
 			ResolveDictionaryValueDelegate resolveDictionaryValueCallback;
 			IObfuscationSpec obfuscationSpec;
@@ -82,8 +82,8 @@ namespace SyncPrem.Pipeline.Core.Processors
 			if ((object)context == null)
 				throw new ArgumentNullException(nameof(context));
 
-			if ((object)recordConfiguration == null)
-				throw new ArgumentNullException(nameof(recordConfiguration));
+			if ((object)configuration == null)
+				throw new ArgumentNullException(nameof(configuration));
 
 			resolveDictionaryValueCallback = (spec, key) => key;
 			obfuscationSpec = new __XX();
@@ -91,13 +91,13 @@ namespace SyncPrem.Pipeline.Core.Processors
 			this.OxymoronEngine = new OxymoronEngine(resolveDictionaryValueCallback, obfuscationSpec);
 		}
 
-		protected override IChannel ProcessRecord(IContext context, RecordConfiguration recordConfiguration, IChannel channel, ProcessDelegate next)
+		protected override IChannel ProcessRecord(IContext context, RecordConfiguration configuration, IChannel channel, ProcessDelegate next)
 		{
 			if ((object)context == null)
 				throw new ArgumentNullException(nameof(context));
 
-			if ((object)recordConfiguration == null)
-				throw new ArgumentNullException(nameof(recordConfiguration));
+			if ((object)configuration == null)
+				throw new ArgumentNullException(nameof(configuration));
 
 			if ((object)channel == null)
 				throw new ArgumentNullException(nameof(channel));
@@ -105,7 +105,7 @@ namespace SyncPrem.Pipeline.Core.Processors
 			// simply wrap
 			//channel.ApplyWrap(this.OxymoronEngine.GetObfuscatedValues);
 
-			return next(context, recordConfiguration, channel);
+			return next(context, configuration, channel);
 		}
 
 		#endregion

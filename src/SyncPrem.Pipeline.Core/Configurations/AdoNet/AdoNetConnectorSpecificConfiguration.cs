@@ -8,7 +8,7 @@ using System.Collections.Generic;
 using System.Data;
 
 using SyncPrem.Pipeline.Abstractions.Configuration;
-using SyncPrem.StreamingIO.AdoNet.UoW;
+using SyncPrem.StreamingIO.Relational.UoW;
 
 using TextMetal.Middleware.Solder.Extensions;
 using TextMetal.Middleware.Solder.Primitives;

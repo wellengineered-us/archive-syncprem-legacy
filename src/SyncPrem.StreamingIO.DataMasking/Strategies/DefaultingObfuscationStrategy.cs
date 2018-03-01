@@ -57,8 +57,8 @@ namespace SyncPrem.StreamingIO.DataMasking.Strategies
 			if ((object)columnSpec.ObfuscationStrategySpec == null)
 				throw new InvalidOperationException(string.Format("Specification missing: '{0}'.", nameof(columnSpec.ObfuscationStrategySpec)));
 
-			value = GetDefault(field.IsOptional && (columnSpec.ObfuscationStrategySpec.DefaultingCanBeNull ?? false), field.FieldType);
-
+			//value = GetDefault(field.IsOptional && (columnSpec.ObfuscationStrategySpec.DefaultingCanBeNull ?? false), field.FieldType);
+			value = null;
 			return value;
 		}
 

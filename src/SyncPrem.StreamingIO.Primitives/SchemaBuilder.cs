@@ -13,7 +13,7 @@ namespace SyncPrem.StreamingIO.Primitives
 	{
 		#region Constructors/Destructors
 
-		public SchemaBuilder()
+		private SchemaBuilder()
 		{
 		}
 
@@ -21,13 +21,23 @@ namespace SyncPrem.StreamingIO.Primitives
 
 		#region Fields/Constants
 
+		private static readonly ISchema empty = Create().WithVersion(0).Build();
 		private readonly Dictionary<string, IField> fields = new Dictionary<string, IField>(StringComparer.OrdinalIgnoreCase);
 		private string schemaName;
+		private SchemaType schemaType;
 		private int schemaVersion;
 
 		#endregion
 
 		#region Properties/Indexers/Events
+
+		public static ISchema Empty
+		{
+			get
+			{
+				return empty;
+			}
+		}
 
 		public IReadOnlyDictionary<string, IField> Fields
 		{
@@ -65,6 +75,18 @@ namespace SyncPrem.StreamingIO.Primitives
 			}
 		}
 
+		public SchemaType SchemaType
+		{
+			get
+			{
+				return this.schemaType;
+			}
+			private set
+			{
+				this.schemaType = value;
+			}
+		}
+
 		public int SchemaVersion
 		{
 			get
@@ -83,28 +105,55 @@ namespace SyncPrem.StreamingIO.Primitives
 
 		private static void AssertCanSet(string propertyName, object propertyValue, object newValue)
 		{
-			if ((object)propertyValue != null && propertyValue != newValue)
+			if (propertyValue != null && propertyValue != newValue)
+				throw new InvalidOperationException(string.Format("SchemaBuilder: Property '{0}' has already been set.", propertyName));
+		}
+
+		private static void AssertCanSet(string propertyName, bool propertyValue, bool newValue)
+		{
+			if (propertyValue != false && propertyValue != newValue)
+				throw new InvalidOperationException(string.Format("SchemaBuilder: Property '{0}' has already been set.", propertyName));
+		}
+
+		private static void AssertCanSet(string propertyName, int propertyValue, int newValue)
+		{
+			if (propertyValue != 0 && propertyValue != newValue)
 				throw new InvalidOperationException(string.Format("SchemaBuilder: Property '{0}' has already been set.", propertyName));
 		}
 
 		public static SchemaBuilder Create()
 		{
-			return new SchemaBuilder();
+			return new SchemaBuilder() { SchemaType = SchemaType.Object };
 		}
 
-		public SchemaBuilder AddField(string fieldName, Type type = null, bool key = false, bool optional = true, ISchema schema = null)
+		public static ISchema FromType(Type type)
+		{
+			SchemaBuilder schemaBuilder;
+
+			if ((object)type == null)
+				throw new ArgumentNullException(nameof(type));
+
+			schemaBuilder = new SchemaBuilder();
+
+			return schemaBuilder.Schema;
+		}
+
+		public SchemaBuilder AddField(string fieldName, Type fieldType, bool isFieldOptional, bool isFieldKeyPart, ISchema fieldSchema = null)
 		{
 			if ((object)fieldName == null)
 				throw new ArgumentNullException(nameof(fieldName));
+
+			if ((object)fieldType == null)
+				throw new ArgumentNullException(nameof(fieldType));
 
 			this.MutableFields.Add(fieldName, new Field()
 											{
 												FieldIndex = this.MutableFields.Count,
 												FieldName = fieldName,
-												FieldType = type ?? typeof(String),
-												IsKeyComponent = key,
-												IsOptional = optional,
-												Schema = schema
+												FieldType = fieldType,
+												IsFieldOptional = isFieldOptional,
+												IsFieldKeyComponent = isFieldKeyPart,
+												FieldSchema = fieldSchema
 											});
 			return this;
 		}
@@ -127,7 +176,7 @@ namespace SyncPrem.StreamingIO.Primitives
 
 		public override string ToString()
 		{
-			return string.Join(", ", this.Fields.Values.Select(f => $"[{f.FieldName}] AS [{f.FieldType.Name}]"));
+			return string.Join(", ", this.Fields.Values.Select(f => $"[{f.FieldName}]@{f.FieldIndex}"));
 		}
 
 		public SchemaBuilder WithName(string value)

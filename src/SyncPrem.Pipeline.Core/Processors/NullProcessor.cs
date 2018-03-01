@@ -68,42 +68,42 @@ namespace SyncPrem.Pipeline.Core.Processors
 			base.Dispose(disposing);
 		}
 
-		protected override void PostExecuteRecord(IContext context, RecordConfiguration recordConfiguration)
+		protected override void PostExecuteRecord(IContext context, RecordConfiguration configuration)
 		{
 			if ((object)context == null)
 				throw new ArgumentNullException(nameof(context));
 
-			if ((object)recordConfiguration == null)
-				throw new ArgumentNullException(nameof(recordConfiguration));
+			if ((object)configuration == null)
+				throw new ArgumentNullException(nameof(configuration));
 
 			Console.WriteLine("PostExecuteRecord processor: '{0}'", nameof(NullProcessor));
 		}
 
-		protected override void PreExecuteRecord(IContext context, RecordConfiguration recordConfiguration)
+		protected override void PreExecuteRecord(IContext context, RecordConfiguration configuration)
 		{
 			if ((object)context == null)
 				throw new ArgumentNullException(nameof(context));
 
-			if ((object)recordConfiguration == null)
-				throw new ArgumentNullException(nameof(recordConfiguration));
+			if ((object)configuration == null)
+				throw new ArgumentNullException(nameof(configuration));
 
 			Console.WriteLine("PreExecuteRecord processor: '{0}'", nameof(NullProcessor));
 		}
 
-		protected override IChannel ProcessRecord(IContext context, RecordConfiguration recordConfiguration, IChannel channel, ProcessDelegate next)
+		protected override IChannel ProcessRecord(IContext context, RecordConfiguration configuration, IChannel channel, ProcessDelegate next)
 		{
 			if ((object)context == null)
 				throw new ArgumentNullException(nameof(context));
 
-			if ((object)recordConfiguration == null)
-				throw new ArgumentNullException(nameof(recordConfiguration));
+			if ((object)configuration == null)
+				throw new ArgumentNullException(nameof(configuration));
 
 			if ((object)channel == null)
 				throw new ArgumentNullException(nameof(channel));
 
 			Console.WriteLine("ProcessRecord (before next) processor: '{0}'", nameof(NullProcessor));
 
-			channel = next(context, recordConfiguration, channel);
+			channel = next(context, configuration, channel);
 
 			Console.WriteLine("ProcessRecord (after next) processor: '{0}'", nameof(NullProcessor));
 

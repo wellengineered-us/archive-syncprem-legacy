@@ -24,15 +24,15 @@ namespace SyncPrem.Pipeline.Abstractions.Stage.Processor
 
 		#region Methods/Operators
 
-		public IChannel Process(IContext context, RecordConfiguration recordConfiguration, IChannel channel, ProcessDelegate next)
+		public IChannel Process(IContext context, RecordConfiguration configuration, IChannel channel, ProcessDelegate next)
 		{
 			IChannel transformedStream;
 
 			if ((object)context == null)
 				throw new ArgumentNullException(nameof(context));
 
-			if ((object)recordConfiguration == null)
-				throw new ArgumentNullException(nameof(recordConfiguration));
+			if ((object)configuration == null)
+				throw new ArgumentNullException(nameof(configuration));
 
 			if ((object)channel == null)
 				throw new ArgumentNullException(nameof(channel));
@@ -40,12 +40,12 @@ namespace SyncPrem.Pipeline.Abstractions.Stage.Processor
 			//if ((object)next == null)
 			//throw new ArgumentNullException(nameof(next));
 
-			transformedStream = this.ProcessRecord(context, recordConfiguration, channel, next);
+			transformedStream = this.ProcessRecord(context, configuration, channel, next);
 
 			return transformedStream;
 		}
 
-		protected abstract IChannel ProcessRecord(IContext context, RecordConfiguration recordConfiguration, IChannel channel, ProcessDelegate next);
+		protected abstract IChannel ProcessRecord(IContext context, RecordConfiguration configuration, IChannel channel, ProcessDelegate next);
 
 		#endregion
 	}

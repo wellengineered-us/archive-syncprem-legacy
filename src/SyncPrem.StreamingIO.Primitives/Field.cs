@@ -21,10 +21,11 @@ namespace SyncPrem.StreamingIO.Primitives
 
 		private long fieldIndex;
 		private string fieldName;
+
+		private ISchema fieldSchema;
 		private Type fieldType;
 		private bool isFieldKeyComponent;
 		private bool isFieldOptional;
-		private ISchema schema;
 
 		#endregion
 
@@ -54,6 +55,18 @@ namespace SyncPrem.StreamingIO.Primitives
 			}
 		}
 
+		public ISchema FieldSchema
+		{
+			get
+			{
+				return this.fieldSchema;
+			}
+			set
+			{
+				this.fieldSchema = value;
+			}
+		}
+
 		public Type FieldType
 		{
 			get
@@ -66,7 +79,7 @@ namespace SyncPrem.StreamingIO.Primitives
 			}
 		}
 
-		public bool IsKeyComponent
+		public bool IsFieldKeyComponent
 		{
 			get
 			{
@@ -78,7 +91,7 @@ namespace SyncPrem.StreamingIO.Primitives
 			}
 		}
 
-		public bool IsOptional
+		public bool IsFieldOptional
 		{
 			get
 			{
@@ -87,18 +100,6 @@ namespace SyncPrem.StreamingIO.Primitives
 			set
 			{
 				this.isFieldOptional = value;
-			}
-		}
-
-		public ISchema Schema
-		{
-			get
-			{
-				return this.schema;
-			}
-			set
-			{
-				this.schema = value;
 			}
 		}
 

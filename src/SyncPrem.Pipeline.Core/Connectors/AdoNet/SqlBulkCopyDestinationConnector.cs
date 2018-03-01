@@ -27,7 +27,7 @@ namespace SyncPrem.Pipeline.Core.Connectors.AdoNet
 
 		#region Methods/Operators
 
-		protected override void ConsumeMessageReader(IContext context, RecordConfiguration recordConfiguration, DbDataReader sourceDataReader, out long rowsCopied)
+		protected override void ConsumeMessageReader(IContext context, RecordConfiguration configuration, DbDataReader sourceDataReader, out long rowsCopied)
 		{
 			long _rowsCopied = 0;
 			//SqlRowsCopiedEventHandler callback;
@@ -35,8 +35,8 @@ namespace SyncPrem.Pipeline.Core.Connectors.AdoNet
 			if ((object)context == null)
 				throw new ArgumentNullException(nameof(context));
 
-			if ((object)recordConfiguration == null)
-				throw new ArgumentNullException(nameof(recordConfiguration));
+			if ((object)configuration == null)
+				throw new ArgumentNullException(nameof(configuration));
 
 			if ((object)sourceDataReader == null)
 				throw new ArgumentNullException(nameof(sourceDataReader));
@@ -59,7 +59,7 @@ namespace SyncPrem.Pipeline.Core.Connectors.AdoNet
 			{
 				//callback = (sender, e) => Console.WriteLine(_rowsCopied = e.RowsCopied);
 
-				foreach (FieldConfiguration columnConfiguration in recordConfiguration.ColumnConfigurations)
+				foreach (FieldConfiguration columnConfiguration in configuration.ColumnConfigurations)
 					sqlBulkCopy.ColumnMappings.Add(columnConfiguration.FieldName, columnConfiguration.FieldName);
 
 				sqlBulkCopy.EnableStreaming = true;

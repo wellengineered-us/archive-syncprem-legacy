@@ -12,9 +12,9 @@ using System.Linq;
 using SyncPrem.Pipeline.Abstractions.Configuration;
 using SyncPrem.Pipeline.Abstractions.Runtime;
 using SyncPrem.Pipeline.Core.Configurations.AdoNet;
-using SyncPrem.StreamingIO.AdoNet;
-using SyncPrem.StreamingIO.AdoNet.UoW;
 using SyncPrem.StreamingIO.ProxyWrappers;
+using SyncPrem.StreamingIO.Relational;
+using SyncPrem.StreamingIO.Relational.UoW;
 
 using TextMetal.Middleware.Solder.Extensions;
 
@@ -32,17 +32,17 @@ namespace SyncPrem.Pipeline.Core.Connectors.AdoNet
 
 		#region Methods/Operators
 
-		protected override void ConsumeMessageReader(IContext context, RecordConfiguration recordConfiguration, DbDataReader sourceDataReader, out long rowsCopied)
+		protected override void ConsumeMessageReader(IContext context, RecordConfiguration configuration, DbDataReader sourceDataReader, out long rowsCopied)
 		{
-			IEnumerable<IResult> results;
+			IEnumerable<IAdoNetStreamingResult> results;
 			IEnumerable<DbParameter> dbParameters;
 			long _rowsCopied = 0;
 
 			if ((object)context == null)
 				throw new ArgumentNullException(nameof(context));
 
-			if ((object)recordConfiguration == null)
-				throw new ArgumentNullException(nameof(recordConfiguration));
+			if ((object)configuration == null)
+				throw new ArgumentNullException(nameof(configuration));
 
 			if ((object)sourceDataReader == null)
 				throw new ArgumentNullException(nameof(sourceDataReader));

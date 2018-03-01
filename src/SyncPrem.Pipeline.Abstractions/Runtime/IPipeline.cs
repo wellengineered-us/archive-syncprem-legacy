@@ -4,7 +4,6 @@
 */
 
 using System;
-using System.Collections.Generic;
 
 using SyncPrem.Pipeline.Abstractions.Configuration;
 
@@ -27,10 +26,6 @@ namespace SyncPrem.Pipeline.Abstractions.Runtime
 		IContext CreateContext();
 
 		int Execute(IContext context);
-
-		Type GetPipelineType();
-
-		IReadOnlyCollection<Type> GetStaticStageChain();
 
 		#endregion
 	}

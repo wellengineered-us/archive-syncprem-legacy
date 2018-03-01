@@ -13,10 +13,10 @@ using SyncPrem.Pipeline.Abstractions.Configuration;
 using SyncPrem.Pipeline.Abstractions.Runtime;
 using SyncPrem.Pipeline.Abstractions.Stage.Connector.Destination;
 using SyncPrem.Pipeline.Core.Configurations.AdoNet;
-using SyncPrem.StreamingIO.AdoNet;
-using SyncPrem.StreamingIO.AdoNet.UoW;
 using SyncPrem.StreamingIO.Primitives;
 using SyncPrem.StreamingIO.ProxyWrappers;
+using SyncPrem.StreamingIO.Relational;
+using SyncPrem.StreamingIO.Relational.UoW;
 
 using TextMetal.Middleware.Solder.Extensions;
 
@@ -75,11 +75,6 @@ namespace SyncPrem.Pipeline.Core.Connectors.AdoNet
 			if ((object)channel == null)
 				throw new ArgumentNullException(nameof(channel));
 
-			schema = channel.Schema;
-
-			if ((object)schema == null)
-				throw new SyncPremException(nameof(schema));
-
 			records = channel.Records;
 
 			if ((object)records == null)
@@ -89,7 +84,7 @@ namespace SyncPrem.Pipeline.Core.Connectors.AdoNet
 
 			/*
 
-			sourceDataReader = new ResultRecordDataReader(schema.Fields.Values, records);
+			sourceDataReader = new AdoNetStreamingDataReader(schema.Fields.Values, records);
 
 			try
 			{
@@ -108,7 +103,7 @@ namespace SyncPrem.Pipeline.Core.Connectors.AdoNet
 
 		protected override void PostExecuteRecord(IContext context, RecordConfiguration configuration)
 		{
-			IEnumerable<IResult> results;
+			IEnumerable<IAdoNetStreamingResult> results;
 			IEnumerable<DbParameter> dbParameters;
 
 			if ((object)context == null)
@@ -146,7 +141,7 @@ namespace SyncPrem.Pipeline.Core.Connectors.AdoNet
 
 		protected override void PreExecuteRecord(IContext context, RecordConfiguration configuration)
 		{
-			IEnumerable<IResult> results;
+			IEnumerable<IAdoNetStreamingResult> results;
 			IEnumerable<DbParameter> dbParameters;
 
 			if ((object)context == null)

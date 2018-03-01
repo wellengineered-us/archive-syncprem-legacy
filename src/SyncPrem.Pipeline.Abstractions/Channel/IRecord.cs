@@ -1,0 +1,48 @@
+﻿/*
+	Copyright ©2002-2017 Daniel P. Bullington (dpbullington@gmail.com)
+	Distributed under the MIT license: http://www.opensource.org/licenses/mit-license.php
+*/
+
+using System;
+
+using SyncPrem.StreamingIO.Primitives;
+
+namespace SyncPrem.Pipeline.Abstractions.Channel
+{
+	public interface IRecord
+	{
+		#region Properties/Indexers/Events
+
+		IPayload Offset
+		{
+			get;
+		}
+
+		int Partition
+		{
+			get;
+		}
+
+		IPayload Payload
+		{
+			get;
+		}
+
+		ISchema Schema
+		{
+			get;
+		}
+
+		DateTimeOffset Timestamp
+		{
+			get;
+		}
+
+		string Topic
+		{
+			get;
+		}
+
+		#endregion
+	}
+}

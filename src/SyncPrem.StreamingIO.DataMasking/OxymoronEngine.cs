@@ -163,18 +163,18 @@ namespace SyncPrem.StreamingIO.DataMasking
 			return (int)hashCode;
 		}
 
-		public static IEnumerable<IRecord> RecordsFromJsonFile(string jsonFilePath)
+		public static IEnumerable<IPayload> RecordsFromJsonFile(string jsonFilePath)
 		{
-			IEnumerable<IRecord> records;
+			IEnumerable<IPayload> records;
 
-			records = JsonSerializationStrategy.Instance.GetObjectFromFile<Record[]>(jsonFilePath);
+			records = JsonSerializationStrategy.Instance.GetObjectFromFile<Payload[]>(jsonFilePath);
 
 			return records;
 		}
 
-		public static void RecordsToJsonFile(IEnumerable<IRecord> records, string jsonFilePath)
+		public static void RecordsToJsonFile(IEnumerable<IPayload> records, string jsonFilePath)
 		{
-			JsonSerializationStrategy.Instance.SetObjectToFile<IEnumerable<IRecord>>(jsonFilePath, records);
+			JsonSerializationStrategy.Instance.SetObjectToFile<IEnumerable<IPayload>>(jsonFilePath, records);
 		}
 
 		private object _GetObfuscatedValue(IField field, object originalFieldValue)
@@ -271,7 +271,7 @@ namespace SyncPrem.StreamingIO.DataMasking
 			return value;
 		}
 
-		public IEnumerable<IRecord> GetObfuscatedValues(IEnumerable<IRecord> records)
+		public IEnumerable<IPayload> GetObfuscatedValues(IEnumerable<IPayload> records)
 		{
 			string fieldName;
 			Type fieldType;
@@ -281,13 +281,13 @@ namespace SyncPrem.StreamingIO.DataMasking
 			if ((object)records == null)
 				throw new ArgumentNullException(nameof(records));
 
-			foreach (IRecord record in records)
+			foreach (IPayload record in records)
 			{
-				Record obfuscatedRecord = null;
+				Payload obfuscatedPayload = null;
 
 				if ((object)record != null)
 				{
-					obfuscatedRecord = new Record();
+					obfuscatedPayload = new Payload();
 
 					foreach (KeyValuePair<string, object> item in record)
 					{
@@ -299,17 +299,15 @@ namespace SyncPrem.StreamingIO.DataMasking
 
 						field = new Field()
 								{
-									FieldName = fieldName,
-									FieldType = fieldType,
-									IsOptional = isFieldOptional
+									FieldName = fieldName
 								};
 
 						obfuscatedFieldValue = this.GetObfuscatedValue(field, originalFieldValue);
-						obfuscatedRecord.Add(fieldName, obfuscatedFieldValue);
+						obfuscatedPayload.Add(fieldName, obfuscatedFieldValue);
 					}
 				}
 
-				yield return obfuscatedRecord;
+				yield return obfuscatedPayload;
 			}
 		}
 

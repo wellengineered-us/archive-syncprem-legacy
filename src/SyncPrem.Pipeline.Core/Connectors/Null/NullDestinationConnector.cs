@@ -29,7 +29,6 @@ namespace SyncPrem.Pipeline.Core.Connectors.Null
 
 		protected override void ConsumeRecord(IContext context, RecordConfiguration configuration, IChannel channel)
 		{
-			ISchema schema;
 			IEnumerable<IRecord> records;
 
 			if ((object)context == null)
@@ -40,11 +39,6 @@ namespace SyncPrem.Pipeline.Core.Connectors.Null
 
 			if ((object)channel == null)
 				throw new ArgumentNullException(nameof(channel));
-
-			schema = channel.Schema;
-
-			if ((object)schema == null)
-				throw new SyncPremException(nameof(schema));
 
 			records = channel.Records;
 

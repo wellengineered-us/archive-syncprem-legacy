@@ -10,7 +10,7 @@ using System.Data.Common;
 using System.Linq;
 
 using SyncPrem.Infrastructure.Configuration;
-using SyncPrem.StreamingIO.AdoNet.UoW;
+using SyncPrem.StreamingIO.Relational.UoW;
 
 using TextMetal.Middleware.Solder.Primitives;
 

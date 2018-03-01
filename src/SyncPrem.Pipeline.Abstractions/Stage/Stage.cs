@@ -49,19 +49,19 @@ namespace SyncPrem.Pipeline.Abstractions.Stage
 
 		#region Methods/Operators
 
-		public void PostExecute(IContext context, RecordConfiguration recordConfiguration)
+		public void PostExecute(IContext context, RecordConfiguration configuration)
 		{
-			this.PostExecuteRecord(context, recordConfiguration);
+			this.PostExecuteRecord(context, configuration);
 		}
 
-		protected abstract void PostExecuteRecord(IContext context, RecordConfiguration recordConfiguration);
+		protected abstract void PostExecuteRecord(IContext context, RecordConfiguration configuration);
 
-		public void PreExecute(IContext context, RecordConfiguration recordConfiguration)
+		public void PreExecute(IContext context, RecordConfiguration configuration)
 		{
-			this.PreExecuteRecord(context, recordConfiguration);
+			this.PreExecuteRecord(context, configuration);
 		}
 
-		protected abstract void PreExecuteRecord(IContext context, RecordConfiguration recordConfiguration);
+		protected abstract void PreExecuteRecord(IContext context, RecordConfiguration configuration);
 
 		#endregion
 	}

@@ -6,8 +6,6 @@
 using System;
 using System.Collections.Generic;
 
-using SyncPrem.StreamingIO.Primitives;
-
 namespace SyncPrem.Pipeline.Abstractions.Channel
 {
 	public interface IChannel : IComponent
@@ -15,16 +13,6 @@ namespace SyncPrem.Pipeline.Abstractions.Channel
 		#region Properties/Indexers/Events
 
 		IEnumerable<IRecord> Records
-		{
-			get;
-		}
-
-		ISchema Schema
-		{
-			get;
-		}
-
-		DateTimeOffset Timestamp
 		{
 			get;
 		}
