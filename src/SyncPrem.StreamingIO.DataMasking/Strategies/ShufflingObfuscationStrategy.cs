@@ -9,6 +9,8 @@ using System.Text;
 
 using SyncPrem.StreamingIO.Primitives;
 
+using TextMetal.Middleware.Solder.Extensions;
+
 namespace SyncPrem.StreamingIO.DataMasking.Strategies
 {
 	/// <summary>
@@ -68,7 +70,7 @@ namespace SyncPrem.StreamingIO.DataMasking.Strategies
 
 			_value = (String)value;
 
-			if (string.IsNullOrWhiteSpace(_value))
+			if (SolderFascadeAccessor.DataTypeFascade.IsNullOrWhiteSpace(_value))
 				return _value;
 
 			_value = _value.Trim();
@@ -91,7 +93,7 @@ namespace SyncPrem.StreamingIO.DataMasking.Strategies
 			if ((object)fidelityMap == null)
 				throw new ArgumentNullException(nameof(fidelityMap));
 
-			if (string.IsNullOrWhiteSpace(value))
+			if (SolderFascadeAccessor.DataTypeFascade.IsNullOrWhiteSpace(value))
 				return;
 
 			sb = new StringBuilder(value);
@@ -115,7 +117,7 @@ namespace SyncPrem.StreamingIO.DataMasking.Strategies
 
 			fidelityMap = new Dictionary<int, char>();
 
-			if (string.IsNullOrWhiteSpace(value))
+			if (SolderFascadeAccessor.DataTypeFascade.IsNullOrWhiteSpace(value))
 				return fidelityMap;
 
 			sb = new StringBuilder();

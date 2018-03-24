@@ -14,7 +14,7 @@ namespace SyncPrem.Pipeline.Core.Channels
 	{
 		#region Constructors/Destructors
 
-		public Record(ISchema schema, IPayload payload, string topic, int partition, IPayload offset)
+		public Record(ISchema schema, IPayload payload, string topic, IPartition partition, IOffset offset)
 		{
 			if ((object)schema == null)
 				throw new ArgumentNullException(nameof(schema));
@@ -37,10 +37,9 @@ namespace SyncPrem.Pipeline.Core.Channels
 
 		#region Fields/Constants
 
-		private readonly IPayload offset;
-		private readonly int partition;
+		private readonly IOffset offset;
+		private readonly IPartition partition;
 		private readonly IPayload payload;
-
 		private readonly ISchema schema;
 		private readonly DateTimeOffset timestamp;
 		private readonly string topic;
@@ -49,7 +48,7 @@ namespace SyncPrem.Pipeline.Core.Channels
 
 		#region Properties/Indexers/Events
 
-		public IPayload Offset
+		public IOffset Offset
 		{
 			get
 			{
@@ -57,7 +56,7 @@ namespace SyncPrem.Pipeline.Core.Channels
 			}
 		}
 
-		public int Partition
+		public IPartition Partition
 		{
 			get
 			{

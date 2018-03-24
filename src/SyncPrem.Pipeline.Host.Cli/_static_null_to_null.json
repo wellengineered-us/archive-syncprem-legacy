@@ -3,7 +3,7 @@
 
 	"SourceConfiguration":
 	{
-		"StageAqtn": "SyncPrem.Pipeline.Core.Connectors.Null.NullSourceConnector, SyncPrem.Pipeline.Core",
+		"StageAqtn": "SyncPrem.Pipeline.Core.Connectors.NullSourceConnector, SyncPrem.Pipeline.Core",
 		"StageSpecificConfiguration":
 		{
 		}
@@ -33,7 +33,7 @@
 
 	"DestinationConfiguration":
 	{
-		"StageAqtn": "SyncPrem.Pipeline.Core.Connectors.Null.NullDestinationConnector, SyncPrem.Pipeline.Core",
+		"StageAqtn": "SyncPrem.Pipeline.Core.Connectors.NullDestinationConnector, SyncPrem.Pipeline.Core",
 		"StageSpecificConfiguration":
 		{
 		}

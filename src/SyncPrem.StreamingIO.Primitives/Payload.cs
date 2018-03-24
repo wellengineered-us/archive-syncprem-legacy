@@ -22,12 +22,12 @@ namespace SyncPrem.StreamingIO.Primitives
 
 		#region Methods/Operators
 
-		public static Payload FromScalarValue<T>(T value)
+		public static Payload FromPrimitive<T>(T value)
 		{
-			return FromScalarValue((object)value);
+			return FromPrimitive((object)value);
 		}
 
-		public static Payload FromScalarValue(object value)
+		public static Payload FromPrimitive(object value)
 		{
 			Payload payload;
 

@@ -17,7 +17,7 @@ using _Message = TextMetal.Middleware.Solder.Primitives.Message;
 
 namespace SyncPrem.Pipeline.Abstractions.Configuration
 {
-	public class StageConfiguration : ConfigurationObject
+	public class StageConfiguration : ComponentConfiguration
 	{
 		#region Constructors/Destructors
 
@@ -133,8 +133,21 @@ namespace SyncPrem.Pipeline.Abstractions.Configuration
 						messages.Add(NewError(string.Format("{0} stage failed to instatiate type from AQTN.", stageContext)));
 					else
 					{
-						this.ApplyStageSpecificConfiguration(stage.StageSpecificConfigurationType);
-						messages.AddRange(this.ValidateStageSpecificConfiguration(stageContext));
+						try
+						{
+							using (stage)
+							{
+								stage.Configuration = this;
+								stage.Create();
+								this.ApplyStageSpecificConfiguration(stage.StageSpecificConfigurationType);
+
+								messages.AddRange(this.ValidateStageSpecificConfiguration(stageContext));
+							}
+						}
+						catch (Exception ex)
+						{
+							messages.Add(NewError(string.Format("Error during {0} stage validation: {1}.", stageContext, ex)));
+						}
 					}
 				}
 			}

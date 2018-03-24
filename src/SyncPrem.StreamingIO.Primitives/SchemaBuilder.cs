@@ -9,12 +9,21 @@ using System.Linq;
 
 namespace SyncPrem.StreamingIO.Primitives
 {
-	public sealed class SchemaBuilder : ISchema
+	public sealed class SchemaBuilder : ISchemaBuilder, ISchema
 	{
 		#region Constructors/Destructors
 
-		private SchemaBuilder()
+		public SchemaBuilder()
+			: this(new Dictionary<string, IField>(StringComparer.OrdinalIgnoreCase))
 		{
+		}
+
+		public SchemaBuilder(Dictionary<string, IField> fields)
+		{
+			if ((object)fields == null)
+				throw new ArgumentNullException(nameof(fields));
+
+			this.fields = fields;
 		}
 
 		#endregion
@@ -22,7 +31,7 @@ namespace SyncPrem.StreamingIO.Primitives
 		#region Fields/Constants
 
 		private static readonly ISchema empty = Create().WithVersion(0).Build();
-		private readonly Dictionary<string, IField> fields = new Dictionary<string, IField>(StringComparer.OrdinalIgnoreCase);
+		private readonly Dictionary<string, IField> fields;
 		private string schemaName;
 		private SchemaType schemaType;
 		private int schemaVersion;
@@ -190,6 +199,13 @@ namespace SyncPrem.StreamingIO.Primitives
 		{
 			AssertCanSet(nameof(this.SchemaVersion), this.SchemaVersion, value);
 			this.SchemaVersion = value;
+			return this;
+		}
+
+		public SchemaBuilder WithType(SchemaType value)
+		{
+			AssertCanSet(nameof(this.SchemaType), this.SchemaType, value);
+			this.SchemaType = value;
 			return this;
 		}
 

@@ -21,6 +21,7 @@ namespace SyncPrem.StreamingIO.Textual
 
 		private long fieldOrdinal;
 		private string fieldTitle;
+		private string fieldFormat;
 		private TextualFieldType fieldType;
 		private bool isFieldIdentity;
 		private bool isFieldRequired;
@@ -38,6 +39,18 @@ namespace SyncPrem.StreamingIO.Textual
 			set
 			{
 				this.fieldOrdinal = value;
+			}
+		}
+
+		public string FieldFormat
+		{
+			get
+			{
+				return this.fieldFormat;
+			}
+			set
+			{
+				this.fieldFormat = value;
 			}
 		}
 

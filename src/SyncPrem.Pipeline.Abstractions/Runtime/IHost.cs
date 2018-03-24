@@ -9,12 +9,7 @@ using SyncPrem.Pipeline.Abstractions.Configuration;
 
 namespace SyncPrem.Pipeline.Abstractions.Runtime
 {
-	public interface IHost : IComponent
+	public interface IHost : IComponent, IConfigurable<PipelineConfiguration>
 	{
-		#region Methods/Operators
-
-		void Host(PipelineConfiguration pipelineConfiguration);
-
-		#endregion
 	}
 }

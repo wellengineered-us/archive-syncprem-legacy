@@ -3,12 +3,12 @@
 
 	"SourceConfiguration":
 	{
-		"StageAqtn": "SyncPrem.Pipeline.Core.Connectors.FlatText.DelimitedTextSourceConnector, SyncPrem.Pipeline.Core",
+		"StageAqtn": "SyncPrem.Pipeline.Core.Connectors.DelimitedTextSourceConnector, SyncPrem.Pipeline.Core",
 		"StageSpecificConfiguration":
 		{
 			"DelimitedTextFilePath": "d:\\Confidential_Banking_Data.txt",
 
-			"DelimitedTextSpecConfiguration":
+			"DelimitedTextualConfiguration":
 			{
 				"FirstRecordIsHeader": true,
 				"LastRecordIsFooter": false,
@@ -17,49 +17,49 @@
 				"OpenQuoteValue": "",
 				"CloseQuoteValue": "",
 
-				"DelimitedTextHeaderFieldConfigurations":
+				"TextualHeaderFieldConfigurations":
 				[
 					{
-						"FieldName": "institution",
-						"FieldTypeAqtn": "System.String",
-						"IsKeyComponent": true
+						"FieldTitle": "institution",
+						"FieldType": "Text",
+						"IsFieldIdentity": true
 					},
 					{
-						"FieldName": "txid",
-						"FieldTypeAqtn": "System.Int32",
-						"IsKeyComponent": true
+						"FieldTitle": "txid",
+						"FieldType": "Number",
+						"IsFieldIdentity": true
 					},
 					{
-						"FieldName": "number",
-						"FieldTypeAqtn": "System.String"
+						"FieldTitle": "number",
+						"FieldType": "Text"
 					},
 					{
-						"FieldName": "date",
-						"FieldTypeAqtn": "System.DateTime"
+						"FieldTitle": "date",
+						"FieldType": "DateTime"
 					},
 					{
-						"FieldName": "payee",
-						"FieldTypeAqtn": "System.String"
+						"FieldTitle": "payee",
+						"FieldType": "Text"
 					},
 					{
-						"FieldName": "amount",
-						"FieldTypeAqtn": "System.Double"
+						"FieldTitle": "amount",
+						"FieldType": "Currency"
 					},
 					{
-						"FieldName": "cleared",
-						"FieldTypeAqtn": "System.Byte"
+						"FieldTitle": "cleared",
+						"FieldType": "Number"
 					},
 					{
-						"FieldName": "category",
-						"FieldTypeAqtn": "System.String"
+						"FieldTitle": "category",
+						"FieldType": "Text"
 					},
 					{
-						"FieldName": "due",
-						"FieldTypeAqtn": "System.DateTime"
+						"FieldTitle": "due",
+						"FieldType": "DateTime"
 					},
 					{
-						"FieldName": "comments",
-						"FieldTypeAqtn": "System.String"
+						"FieldTitle": "comments",
+						"FieldType": "Text"
 					}
 				]
 			}
@@ -79,12 +79,12 @@
 
 	"DestinationConfiguration":
 	{
-		"StageAqtn": "SyncPrem.Pipeline.Core.Connectors.FlatText.DelimitedTextDestinationConnector, SyncPrem.Pipeline.Core",
+		"StageAqtn": "SyncPrem.Pipeline.Core.Connectors.DelimitedTextDestinationConnector, SyncPrem.Pipeline.Core",
 		"StageSpecificConfiguration":
 		{
 			"DelimitedTextFilePath": "d:\\Public_Banking_Data.csv",
 
-			"DelimitedTextSpecConfiguration":
+			"DelimitedTextualConfiguration":
 			{
 				"FirstRecordIsHeader": true,
 				"LastRecordIsFooter": false,
@@ -93,47 +93,51 @@
 				"OpenQuoteValue": "\"",
 				"CloseQuoteValue": "\"",
 
-				"DelimitedTextHeaderFieldConfigurations":
+				"TextualHeaderFieldConfigurations":
 				[
 					{
-						"FieldName": "institution",
-						"FieldTypeAqtn": "System.String"
+						"FieldTitle": "institution",
+						"FieldType": "Text"
 					},
 					{
-						"FieldName": "txid",
-						"FieldTypeAqtn": "System.Int32"
+						"FieldTitle": "txid",
+						"FieldType": "Number",
+						"FieldFormat": "000000000"
 					},
 					{
-						"FieldName": "number",
-						"FieldTypeAqtn": "System.String"
+						"FieldTitle": "number",
+						"FieldType": "Text"
 					},
 					{
-						"FieldName": "date",
-						"FieldTypeAqtn": "System.DateTime"
+						"FieldTitle": "date",
+						"FieldType": "DateTime",
+						"FieldFormat": "MM/dd/yyyy"
 					},
 					{
-						"FieldName": "payee",
-						"FieldTypeAqtn": "System.String"
+						"FieldTitle": "payee",
+						"FieldType": "Text"
 					},
 					{
-						"FieldName": "amount",
-						"FieldTypeAqtn": "System.Double"
+						"FieldTitle": "amount",
+						"FieldType": "Currency",
+						"FieldFormat": "$###,###.00"
 					},
 					{
-						"FieldName": "cleared",
-						"FieldTypeAqtn": "System.Byte"
+						"FieldTitle": "cleared",
+						"FieldType": "Number"
 					},
 					{
-						"FieldName": "category",
-						"FieldTypeAqtn": "System.String"
+						"FieldTitle": "category",
+						"FieldType": "Text"
 					},
 					{
-						"FieldName": "due",
-						"FieldTypeAqtn": "System.DateTime"
+						"FieldTitle": "due",
+						"FieldType": "DateTime",
+						"FieldFormat": "MM/dd/yyyy"
 					},
 					{
-						"FieldName": "comments",
-						"FieldTypeAqtn": "System.String"
+						"FieldTitle": "comments",
+						"FieldType": "Text"
 					}
 				]
 			}

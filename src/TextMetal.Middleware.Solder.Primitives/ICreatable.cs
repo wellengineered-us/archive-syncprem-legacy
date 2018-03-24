@@ -7,6 +7,15 @@ namespace TextMetal.Middleware.Solder.Primitives
 {
 	public interface ICreatable
 	{
+		#region Properties/Indexers/Events
+
+		bool IsCreated
+		{
+			get;
+		}
+
+		#endregion
+
 		#region Methods/Operators
 
 		void Create();

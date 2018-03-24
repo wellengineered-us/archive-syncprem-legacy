@@ -8,8 +8,6 @@ using System.Collections.Generic;
 using System.Data;
 using System.Data.Common;
 
-using SyncPrem.StreamingIO.Primitives;
-
 namespace SyncPrem.StreamingIO.Relational
 {
 	internal interface IAdoNetStreamingFascade
@@ -48,7 +46,7 @@ namespace SyncPrem.StreamingIO.Relational
 		/// <param name="commandTimeout"> The command timeout (use null for default). </param>
 		/// <param name="commandPrepare"> Whether to prepare the command at the data source. </param>
 		/// <returns> The data reader result. </returns>
-		DbDataReader ExecuteReader(DbConnection dbConnection, DbTransaction dbTransaction, CommandType commandType, string commandText, IEnumerable<DbParameter> commandParameters, CommandBehavior commandBehavior, int? commandTimeout, bool commandPrepare);
+		AdoNetStreamingDataReader ExecuteReader(DbConnection dbConnection, DbTransaction dbTransaction, CommandType commandType, string commandText, IEnumerable<DbParameter> commandParameters, CommandBehavior commandBehavior, int? commandTimeout, bool commandPrepare);
 
 		/// <summary>
 		/// Execute a command against a data source, mapping the data reader to an enumerable of record dictionaries.
@@ -62,7 +60,7 @@ namespace SyncPrem.StreamingIO.Relational
 		/// <param name="commandParameters"> The parameters to use during the operation. </param>
 		/// <param name="recordsAffectedCallback"> Executed when the output count of records affected is available to return (post enumeration). </param>
 		/// <returns> An enumerable of result instances, each containing an enumerable of dictionaries with record key/value pairs of schema metadata. </returns>
-		IEnumerable<IPayload> ExecuteRecords(DbConnection dbConnection, DbTransaction dbTransaction, CommandType commandType, string commandText, IEnumerable<DbParameter> commandParameters, Action<int> recordsAffectedCallback);
+		IEnumerable<IAdoNetStreamingRecord> ExecuteRecords(DbConnection dbConnection, DbTransaction dbTransaction, CommandType commandType, string commandText, IEnumerable<DbParameter> commandParameters, Action<int> recordsAffectedCallback);
 
 		/// <summary>
 		/// Execute a command against a data source, mapping the data reader to an enumerable of results, each with an enumerable of record dictionaries.
@@ -89,7 +87,7 @@ namespace SyncPrem.StreamingIO.Relational
 		/// <param name="commandParameters"> The parameters to use during the operation. </param>
 		/// <param name="recordsAffectedCallback"> Executed when the output count of records affected is available to return (post enumeration). </param>
 		/// <returns> An enumerable of result instances, each containing an enumerable of dictionaries with record key/value pairs of schema metadata. </returns>
-		IEnumerable<IPayload> ExecuteSchemaRecords(DbConnection dbConnection, DbTransaction dbTransaction, CommandType commandType, string commandText, IEnumerable<DbParameter> commandParameters, Action<int> recordsAffectedCallback);
+		IEnumerable<IAdoNetStreamingRecord> ExecuteSchemaRecords(DbConnection dbConnection, DbTransaction dbTransaction, CommandType commandType, string commandText, IEnumerable<DbParameter> commandParameters, Action<int> recordsAffectedCallback);
 
 		/// <summary>
 		/// Execute a command against a data source, mapping the data reader GetSchemaTable() result to an results, each with an enumerable of record dictionaries.
@@ -112,7 +110,7 @@ namespace SyncPrem.StreamingIO.Relational
 		/// <param name="dbDataReader"> The target data reader. </param>
 		/// <param name="recordsAffectedCallback"> Executed when the output count of records affected is available to return (post enumeration). </param>
 		/// <returns> An enumerable of record dictionary instances, containing key/value pairs of data. </returns>
-		IEnumerable<IPayload> GetRecordsFromReader(DbDataReader dbDataReader, Action<int> recordsAffectedCallback);
+		IEnumerable<IAdoNetStreamingRecord> GetRecordsFromReader(DbDataReader dbDataReader, Action<int> recordsAffectedCallback);
 
 		/// <summary>
 		/// Execute a command against a data source, mapping the data reader to an enumerable of results, each with an enumerable of records.
@@ -131,7 +129,7 @@ namespace SyncPrem.StreamingIO.Relational
 		/// <param name="dbDataReader"> The target data reader. </param>
 		/// <param name="recordsAffectedCallback"> Executed when the output count of records affected is available to return (post enumeration). </param>
 		/// <returns> An enumerable of record dictionary instances, containing key/value pairs of schema metadata. </returns>
-		IEnumerable<IPayload> GetSchemaRecordsFromReader(DbDataReader dbDataReader, Action<int> recordsAffectedCallback);
+		IEnumerable<IAdoNetStreamingRecord> GetSchemaRecordsFromReader(DbDataReader dbDataReader, Action<int> recordsAffectedCallback);
 
 		/// <summary>
 		/// Execute a command against a data source, mapping the data reader GetSchemaTable() result to an enumerable of results, each with an enumerable of records.

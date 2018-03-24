@@ -12,7 +12,6 @@
     <ProjectReference Include="..\SyncPrem.StreamingIO.Textual\SyncPrem.StreamingIO.Textual.csproj" />
     <ProjectReference Include="..\SyncPrem.StreamingIO.Primitives\SyncPrem.StreamingIO.Primitives.csproj" />
     <ProjectReference Include="..\SyncPrem.StreamingIO.ProxyWrappers\SyncPrem.StreamingIO.ProxyWrappers.csproj" />
-    <ProjectReference Include="..\TextMetal.Imports.NUnit\TextMetal.Imports.NUnit.csproj" />
   </ItemGroup>
 
   <ItemGroup>

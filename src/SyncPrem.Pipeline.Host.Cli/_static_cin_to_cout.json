@@ -3,7 +3,7 @@
 
 	"SourceConfiguration":
 	{
-		"StageAqtn": "SyncPrem.Pipeline.Core.Connectors.Console.ConsoleSourceConnector, SyncPrem.Pipeline.Core",
+		"StageAqtn": "SyncPrem.Pipeline.Core.Connectors.ConsoleSourceConnector, SyncPrem.Pipeline.Core",
 		"StageSpecificConfiguration":
 		{
 		}
@@ -15,7 +15,7 @@
 
 	"DestinationConfiguration":
 	{
-		"StageAqtn": "SyncPrem.Pipeline.Core.Connectors.Console.ConsoleDestinationConnector, SyncPrem.Pipeline.Core",
+		"StageAqtn": "SyncPrem.Pipeline.Core.Connectors.ConsoleDestinationConnector, SyncPrem.Pipeline.Core",
 		"StageSpecificConfiguration":
 		{
 		}

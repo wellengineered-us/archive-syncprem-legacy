@@ -3,6 +3,9 @@
 	Distributed under the MIT license: http://www.opensource.org/licenses/mit-license.php
 */
 
+using System.Collections;
+using System.Collections.Generic;
+
 namespace SyncPrem.Infrastructure.Configuration
 {
 	/// <summary>
@@ -12,7 +15,7 @@ namespace SyncPrem.Infrastructure.Configuration
 	/// This will be left to the class implementation for which to solve.
 	/// </summary>
 	/// <typeparam name="TItemConfigurationObject"> </typeparam>
-	public interface IConfigurationObjectCollection<TItemConfigurationObject> /*: IConfigurationObjectCollection*/
+	public interface IConfigurationObjectCollection<TItemConfigurationObject> : IList<TItemConfigurationObject> /*: IConfigurationObjectCollection*/
 		where TItemConfigurationObject : IConfigurationObject
 	{
 		#region Properties/Indexers/Events

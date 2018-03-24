@@ -10,7 +10,7 @@ namespace TextMetal.Middleware.Solder.Primitives
 	/// <summary>
 	/// Represents a message with a category, description, and severity.
 	/// </summary>
-	public sealed class Message
+	public sealed class Message : IMessage
 	{
 		#region Constructors/Destructors
 

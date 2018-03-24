@@ -9,7 +9,7 @@ using SyncPrem.Pipeline.Abstractions.Configuration;
 
 namespace SyncPrem.Pipeline.Abstractions.Stage
 {
-	public abstract class Stage<TStageSpecificConfiguration> : Stage
+	public abstract class Stage<TStageSpecificConfiguration> : Stage, ISpecifiable<TStageSpecificConfiguration>
 		where TStageSpecificConfiguration : StageSpecificConfiguration, new()
 	{
 		#region Constructors/Destructors
@@ -22,13 +22,13 @@ namespace SyncPrem.Pipeline.Abstractions.Stage
 
 		#region Fields/Constants
 
-		private StageConfiguration<TStageSpecificConfiguration> stageConfiguration;
+		private TStageSpecificConfiguration specification;
 
 		#endregion
 
 		#region Properties/Indexers/Events
 
-		public override Type StageSpecificConfigurationType
+		public Type SpecificationType
 		{
 			get
 			{
@@ -36,15 +36,23 @@ namespace SyncPrem.Pipeline.Abstractions.Stage
 			}
 		}
 
-		public new StageConfiguration<TStageSpecificConfiguration> StageConfiguration
+		public override Type StageSpecificConfigurationType
 		{
 			get
 			{
-				return this.stageConfiguration;
+				return this.SpecificationType;
 			}
-			private set
+		}
+
+		public TStageSpecificConfiguration Specification
+		{
+			get
 			{
-				this.stageConfiguration = value;
+				return this.specification;
+			}
+			set
+			{
+				this.specification = value;
 			}
 		}
 
@@ -54,35 +62,36 @@ namespace SyncPrem.Pipeline.Abstractions.Stage
 
 		protected override void Create(bool creating)
 		{
-			StageConfiguration baseUntypedStageConfiguration;
-			StageConfiguration<TStageSpecificConfiguration> _stageConfiguration;
+			StageConfiguration untypedStageConfiguration;
+			StageConfiguration<TStageSpecificConfiguration> typedStageConfiguration;
 
 			base.Create(creating);
 
 			if (!creating)
 				return;
 
-			baseUntypedStageConfiguration = base.StageConfiguration;
+			untypedStageConfiguration = this.Configuration;
 
-			if ((object)baseUntypedStageConfiguration == null)
-				throw new InvalidOperationException(string.Format("Configuration missing: '{0}'.", nameof(baseUntypedStageConfiguration)));
+			if ((object)untypedStageConfiguration == null)
+				throw new InvalidOperationException(string.Format("Configuration missing: '{0}'.", nameof(untypedStageConfiguration)));
 
-			if ((object)baseUntypedStageConfiguration.StageSpecificConfiguration == null)
-				throw new InvalidOperationException(string.Format("Configuration missing: '{0}'.", nameof(baseUntypedStageConfiguration.StageSpecificConfiguration)));
+			if ((object)untypedStageConfiguration.StageSpecificConfiguration == null)
+				throw new InvalidOperationException(string.Format("Configuration missing: '{0}'.", nameof(untypedStageConfiguration.StageSpecificConfiguration)));
 
-			_stageConfiguration = new StageConfiguration<TStageSpecificConfiguration>(baseUntypedStageConfiguration);
+			typedStageConfiguration = new StageConfiguration<TStageSpecificConfiguration>(untypedStageConfiguration);
 
-			if ((object)_stageConfiguration.StageSpecificConfiguration == null)
-				throw new InvalidOperationException(string.Format("Configuration missing: '{0}'.", nameof(_stageConfiguration.StageSpecificConfiguration)));
+			if ((object)typedStageConfiguration.StageSpecificConfiguration == null)
+				throw new InvalidOperationException(string.Format("Configuration missing: '{0}'.", nameof(typedStageConfiguration.StageSpecificConfiguration)));
 
-			this.StageConfiguration = _stageConfiguration;
+			this.Specification = typedStageConfiguration.StageSpecificConfiguration;
 		}
 
 		protected override void Dispose(bool disposing)
 		{
 			if (disposing)
 			{
-				this.StageConfiguration = null;
+				this.Configuration = null;
+				this.Specification = null;
 			}
 
 			base.Dispose(disposing);

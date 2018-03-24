@@ -9,40 +9,29 @@ using System.IO;
 
 using SyncPrem.StreamingIO.Primitives;
 
+using TextMetal.Middleware.Solder.Extensions;
+
 namespace SyncPrem.StreamingIO.Textual.Delimited
 {
-	public class DelimitedTextualWriter : TextualWriter
+	public class DelimitedTextualWriter : TextualWriter<IDelimitedTextualFieldSpec, IDelimitedTextualSpec>
 	{
 		#region Constructors/Destructors
 
 		public DelimitedTextualWriter(TextWriter baseTextWriter, IDelimitedTextualSpec delimitedTextualSpec)
-			: base(baseTextWriter)
+			: base(baseTextWriter, delimitedTextualSpec)
 		{
-			if ((object)delimitedTextualSpec == null)
-				throw new ArgumentNullException(nameof(delimitedTextualSpec));
-
-			this.delimitedTextualSpec = delimitedTextualSpec;
 		}
 
 		#endregion
 
 		#region Fields/Constants
 
-		private readonly IDelimitedTextualSpec delimitedTextualSpec;
 		private bool footerRecordWritten;
 		private bool headerRecordWritten;
 
 		#endregion
 
 		#region Properties/Indexers/Events
-
-		public IDelimitedTextualSpec DelimitedTextualSpec
-		{
-			get
-			{
-				return this.delimitedTextualSpec;
-			}
-		}
 
 		private bool FooterRecordWritten
 		{
@@ -72,21 +61,21 @@ namespace SyncPrem.StreamingIO.Textual.Delimited
 
 		#region Methods/Operators
 
-		private void WriteField(bool firstFieldInRecord, object fieldValue)
+		private void WriteField(bool firstFieldInRecord, string fieldValue)
 		{
-			if (!firstFieldInRecord && !string.IsNullOrEmpty(this.DelimitedTextualSpec.FieldDelimiter))
-				this.BaseTextWriter.Write(this.DelimitedTextualSpec.FieldDelimiter);
+			if (!firstFieldInRecord && !SolderFascadeAccessor.DataTypeFascade.IsNullOrEmpty(this.TextualSpec.FieldDelimiter))
+				this.BaseTextWriter.Write(this.TextualSpec.FieldDelimiter);
 
-			if (!string.IsNullOrEmpty(this.DelimitedTextualSpec.OpenQuoteValue))
-				this.BaseTextWriter.Write(this.DelimitedTextualSpec.OpenQuoteValue);
+			if (!SolderFascadeAccessor.DataTypeFascade.IsNullOrEmpty(this.TextualSpec.OpenQuoteValue))
+				this.BaseTextWriter.Write(this.TextualSpec.OpenQuoteValue);
 
 			this.BaseTextWriter.Write(fieldValue);
 
-			if (!string.IsNullOrEmpty(this.DelimitedTextualSpec.CloseQuoteValue))
-				this.BaseTextWriter.Write(this.DelimitedTextualSpec.CloseQuoteValue);
+			if (!SolderFascadeAccessor.DataTypeFascade.IsNullOrEmpty(this.TextualSpec.CloseQuoteValue))
+				this.BaseTextWriter.Write(this.TextualSpec.CloseQuoteValue);
 		}
 
-		public override void WriteFooterRecords(IEnumerable<IDelimitedTextualFieldSpec> specs, IEnumerable<IPayload> footers)
+		public override void WriteFooterRecords(IEnumerable<IDelimitedTextualFieldSpec> footers, IEnumerable<ITextualStreamingRecord> records)
 		{
 			//bool firstFieldInRecord;
 
@@ -107,14 +96,14 @@ namespace SyncPrem.StreamingIO.Textual.Delimited
 						firstFieldInRecord = false;
 				}
 
-				if (!string.IsNullOrEmpty(this.DelimitedTextualSpec.RecordDelimiter))
+				if (!SolderFascadeAccessor.DataTypeFascade.IsNullOrEmpty(this.DelimitedTextualSpec.RecordDelimiter))
 					this.BaseTextWriter.Write(this.DelimitedTextualSpec.RecordDelimiter);
 
 				this.HeaderRecordWritten = true;
 			}*/
 		}
 
-		public override void WriteHeaderFields(IEnumerable<IDelimitedTextualFieldSpec> specs)
+		public override void WriteHeaderFields(IEnumerable<IDelimitedTextualFieldSpec> headers)
 		{
 			bool firstFieldInRecord;
 
@@ -122,25 +111,60 @@ namespace SyncPrem.StreamingIO.Textual.Delimited
 				throw new InvalidOperationException(string.Format("Header record (fields) has (have) alredy been written."));
 
 			// fields != null IF AND ONLY IF caller wishes to override DelimitedTextualSpec.DelimitedTextHeaderSpecs
-			specs = specs ?? this.DelimitedTextualSpec.TextualHeaderSpecs;
+			headers = headers ?? this.TextualSpec.TextualHeaderSpecs;
 
-			if ((object)specs != null &&
-				this.DelimitedTextualSpec.IsFirstRecordHeader)
+			if ((object)headers != null &&
+				this.TextualSpec.IsFirstRecordHeader)
 			{
 				firstFieldInRecord = true;
-				foreach (IDelimitedTextualFieldSpec spec in specs)
+				foreach (IDelimitedTextualFieldSpec header in headers)
 				{
-					this.WriteField(firstFieldInRecord, spec.FieldTitle);
+					this.WriteField(firstFieldInRecord, FormatFieldTitle(header.FieldTitle));
 
 					if (firstFieldInRecord)
 						firstFieldInRecord = false;
 				}
 
-				if (!string.IsNullOrEmpty(this.DelimitedTextualSpec.RecordDelimiter))
-					this.BaseTextWriter.Write(this.DelimitedTextualSpec.RecordDelimiter);
+				if (!SolderFascadeAccessor.DataTypeFascade.IsNullOrEmpty(this.TextualSpec.RecordDelimiter))
+					this.BaseTextWriter.Write(this.TextualSpec.RecordDelimiter);
 
 				this.HeaderRecordWritten = true;
 			}
+		}
+
+		protected static string FormatFieldTitle(string fieldTitle)
+		{
+			string value;
+
+			if ((object)fieldTitle == null)
+				throw new ArgumentNullException(nameof(fieldTitle));
+
+			value = fieldTitle; // TODO: escape bad chars
+
+			return value;
+		}
+
+		protected string FormatFieldValue(long fieldIndex, string fieldTitle, object fieldValue)
+		{
+			IDelimitedTextualFieldSpec header = null;
+			string value;
+			string safeFieldValue;
+
+			if ((object)fieldTitle == null)
+				throw new ArgumentNullException(nameof(fieldTitle));
+
+			// TODO: do not assume order is corrcetly aligned to index
+			if (fieldIndex < this.TextualSpec.TextualHeaderSpecs.Count)
+				header = this.TextualSpec.TextualHeaderSpecs[(int)fieldIndex];
+
+			safeFieldValue = fieldValue?.ToString() ?? string.Empty;
+
+			if ((object)header != null && !SolderFascadeAccessor.DataTypeFascade.IsNullOrEmpty(header.FieldFormat))
+				value = string.Format("{0:" + header.FieldFormat + "}", safeFieldValue);
+			else
+				value = safeFieldValue;
+
+			return value;
 		}
 
 		public override void WriteRecords(IEnumerable<IPayload> records)
@@ -153,20 +177,26 @@ namespace SyncPrem.StreamingIO.Textual.Delimited
 			if (!this.HeaderRecordWritten)
 				this.WriteHeaderFields(null); // force fields if not explicitly called in advance
 
+			long recordIndex = 0;
 			foreach (IPayload record in records)
 			{
 				firstFieldInRecord = true;
 
+				long fieldIndex = 0;
 				foreach (KeyValuePair<string, object> item in record)
 				{
-					this.WriteField(firstFieldInRecord, item.Value);
+					this.WriteField(firstFieldInRecord, FormatFieldValue(fieldIndex, item.Key, item.Value));
 
 					if (firstFieldInRecord)
 						firstFieldInRecord = false;
+
+					fieldIndex++;
 				}
 
-				if (!string.IsNullOrEmpty(this.DelimitedTextualSpec.RecordDelimiter))
-					this.BaseTextWriter.Write(this.DelimitedTextualSpec.RecordDelimiter);
+				if (!SolderFascadeAccessor.DataTypeFascade.IsNullOrEmpty(this.TextualSpec.RecordDelimiter))
+					this.BaseTextWriter.Write(this.TextualSpec.RecordDelimiter);
+
+				recordIndex++;
 			}
 		}
 

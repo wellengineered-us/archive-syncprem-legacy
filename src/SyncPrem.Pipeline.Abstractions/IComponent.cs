@@ -9,7 +9,7 @@ using TextMetal.Middleware.Solder.Primitives;
 
 namespace SyncPrem.Pipeline.Abstractions
 {
-	public interface IComponent : ICreatable, IDisposable
+	public interface IComponent : ICreatable, IDisposableEx
 	{
 		#region Properties/Indexers/Events
 

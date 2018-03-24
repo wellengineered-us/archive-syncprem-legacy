@@ -9,10 +9,19 @@ namespace SyncPrem.StreamingIO.Textual.Fixed
 	{
 		#region Properties/Indexers/Events
 
-		int RecordLength
+		long RecordLength
 		{
 			get;
-			set;
+		}
+
+		bool UsingRecordDelimiter
+		{
+			get;
+		}
+
+		char FillCharacter
+		{
+			get;
 		}
 
 		#endregion

@@ -3,7 +3,7 @@
 
 	"SourceConfiguration":
 	{
-		"StageAqtn": "SyncPrem.Pipeline.Core.Connectors.AdoNet.AdoNetSourceConnector, SyncPrem.Pipeline.Core",
+		"StageAqtn": "SyncPrem.Pipeline.Core.Connectors.AdoNetSourceConnector, SyncPrem.Pipeline.Core",
 		"StageSpecificConfiguration":
 		{
 			"ConnectionAqtn": "System.Data.SqlClient.SqlConnection, System.Data.SqlClient",
@@ -36,7 +36,7 @@
 
 	"DestinationConfiguration":
 	{
-		"StageAqtn": "SyncPrem.Pipeline.Core.Connectors.AdoNet.SqlBulkCopyDestinationConnector, SyncPrem.Pipeline.Core",
+		"StageAqtn": "SyncPrem.Pipeline.Core.Connectors.SqlBulkCopyDestinationConnector, SyncPrem.Pipeline.Core",
 		"StageSpecificConfiguration":
 		{
 			"ConnectionAqtn": "System.Data.SqlClient.SqlConnection, System.Data.SqlClient",

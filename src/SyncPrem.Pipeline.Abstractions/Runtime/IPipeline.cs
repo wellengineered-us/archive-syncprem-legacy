@@ -9,18 +9,8 @@ using SyncPrem.Pipeline.Abstractions.Configuration;
 
 namespace SyncPrem.Pipeline.Abstractions.Runtime
 {
-	public interface IPipeline : IComponent
+	public interface IPipeline : IComponent, IConfigurable<PipelineConfiguration>
 	{
-		#region Properties/Indexers/Events
-
-		PipelineConfiguration PipelineConfiguration
-		{
-			get;
-			set;
-		}
-
-		#endregion
-
 		#region Methods/Operators
 
 		IContext CreateContext();

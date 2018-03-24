@@ -37,6 +37,11 @@ namespace SyncPrem.StreamingIO.Textual
 			set;
 		}
 
+		string FieldFormat
+		{
+			get;
+		}
+
 		#endregion
 	}
 }

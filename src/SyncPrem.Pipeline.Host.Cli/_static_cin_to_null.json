@@ -1,0 +1,23 @@
+{
+	"PipelineAqtn": "SyncPrem.Pipeline.Core.StaticPipeline, SyncPrem.Pipeline.Core",
+
+	"SourceConfiguration":
+	{
+		"StageAqtn": "SyncPrem.Pipeline.Core.Connectors.ConsoleSourceConnector, SyncPrem.Pipeline.Core",
+		"StageSpecificConfiguration":
+		{
+		}
+	},
+
+	"ProcessorConfigurations":
+	[
+	],
+
+	"DestinationConfiguration":
+	{
+		"StageAqtn": "SyncPrem.Pipeline.Core.Connectors.NullDestinationConnector, SyncPrem.Pipeline.Core",
+		"StageSpecificConfiguration":
+		{
+		}
+	}
+}

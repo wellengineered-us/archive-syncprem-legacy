@@ -10,19 +10,13 @@ using SyncPrem.Pipeline.Abstractions.Runtime;
 
 namespace SyncPrem.Pipeline.Abstractions.Stage
 {
-	public interface IStage : IComponent
+	public interface IStage : IComponent, IConfigurable<StageConfiguration>
 	{
 		#region Properties/Indexers/Events
 
 		Type StageSpecificConfigurationType
 		{
 			get;
-		}
-
-		StageConfiguration StageConfiguration
-		{
-			get;
-			set;
 		}
 
 		#endregion

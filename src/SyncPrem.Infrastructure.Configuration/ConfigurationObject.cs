@@ -18,6 +18,14 @@ namespace SyncPrem.Infrastructure.Configuration
 	{
 		#region Constructors/Destructors
 
+		protected ConfigurationObject(IConfigurationObjectCollection<IConfigurationObject> items)
+		{
+			if((object)items == null)
+				throw new ArgumentNullException(nameof(items));
+
+			this.items = items;
+		}
+
 		protected ConfigurationObject()
 		{
 			this.items = new ConfigurationObjectCollection<IConfigurationObject>(this);

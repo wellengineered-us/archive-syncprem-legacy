@@ -9,16 +9,14 @@ namespace SyncPrem.StreamingIO.Textual.Fixed
 	{
 		#region Properties/Indexers/Events
 
-		int FieldLength
+		long FieldLength
 		{
 			get;
-			set;
 		}
 
-		int StartPosition
+		long StartPosition
 		{
 			get;
-			set;
 		}
 
 		#endregion

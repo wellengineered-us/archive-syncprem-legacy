@@ -253,7 +253,7 @@ namespace TextMetal.Middleware.Solder.Injection
 			// special case, see comments in call chain...
 			//GC.SuppressFinalize(this);
 
-			//this.Disposed = true;
+			//this.IsDisposed = true;
 		}
 
 		public void Dispose()

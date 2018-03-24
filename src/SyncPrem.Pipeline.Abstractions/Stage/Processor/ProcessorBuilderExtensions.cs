@@ -34,7 +34,7 @@ namespace SyncPrem.Pipeline.Abstractions.Stage.Processor
 
 														using (_processor)
 														{
-															_processor.StageConfiguration = stageConfiguration;
+															_processor.Configuration = stageConfiguration;
 															_processor.Create();
 
 															_processor.PreExecute(context, configuration);
@@ -72,7 +72,7 @@ namespace SyncPrem.Pipeline.Abstractions.Stage.Processor
 
 														using (processor)
 														{
-															processor.StageConfiguration = stageConfiguration;
+															processor.Configuration = stageConfiguration;
 															processor.Create();
 
 															processor.PreExecute(context, configuration);

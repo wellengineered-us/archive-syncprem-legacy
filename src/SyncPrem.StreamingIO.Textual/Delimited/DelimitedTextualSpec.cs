@@ -7,6 +7,8 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 
+using TextMetal.Middleware.Solder.Extensions;
+
 namespace SyncPrem.StreamingIO.Textual.Delimited
 {
 	public class DelimitedTextualSpec : TextualSpec<IDelimitedTextualFieldSpec>, IDelimitedTextualSpec
@@ -75,16 +77,16 @@ namespace SyncPrem.StreamingIO.Textual.Delimited
 
 			strings = new List<string>();
 
-			if (!string.IsNullOrEmpty(this.RecordDelimiter))
+			if (!SolderFascadeAccessor.DataTypeFascade.IsNullOrEmpty(this.RecordDelimiter))
 				strings.Add(this.RecordDelimiter);
 
-			if (!string.IsNullOrEmpty(this.FieldDelimiter))
+			if (!SolderFascadeAccessor.DataTypeFascade.IsNullOrEmpty(this.FieldDelimiter))
 				strings.Add(this.FieldDelimiter);
 
-			if (!string.IsNullOrEmpty(this.OpenQuoteValue))
+			if (!SolderFascadeAccessor.DataTypeFascade.IsNullOrEmpty(this.OpenQuoteValue))
 				strings.Add(this.OpenQuoteValue);
 
-			if (!string.IsNullOrEmpty(this.CloseQuoteValue))
+			if (!SolderFascadeAccessor.DataTypeFascade.IsNullOrEmpty(this.CloseQuoteValue))
 				strings.Add(this.CloseQuoteValue);
 
 			if (strings.GroupBy(s => s).Where(gs => gs.Count() > 1).Any())

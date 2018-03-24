@@ -9,10 +9,28 @@
 				"SOLDER_HOOK_UNHANDLED_EXCEPTIONS": "false"
 			}
 		},
+		"test_static_null_to_null":
+		{
+			"commandName": "Project",
+			"commandLineArgs": "-sourcefile:_static_null_to_null.json",
+			"environmentVariables":
+			{
+				"SOLDER_HOOK_UNHANDLED_EXCEPTIONS": "false"
+			}
+		},
 		"test_static_null_to_cout":
 		{
 			"commandName": "Project",
 			"commandLineArgs": "-sourcefile:_static_null_to_cout.json",
+			"environmentVariables":
+			{
+				"SOLDER_HOOK_UNHANDLED_EXCEPTIONS": "false"
+			}
+		},
+		"test_static_cin_to_null":
+		{
+			"commandName": "Project",
+			"commandLineArgs": "-sourcefile:_static_cin_to_null.json",
 			"environmentVariables":
 			{
 				"SOLDER_HOOK_UNHANDLED_EXCEPTIONS": "false"
@@ -27,15 +45,7 @@
 				"SOLDER_HOOK_UNHANDLED_EXCEPTIONS": "false"
 			}
 		},
-		"test_static_null_to_null":
-		{
-			"commandName": "Project",
-			"commandLineArgs": "-sourcefile:_static_null_to_null.json",
-			"environmentVariables":
-			{
-				"SOLDER_HOOK_UNHANDLED_EXCEPTIONS": "false"
-			}
-		},
+
 		"test_static_adonet_to_sqlbcp":
 		{
 			"commandName": "Project",

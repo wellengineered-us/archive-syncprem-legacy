@@ -11,7 +11,6 @@ using System.Data.Common;
 using System.Linq;
 using System.Reflection;
 
-using SyncPrem.StreamingIO.Primitives;
 using SyncPrem.StreamingIO.ProxyWrappers;
 
 using TextMetal.Middleware.Solder.Extensions;
@@ -91,9 +90,9 @@ namespace SyncPrem.StreamingIO.Relational
 		/// <param name="commandTimeout"> The command timeout (use null for default). </param>
 		/// <param name="commandPrepare"> Whether to prepare the command at the data source. </param>
 		/// <returns> The data reader result. </returns>
-		public DbDataReader ExecuteReader(DbConnection dbConnection, DbTransaction dbTransaction, CommandType commandType, string commandText, IEnumerable<DbParameter> commandParameters, CommandBehavior commandBehavior, int? commandTimeout, bool commandPrepare)
+		public AdoNetStreamingDataReader ExecuteReader(DbConnection dbConnection, DbTransaction dbTransaction, CommandType commandType, string commandText, IEnumerable<DbParameter> commandParameters, CommandBehavior commandBehavior, int? commandTimeout, bool commandPrepare)
 		{
-			DbDataReader dbDataReader;
+			AdoNetStreamingDataReader dbDataReader;
 
 			Guid _ = this.__enter();
 
@@ -125,12 +124,9 @@ namespace SyncPrem.StreamingIO.Relational
 					dbCommand.Prepare();
 
 				// do the database work
-				dbDataReader = dbCommand.ExecuteReader(commandBehavior);
+				var dataReader = dbCommand.ExecuteReader(commandBehavior);
+				dbDataReader = new AdoNetStreamingDataReader(dataReader);
 
-#if DEBUG
-				// wrap reader with proxy
-				dbDataReader = new WrappedDbDataReader(dbDataReader);
-#endif
 				// clean out parameters
 				//dbCommand.Parameters.Clear();
 
@@ -154,9 +150,9 @@ namespace SyncPrem.StreamingIO.Relational
 		/// <param name="commandParameters"> The parameters to use during the operation. </param>
 		/// <param name="rowsAffectedCallback"> Executed when the output count of records affected is available to return (post enumeration). </param>
 		/// <returns> An enumerable of result instances, each containing an enumerable of dictionaries with record key/value pairs of schema metadata. </returns>
-		public IEnumerable<IPayload> ExecuteRecords(DbConnection dbConnection, DbTransaction dbTransaction, CommandType commandType, string commandText, IEnumerable<DbParameter> commandParameters, Action<int> rowsAffectedCallback)
+		public IEnumerable<IAdoNetStreamingRecord> ExecuteRecords(DbConnection dbConnection, DbTransaction dbTransaction, CommandType commandType, string commandText, IEnumerable<DbParameter> commandParameters, Action<int> rowsAffectedCallback)
 		{
-			IEnumerable<IPayload> records;
+			IEnumerable<IAdoNetStreamingRecord> records;
 			DbDataReader dbDataReader;
 
 			// force no preparation
@@ -180,7 +176,7 @@ namespace SyncPrem.StreamingIO.Relational
 
 				this.__trace(_, "before yield loop");
 
-				foreach (IPayload record in records)
+				foreach (IAdoNetStreamingRecord record in records)
 				{
 					this.__trace(_, "on yield item");
 
@@ -259,9 +255,9 @@ namespace SyncPrem.StreamingIO.Relational
 		/// <param name="commandParameters"> The parameters to use during the operation. </param>
 		/// <param name="recordsAffectedCallback"> Executed when the output count of records affected is available to return (post enumeration). </param>
 		/// <returns> An enumerable of result instances, each containing an enumerable of dictionaries with record key/value pairs of schema metadata. </returns>
-		public IEnumerable<IPayload> ExecuteSchemaRecords(DbConnection dbConnection, DbTransaction dbTransaction, CommandType commandType, string commandText, IEnumerable<DbParameter> commandParameters, Action<int> recordsAffectedCallback)
+		public IEnumerable<IAdoNetStreamingRecord> ExecuteSchemaRecords(DbConnection dbConnection, DbTransaction dbTransaction, CommandType commandType, string commandText, IEnumerable<DbParameter> commandParameters, Action<int> recordsAffectedCallback)
 		{
-			IEnumerable<IPayload> records;
+			IEnumerable<IAdoNetStreamingRecord> records;
 			DbDataReader dbDataReader;
 
 			// force no preparation
@@ -285,7 +281,7 @@ namespace SyncPrem.StreamingIO.Relational
 
 				this.__trace(_, "before yield loop");
 
-				foreach (IPayload record in records)
+				foreach (IAdoNetStreamingRecord record in records)
 				{
 					this.__trace(_, "on yield item");
 
@@ -360,9 +356,9 @@ namespace SyncPrem.StreamingIO.Relational
 		/// <param name="dbDataReader"> The target data reader. </param>
 		/// <param name="recordsAffectedCallback"> Executed when the output count of records affected is available to return (post enumeration). </param>
 		/// <returns> An enumerable of record dictionary instances, containing key/value pairs of data. </returns>
-		public IEnumerable<IPayload> GetRecordsFromReader(DbDataReader dbDataReader, Action<int> recordsAffectedCallback)
+		public IEnumerable<IAdoNetStreamingRecord> GetRecordsFromReader(DbDataReader dbDataReader, Action<int> recordsAffectedCallback)
 		{
-			Payload payload;
+			AdoNetStreamingRecord record;
 			int recordsAffected;
 			long recordIndex = 0;
 			string key;
@@ -379,7 +375,7 @@ namespace SyncPrem.StreamingIO.Relational
 
 				while (dbDataReader.Read())
 				{
-					payload = new Payload();
+					record = new AdoNetStreamingRecord(-1, recordIndex);
 
 					for (int fieldIndex = 0; fieldIndex < dbDataReader.FieldCount; fieldIndex++)
 					{
@@ -387,16 +383,16 @@ namespace SyncPrem.StreamingIO.Relational
 						value = dbDataReader.GetValue(fieldIndex);
 						value = value.ChangeType<object>();
 
-						if (payload.ContainsKey(key) || (key ?? string.Empty).Length == 0)
+						if (record.ContainsKey(key) || (key ?? string.Empty).Length == 0)
 							key = string.Format("Field_{0:0000}", fieldIndex);
 
-						payload.Add(key, value);
+						record.Add(key, value);
 					}
 
 					this.__trace(_, "on yield item");
 
 					recordIndex++;
-					yield return payload; // LAZY PROCESSING INTENT HERE / DO NOT FORCE EAGER LOAD
+					yield return record; // LAZY PROCESSING INTENT HERE / DO NOT FORCE EAGER LOAD
 				}
 
 				this.__trace(_, "after yield loop");
@@ -434,21 +430,21 @@ namespace SyncPrem.StreamingIO.Relational
 
 				do
 				{
-					IEnumerable<IPayload> records;
-					AdoNetStreamingResult adoNetStreamingResult;
+					IEnumerable<IAdoNetStreamingRecord> records;
+					AdoNetStreamingResult result;
 
-					adoNetStreamingResult = new AdoNetStreamingResult(resultIndex);
-					records = this.GetSchemaRecordsFromReader(dbDataReader, (ra) =>
+					result = new AdoNetStreamingResult(resultIndex);
+					records = this.GetRecordsFromReader(dbDataReader, (ra) =>
 																			{
-																				AdoNetStreamingResult _adoNetStreamingResult = adoNetStreamingResult; // prevent modified closure
-																				_adoNetStreamingResult.RecordsAffected = ra;
+																				AdoNetStreamingResult _result = result; // prevent modified closure
+																				_result.RecordsAffected = ra;
 																			});
-					adoNetStreamingResult.Records = records;
+					result.Records = records;
 
 					this.__trace(_, "on yield item");
 
 					resultIndex++;
-					yield return adoNetStreamingResult; // LAZY PROCESSING INTENT HERE / DO NOT FORCE EAGER LOAD
+					yield return result; // LAZY PROCESSING INTENT HERE / DO NOT FORCE EAGER LOAD
 				}
 				while (dbDataReader.NextResult());
 
@@ -468,13 +464,13 @@ namespace SyncPrem.StreamingIO.Relational
 		/// <param name="dbDataReader"> The target data reader. </param>
 		/// <param name="recordsAffectedCallback"> Executed when the output count of records affected is available to return (post enumeration). </param>
 		/// <returns> An enumerable of record dictionary instances, containing key/value pairs of schema metadata. </returns>
-		public IEnumerable<IPayload> GetSchemaRecordsFromReader(DbDataReader dbDataReader, Action<int> recordsAffectedCallback)
+		public IEnumerable<IAdoNetStreamingRecord> GetSchemaRecordsFromReader(DbDataReader dbDataReader, Action<int> recordsAffectedCallback)
 		{
 			ReadOnlyCollection<DbColumn> dbColumns;
 			DbColumn dbColumn;
 			PropertyInfo[] propertyInfos;
 			PropertyInfo propertyInfo;
-			Payload payload;
+			AdoNetStreamingRecord record;
 			int recordsAffected;
 			string key;
 			object value;
@@ -501,7 +497,7 @@ namespace SyncPrem.StreamingIO.Relational
 
 						propertyInfos = dbColumn.GetType().GetProperties(BindingFlags.Public | BindingFlags.Instance | BindingFlags.GetProperty);
 
-						payload = new Payload();
+						record = new AdoNetStreamingRecord(-1, recordIndex);
 
 						if ((object)propertyInfos != null)
 						{
@@ -516,13 +512,13 @@ namespace SyncPrem.StreamingIO.Relational
 								value = propertyInfo.GetValue(dbColumn);
 								value = value.ChangeType<object>();
 
-								payload.Add(key, value);
+								record.Add(key, value);
 							}
 						}
 
 						this.__trace(_, "on yield item");
 
-						yield return payload; // LAZY PROCESSING INTENT HERE / DO NOT FORCE EAGER LOAD
+						yield return record; // LAZY PROCESSING INTENT HERE / DO NOT FORCE EAGER LOAD
 					}
 				}
 
@@ -561,21 +557,21 @@ namespace SyncPrem.StreamingIO.Relational
 
 				do
 				{
-					IEnumerable<IPayload> records;
-					AdoNetStreamingResult adoNetStreamingResult;
+					IEnumerable<IAdoNetStreamingRecord> records;
+					AdoNetStreamingResult result;
 
-					adoNetStreamingResult = new AdoNetStreamingResult(resultIndex);
+					result = new AdoNetStreamingResult(resultIndex);
 					records = this.GetSchemaRecordsFromReader(dbDataReader, (ra) =>
 																			{
-																				AdoNetStreamingResult _adoNetStreamingResult = adoNetStreamingResult; // prevent modified closure
-																				_adoNetStreamingResult.RecordsAffected = ra;
+																				AdoNetStreamingResult _result = result; // prevent modified closure
+																				_result.RecordsAffected = ra;
 																			});
-					adoNetStreamingResult.Records = records;
+					result.Records = records;
 
 					this.__trace(_, "on yield item");
 
 					resultIndex++;
-					yield return adoNetStreamingResult; // LAZY PROCESSING INTENT HERE / DO NOT FORCE EAGER LOAD
+					yield return result; // LAZY PROCESSING INTENT HERE / DO NOT FORCE EAGER LOAD
 				}
 				while (dbDataReader.NextResult());
 

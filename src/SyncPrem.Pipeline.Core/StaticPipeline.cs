@@ -34,21 +34,21 @@ namespace SyncPrem.Pipeline.Core
 
 		#region Fields/Constants
 
-		private PipelineConfiguration pipelineConfiguration;
+		private PipelineConfiguration configuration;
 
 		#endregion
 
 		#region Properties/Indexers/Events
 
-		public PipelineConfiguration PipelineConfiguration
+		public PipelineConfiguration Configuration
 		{
 			get
 			{
-				return this.pipelineConfiguration;
+				return this.configuration;
 			}
 			set
 			{
-				this.pipelineConfiguration = value;
+				this.configuration = value;
 			}
 		}
 
@@ -75,9 +75,9 @@ namespace SyncPrem.Pipeline.Core
 			if ((object)context == null)
 				throw new ArgumentNullException(nameof(context));
 
-			sourceConnectorType = this.PipelineConfiguration.SourceConfiguration.GetStageType();
-			destinationConnectorType = this.PipelineConfiguration.DestinationConfiguration.GetStageType();
-			processorTypeConfigMappings = this.PipelineConfiguration.ProcessorConfigurations.ToDictionary(c => c, c => c.GetStageType());
+			sourceConnectorType = this.Configuration.SourceConfiguration.GetStageType();
+			destinationConnectorType = this.Configuration.DestinationConfiguration.GetStageType();
+			processorTypeConfigMappings = this.Configuration.ProcessorConfigurations.ToDictionary(c => c, c => c.GetStageType());
 
 			if ((object)sourceConnectorType == null)
 				throw new InvalidOperationException(nameof(sourceConnectorType));
@@ -89,7 +89,7 @@ namespace SyncPrem.Pipeline.Core
 
 			using (sourceConnector)
 			{
-				sourceConnector.StageConfiguration = this.PipelineConfiguration.SourceConfiguration;
+				sourceConnector.Configuration = this.Configuration.SourceConfiguration;
 				sourceConnector.Create();
 
 				if ((object)destinationConnectorType == null)
@@ -107,10 +107,10 @@ namespace SyncPrem.Pipeline.Core
 					ProcessDelegate process;
 					IProcessorBuilder processorBuilder;
 
-					destinationConnector.StageConfiguration = this.PipelineConfiguration.DestinationConfiguration;
+					destinationConnector.Configuration = this.Configuration.DestinationConfiguration;
 					destinationConnector.Create();
 
-					configuration = this.PipelineConfiguration.RecordConfiguration ?? new RecordConfiguration();
+					configuration = this.Configuration.RecordConfiguration ?? new RecordConfiguration();
 					sourceConnector.PreExecute(context, configuration);
 					destinationConnector.PreExecute(context, configuration);
 
@@ -171,7 +171,7 @@ namespace SyncPrem.Pipeline.Core
 					destinationConnector.PostExecute(context, configuration);
 					sourceConnector.PostExecute(context, configuration);
 
-					__check();
+					this.__check();
 				}
 			}
 

@@ -7,12 +7,14 @@ using System;
 using System.Data;
 using System.Data.Common;
 
+using TextMetal.Middleware.Solder.Primitives;
+
 namespace SyncPrem.StreamingIO.Relational.UoW
 {
 	/// <summary>
 	/// Represents an atomic set of data operations on a single connection/transaction.
 	/// </summary>
-	public sealed class UnitOfWork : IUnitOfWork
+	public sealed class UnitOfWork : Lifecycle, IUnitOfWork
 	{
 		#region Constructors/Destructors
 
@@ -31,10 +33,9 @@ namespace SyncPrem.StreamingIO.Relational.UoW
 
 		private readonly DbConnection connection;
 		private readonly DbTransaction transaction;
-		private bool completed;
-		private IDisposable context;
-		private bool disposed;
-		private bool diverged;
+		private bool isCompleted;
+		private IDisposableEx context;
+		private bool isDiverged;
 
 		#endregion
 
@@ -47,7 +48,7 @@ namespace SyncPrem.StreamingIO.Relational.UoW
 		{
 			get
 			{
-				if (this.Disposed)
+				if (this.IsDisposed)
 					throw new ObjectDisposedException(typeof(UnitOfWork).FullName);
 
 				return this.connection;
@@ -61,7 +62,7 @@ namespace SyncPrem.StreamingIO.Relational.UoW
 		{
 			get
 			{
-				if (this.Disposed)
+				if (this.IsDisposed)
 					throw new ObjectDisposedException(typeof(UnitOfWork).FullName);
 
 				return this.transaction;
@@ -71,26 +72,26 @@ namespace SyncPrem.StreamingIO.Relational.UoW
 		/// <summary>
 		/// Gets a value indicating whether the current instance has been completed.
 		/// </summary>
-		public bool Completed
+		public bool IsCompleted
 		{
 			get
 			{
-				return this.completed;
+				return this.isCompleted;
 			}
 			private set
 			{
-				this.completed = value;
+				this.isCompleted = value;
 			}
 		}
 
 		/// <summary>
 		/// Gets the context object.
 		/// </summary>
-		public IDisposable Context
+		public IDisposableEx Context
 		{
 			get
 			{
-				if (this.Disposed)
+				if (this.IsDisposed)
 					throw new ObjectDisposedException(typeof(UnitOfWork).FullName);
 
 				return this.context;
@@ -102,32 +103,17 @@ namespace SyncPrem.StreamingIO.Relational.UoW
 		}
 
 		/// <summary>
-		/// Gets a value indicating whether the current instance has been disposed.
-		/// </summary>
-		public bool Disposed
-		{
-			get
-			{
-				return this.disposed;
-			}
-			private set
-			{
-				this.disposed = value;
-			}
-		}
-
-		/// <summary>
 		/// Gets a value indicating whether the current instance has been diverged.
 		/// </summary>
-		public bool Diverged
+		public bool IsDiverged
 		{
 			get
 			{
-				return this.diverged;
+				return this.isDiverged;
 			}
 			private set
 			{
-				this.diverged = value;
+				this.isDiverged = value;
 			}
 		}
 
@@ -195,7 +181,7 @@ namespace SyncPrem.StreamingIO.Relational.UoW
 			{
 				if ((object)this.Transaction != null)
 				{
-					if (this.Completed && !this.Diverged)
+					if (this.IsCompleted && !this.IsDiverged)
 						this.Transaction.Commit();
 					else
 						this.Transaction.Rollback();
@@ -217,15 +203,9 @@ namespace SyncPrem.StreamingIO.Relational.UoW
 			}
 		}
 
-		public /*virtual*/ void Close()
+		protected override void Create(bool creating)
 		{
-			if (this.Disposed)
-				return;
-
-			this.Dispose(true);
-			GC.SuppressFinalize(this);
-
-			this.Disposed = true;
+			// do nothing
 		}
 
 		/// <summary>
@@ -233,16 +213,16 @@ namespace SyncPrem.StreamingIO.Relational.UoW
 		/// </summary>
 		public void Complete()
 		{
-			if (this.Disposed)
+			if (this.IsDisposed)
 				throw new ObjectDisposedException(typeof(UnitOfWork).FullName);
 
-			if (this.Completed)
+			if (this.IsCompleted)
 				throw new InvalidOperationException(string.Format("The current unit of work is already complete. You should dispose of the unit of work."));
 
-			this.Completed = true;
+			this.IsCompleted = true;
 		}
 
-		private /*protected virtual*/ void Dispose(bool disposing)
+		protected override void Dispose(bool disposing)
 		{
 			if (disposing)
 			{
@@ -251,22 +231,14 @@ namespace SyncPrem.StreamingIO.Relational.UoW
 		}
 
 		/// <summary>
-		/// Dispose of the unit of work.
-		/// </summary>
-		public void Dispose()
-		{
-			this.Close();
-		}
-
-		/// <summary>
 		/// Indicates that at least one operation within the unit of work cause a failure in data concurrency or nullipotency. This forces the entire unit of work to yield an incomplete status. This method can be called any number of times.
 		/// </summary>
 		public void Divergent()
 		{
-			if (this.Disposed)
+			if (this.IsDisposed)
 				throw new ObjectDisposedException(typeof(UnitOfWork).FullName);
 
-			this.Diverged = true;
+			this.IsDiverged = true;
 		}
 
 		#endregion

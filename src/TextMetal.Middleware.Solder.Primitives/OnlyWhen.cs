@@ -9,6 +9,7 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
 using System.Runtime.CompilerServices;
+using System.Text;
 
 namespace TextMetal.Middleware.Solder.Primitives
 {
@@ -35,17 +36,32 @@ namespace TextMetal.Middleware.Solder.Primitives
 		#region Methods/Operators
 
 		[Conditional("DEBUG")]
-		public static void __check()
+		public static void __check(this object obj, [CallerMemberName] string value = null)
 		{
-			IEnumerable<IDisposable> x = Tracker.SelectMany(cd => cd.Value);
-			int i;
+			StringBuilder sb;
 
-			if ((i = x.Select(
-				d =>
+			int count = 0;
+			sb = new StringBuilder();
+
+			foreach (KeyValuePair<Guid, DisposableList<IDisposable>> tracked in Tracker)
+			{
+				using (tracked.Value)
 				{
-					using(d) return 1;
-				}).Count()) > 0)
-				throw new InvalidOperationException(i.ToString());
+					sb.AppendFormat("[{0} -> {1}]", tracked.Key, tracked.Value.Count);
+					sb.AppendLine();
+				}
+
+				if(tracked.Value.Count > 0)
+					count++;
+			}
+
+			__out__(obj, string.Format("leak_check {0}", sb.ToString()), value);
+
+			if (count > 0)
+			{
+				__out__(obj, string.Format("leak_check FAILED with {0} leaked disposables", count), value);
+				Environment.FailFast(string.Format("leak_check FAILED with {0} leaked disposables", count));
+			}
 		}
 
 		[Conditional("DEBUG")]

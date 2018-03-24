@@ -9,24 +9,17 @@ using System.IO;
 using System.Linq;
 using System.Text;
 
-using SyncPrem.StreamingIO.Primitives;
-
 using TextMetal.Middleware.Solder.Extensions;
 
 namespace SyncPrem.StreamingIO.Textual.Delimited
 {
-	public class DelimitedTextualReader : TextualReader
+	public class DelimitedTextualReader : TextualReader<IDelimitedTextualFieldSpec, IDelimitedTextualSpec>
 	{
 		#region Constructors/Destructors
 
 		public DelimitedTextualReader(TextReader baseTextReader, IDelimitedTextualSpec delimitedTextualSpec)
-			: base(baseTextReader)
+			: base(baseTextReader, delimitedTextualSpec)
 		{
-			if ((object)delimitedTextualSpec == null)
-				throw new ArgumentNullException(nameof(delimitedTextualSpec));
-
-			this.delimitedTextualSpec = delimitedTextualSpec;
-
 			this.ResetParserState();
 		}
 
@@ -34,20 +27,11 @@ namespace SyncPrem.StreamingIO.Textual.Delimited
 
 		#region Fields/Constants
 
-		private readonly IDelimitedTextualSpec delimitedTextualSpec;
 		private readonly _ParserState parserState = new _ParserState();
 
 		#endregion
 
 		#region Properties/Indexers/Events
-
-		public IDelimitedTextualSpec DelimitedTextualSpec
-		{
-			get
-			{
-				return this.delimitedTextualSpec;
-			}
-		}
 
 		private _ParserState ParserState
 		{
@@ -69,7 +53,7 @@ namespace SyncPrem.StreamingIO.Textual.Delimited
 			if ((object)targetValue == null)
 				throw new ArgumentNullException(nameof(targetValue));
 
-			if (string.IsNullOrEmpty(targetValue))
+			if (SolderFascadeAccessor.DataTypeFascade.IsNullOrEmpty(targetValue))
 				throw new ArgumentOutOfRangeException(nameof(targetValue));
 
 			// look-behind CHECK
@@ -109,53 +93,46 @@ namespace SyncPrem.StreamingIO.Textual.Delimited
 		{
 			string[] fieldNames;
 			IDelimitedTextualFieldSpec delimitedTextualFieldSpec;
-			IDelimitedTextualFieldSpec[] delimitedTextualFieldSpecs;
 
-			delimitedTextualFieldSpecs = this.DelimitedTextualSpec.TextualHeaderSpecs.ToArray();
-			fieldNames = this.ParserState.headerPayload.Keys.ToArray();
+			fieldNames = this.ParserState.header.Keys.ToArray();
+
+			if ((object)this.TextualSpec == null ||
+				(object)this.TextualSpec.TextualHeaderSpecs == null ||
+				(object)fieldNames == null)
+				throw new InvalidOperationException(string.Format(""));
 
 			// stash parsed field names into field specs member
-			if ((object)this.DelimitedTextualSpec.TextualHeaderSpecs != null &&
-				fieldNames.Length == delimitedTextualFieldSpecs.Length)
+			if (fieldNames.Length == this.TextualSpec.TextualHeaderSpecs.Count)
 			{
-				if ((object)fieldNames != null)
+				for (int fieldIndex = 0; fieldIndex < fieldNames.Length; fieldIndex++)
 				{
-					for (int fieldIndex = 0; fieldIndex < fieldNames.Length; fieldIndex++)
-					{
-						delimitedTextualFieldSpec = delimitedTextualFieldSpecs[fieldIndex];
+					delimitedTextualFieldSpec = this.TextualSpec.TextualHeaderSpecs[fieldIndex];
 
-						if (!string.IsNullOrWhiteSpace(delimitedTextualFieldSpec.FieldTitle) &&
-							delimitedTextualFieldSpec.FieldTitle.ToLower() != fieldNames[fieldIndex].ToLower())
-							throw new InvalidOperationException(string.Format("Field name mismatch: '{0}' <> '{1}'.", delimitedTextualFieldSpec.FieldTitle, fieldNames[fieldIndex]));
+					if (!SolderFascadeAccessor.DataTypeFascade.IsNullOrWhiteSpace(delimitedTextualFieldSpec.FieldTitle) &&
+						delimitedTextualFieldSpec.FieldTitle.ToLower() != fieldNames[fieldIndex].ToLower())
+						throw new InvalidOperationException(string.Format("Field name mismatch: '{0}' <> '{1}'.", delimitedTextualFieldSpec.FieldTitle, fieldNames[fieldIndex]));
 
-						delimitedTextualFieldSpec.FieldTitle = fieldNames[fieldIndex];
-					}
+					delimitedTextualFieldSpec.FieldTitle = fieldNames[fieldIndex];
 				}
 			}
 			else
 			{
 				// reset field specs because they do not match in length
-				delimitedTextualFieldSpecs = new IDelimitedTextualFieldSpec[fieldNames.Length];
+				this.TextualSpec.TextualHeaderSpecs.Clear();
 
-				if ((object)fieldNames != null)
+				for (long fieldIndex = 0; fieldIndex < fieldNames.Length; fieldIndex++)
 				{
-					for (long fieldIndex = 0; fieldIndex < fieldNames.Length; fieldIndex++)
-					{
-						delimitedTextualFieldSpecs[fieldIndex] = new DelimitedTextualFieldSpec()
-																{
-																	FieldTitle = fieldNames[fieldIndex],
-																	FieldType = TextualFieldType.Text,
-																	IsFieldIdentity = false,
-																	IsFieldRequired = true
-																};
-					}
-				}
+					delimitedTextualFieldSpec = new DelimitedTextualFieldSpec()
+												{
+													FieldTitle = fieldNames[fieldIndex],
+													FieldType = TextualFieldType.Text,
+													IsFieldIdentity = false,
+													IsFieldRequired = true,
+													FieldFormat = null,
+													FieldOrdinal = fieldIndex
+												};
 
-				this.DelimitedTextualSpec.TextualHeaderSpecs.Clear();
-
-				for (int i = 0; i < 0; i++)
-				{
-					this.DelimitedTextualSpec.TextualHeaderSpecs.Add(delimitedTextualFieldSpecs);
+					this.TextualSpec.TextualHeaderSpecs.Add(delimitedTextualFieldSpec);
 				}
 			}
 		}
@@ -168,14 +145,14 @@ namespace SyncPrem.StreamingIO.Textual.Delimited
 
 			// now determine what to do based on parser state
 			matchedRecordDelimiter = !this.ParserState.isQuotedValue &&
-									!string.IsNullOrEmpty(this.DelimitedTextualSpec.RecordDelimiter) &&
-									LookBehindFixup(this.ParserState.transientStringBuilder, this.DelimitedTextualSpec.RecordDelimiter);
+									!SolderFascadeAccessor.DataTypeFascade.IsNullOrEmpty(this.TextualSpec.RecordDelimiter) &&
+									LookBehindFixup(this.ParserState.transientStringBuilder, this.TextualSpec.RecordDelimiter);
 
 			if (!matchedRecordDelimiter)
 			{
 				matchedFieldDelimiter = !this.ParserState.isQuotedValue &&
-										!string.IsNullOrEmpty(this.DelimitedTextualSpec.FieldDelimiter) &&
-										LookBehindFixup(this.ParserState.transientStringBuilder, this.DelimitedTextualSpec.FieldDelimiter);
+										!SolderFascadeAccessor.DataTypeFascade.IsNullOrEmpty(this.TextualSpec.FieldDelimiter) &&
+										LookBehindFixup(this.ParserState.transientStringBuilder, this.TextualSpec.FieldDelimiter);
 			}
 			else
 				matchedFieldDelimiter = false;
@@ -192,7 +169,7 @@ namespace SyncPrem.StreamingIO.Textual.Delimited
 				if (this.ParserState.isHeaderRecord)
 				{
 					// stash field if FRIS enabled and zeroth record
-					this.ParserState.payload.Add(tempStringValue, this.ParserState.fieldIndex.ToString("0000"));
+					this.ParserState.record.Add(tempStringValue, this.ParserState.fieldIndex.ToString("0000"));
 				}
 				else
 				{
@@ -203,7 +180,7 @@ namespace SyncPrem.StreamingIO.Textual.Delimited
 					IDelimitedTextualFieldSpec delimitedTextualFieldSpec;
 					IDelimitedTextualFieldSpec[] delimitedTextualFieldSpecs;
 
-					delimitedTextualFieldSpecs = this.DelimitedTextualSpec.TextualHeaderSpecs.ToArray();
+					delimitedTextualFieldSpecs = this.TextualSpec.TextualHeaderSpecs.ToArray();
 
 					// check field array and field index validity
 					if ((object)delimitedTextualFieldSpecs == null ||
@@ -237,7 +214,7 @@ namespace SyncPrem.StreamingIO.Textual.Delimited
 
 					// TODO: add default values, null field value conversions
 					succeeded = true;
-					if (string.IsNullOrWhiteSpace(tempStringValue))
+					if (SolderFascadeAccessor.DataTypeFascade.IsNullOrWhiteSpace(tempStringValue))
 						fieldValue = SolderFascadeAccessor.DataTypeFascade.DefaultValue(fieldType);
 					else
 						succeeded = SolderFascadeAccessor.DataTypeFascade.TryParse(fieldType, tempStringValue, out fieldValue);
@@ -246,13 +223,13 @@ namespace SyncPrem.StreamingIO.Textual.Delimited
 						throw new InvalidOperationException(string.Format("Delimited text reader parse state failure: field string value '{0}' could not be parsed into a valid '{1}'.", tempStringValue, fieldType.FullName));
 
 					// lookup field name (key) by index and commit value to record
-					this.ParserState.payload.Add(delimitedTextualFieldSpec.FieldTitle, fieldValue);
+					this.ParserState.record.Add(delimitedTextualFieldSpec.FieldTitle, fieldValue);
 				}
 
 				// handle blank lines (we assume that any RECORDS with valid RECORD delimiter is OK)
-				if (string.IsNullOrEmpty(tempStringValue) &&
-					this.ParserState.payload.Keys.Count == 1)
-					this.ParserState.payload = null;
+				if (SolderFascadeAccessor.DataTypeFascade.IsNullOrEmpty(tempStringValue) &&
+					this.ParserState.record.Keys.Count == 1)
+					this.ParserState.record = null;
 
 				// now what to do?
 				if (this.ParserState.isEOF)
@@ -281,25 +258,25 @@ namespace SyncPrem.StreamingIO.Textual.Delimited
 			}
 			else if (!this.ParserState.isEOF &&
 					!this.ParserState.isQuotedValue &&
-					!string.IsNullOrEmpty(this.DelimitedTextualSpec.OpenQuoteValue) &&
-					LookBehindFixup(this.ParserState.transientStringBuilder, this.DelimitedTextualSpec.OpenQuoteValue))
+					!SolderFascadeAccessor.DataTypeFascade.IsNullOrEmpty(this.TextualSpec.OpenQuoteValue) &&
+					LookBehindFixup(this.ParserState.transientStringBuilder, this.TextualSpec.OpenQuoteValue))
 			{
 				// BEGIN::QUOTE_VALUE
 				this.ParserState.isQuotedValue = true;
 			}
 			//else if (!this.ParserState.isEOF &&
 			//	this.ParserState.isQuotedValue &&
-			//	!SolderFascadeAccessor.DataTypeFascade.IsNullOrEmpty(this.DelimitedTextualSpec.QuoteValue) &&
-			//	LookBehindFixup(this.ParserState.transientStringBuilder, this.DelimitedTextualSpec.QuoteValue) &&
-			//	this.ParserState.peekNextCharacter.ToString() == this.DelimitedTextualSpec.QuoteValue)
+			//	!SolderFascadeAccessor.DataTypeFascade.IsNullOrEmpty(this.TextualSpec.QuoteValue) &&
+			//	LookBehindFixup(this.ParserState.transientStringBuilder, this.TextualSpec.QuoteValue) &&
+			//	this.ParserState.peekNextCharacter.ToString() == this.TextualSpec.QuoteValue)
 			//{
 			//	// unescape::QUOTE_VALUE
 			//	this.ParserState.transientStringBuilder.Append("'");
 			//}
 			else if (!this.ParserState.isEOF &&
 					this.ParserState.isQuotedValue &&
-					!string.IsNullOrEmpty(this.DelimitedTextualSpec.CloseQuoteValue) &&
-					LookBehindFixup(this.ParserState.transientStringBuilder, this.DelimitedTextualSpec.CloseQuoteValue))
+					!SolderFascadeAccessor.DataTypeFascade.IsNullOrEmpty(this.TextualSpec.CloseQuoteValue) &&
+					LookBehindFixup(this.ParserState.transientStringBuilder, this.TextualSpec.CloseQuoteValue))
 			{
 				// END::QUOTE_VALUE
 				this.ParserState.isQuotedValue = false;
@@ -323,7 +300,7 @@ namespace SyncPrem.StreamingIO.Textual.Delimited
 			return false;
 		}
 
-		public override IEnumerable<IPayload> ReadFooterRecords(IEnumerable<IDelimitedTextualFieldSpec> specs)
+		public override IEnumerable<ITextualStreamingRecord> ReadFooterRecords(IEnumerable<IDelimitedTextualFieldSpec> footers)
 		{
 			throw new NotSupportedException(string.Format("Cannot read footer records (from fields) in this version."));
 		}
@@ -331,24 +308,24 @@ namespace SyncPrem.StreamingIO.Textual.Delimited
 		public override IEnumerable<IDelimitedTextualFieldSpec> ReadHeaderFields()
 		{
 			if (this.ParserState.recordIndex == 0 &&
-				this.DelimitedTextualSpec.IsFirstRecordHeader)
+				this.TextualSpec.IsFirstRecordHeader)
 			{
-				IPayload headerRecord;
-				IEnumerable<IPayload> headerRecords = this.ResumableParserMainLoop(true);
+				ITextualStreamingRecord header;
+				IEnumerable<ITextualStreamingRecord> records = this.ResumableParserMainLoop(true);
 
-				headerRecord = headerRecords.SingleOrDefault(); // force a single enumeration - yield return is a brain fyck
+				header = records.SingleOrDefault(); // force a single enumeration - yield return is a brain fyck
 
 				// sanity check - should never non-null record since it breaks (once==true)
-				if ((object)headerRecord != null)
+				if ((object)header != null)
 					throw new InvalidOperationException(string.Format("Delimited text reader parse state failure: yielded header record was not null."));
 
 				this.FixupHeaderRecord();
 			}
 
-			return this.DelimitedTextualSpec.TextualHeaderSpecs;
+			return this.TextualSpec.TextualHeaderSpecs;
 		}
 
-		public override IEnumerable<IPayload> ReadRecords()
+		public override IEnumerable<ITextualStreamingRecord> ReadRecords()
 		{
 			return this.ResumableParserMainLoop(false);
 		}
@@ -357,7 +334,7 @@ namespace SyncPrem.StreamingIO.Textual.Delimited
 		{
 			const long DEFAULT_INDEX = 0;
 
-			this.ParserState.payload = new Payload();
+			this.ParserState.record = new TextualStreamingRecord(0, 0, 0);
 			this.ParserState.transientStringBuilder = new StringBuilder();
 			this.ParserState.readCurrentCharacter = '\0';
 			this.ParserState.peekNextCharacter = '\0';
@@ -369,10 +346,10 @@ namespace SyncPrem.StreamingIO.Textual.Delimited
 			this.ParserState.isQuotedValue = false;
 			this.ParserState.isEOF = false;
 
-			this.DelimitedTextualSpec.AssertValid();
+			this.TextualSpec.AssertValid();
 		}
 
-		private IEnumerable<IPayload> ResumableParserMainLoop(bool once)
+		private IEnumerable<ITextualStreamingRecord> ResumableParserMainLoop(bool once)
 		{
 			int __value;
 			char ch;
@@ -404,8 +381,8 @@ namespace SyncPrem.StreamingIO.Textual.Delimited
 				}
 
 				// eval on every loop
-				this.ParserState.isHeaderRecord = this.ParserState.recordIndex == 0 && this.DelimitedTextualSpec.IsFirstRecordHeader;
-				this.ParserState.isFooterRecord = false; //this.ParserState.recordIndex == 0 && (this.DelimitedTextualSpec.IsLastRecordFooter ?? false);
+				this.ParserState.isHeaderRecord = this.ParserState.recordIndex == 0 && this.TextualSpec.IsFirstRecordHeader;
+				this.ParserState.isFooterRecord = false; //this.ParserState.recordIndex == 0 && (this.TextualSpec.IsLastRecordFooter ?? false);
 
 				// peek the next byte
 				__value = this.BaseTextReader.Peek();
@@ -415,18 +392,18 @@ namespace SyncPrem.StreamingIO.Textual.Delimited
 				if (this.ParserStateMachine())
 				{
 					// if record is null here, then is was a blank line - no error just avoid doing work
-					if ((object)this.ParserState.payload != null)
+					if ((object)this.ParserState.record != null)
 					{
 						// should never yield the header record
 						if (!this.ParserState.isHeaderRecord)
 						{
 							// aint this some shhhhhhhh!t?
-							yield return this.ParserState.payload;
+							yield return this.ParserState.record;
 						}
 						else
 						{
-							this.ParserState.headerPayload = this.ParserState.payload; // cache elsewhere
-							this.ParserState.payload = null; // pretend it was a blank line
+							this.ParserState.header = this.ParserState.record; // cache elsewhere
+							this.ParserState.record = null; // pretend it was a blank line
 							//this.ParserState.recordIndex--; // adjust down to zero
 						}
 					}
@@ -436,7 +413,7 @@ namespace SyncPrem.StreamingIO.Textual.Delimited
 						throw new InvalidOperationException(string.Format("Delimited text reader parse state failure: zero record index unexpected."));
 
 					// create a new record for the next index; will be used later
-					this.ParserState.payload = new Payload();
+					this.ParserState.record = new TextualStreamingRecord(this.ParserState.recordIndex, this.ParserState.contentIndex, this.ParserState.characterIndex);
 
 					if (once) // state-based resumption of loop ;)
 						break; // MUST NOT USE YIELD BREAK - as we will RESUME the enumeration based on state
@@ -455,14 +432,14 @@ namespace SyncPrem.StreamingIO.Textual.Delimited
 			public long characterIndex;
 			public long contentIndex;
 			public long fieldIndex;
-			public IPayload headerPayload;
+			public ITextualStreamingRecord header;
 			public bool isEOF;
 			public bool isFooterRecord;
 			public bool isHeaderRecord;
 			public bool isQuotedValue;
-			public IPayload payload;
 			public char peekNextCharacter;
 			public char readCurrentCharacter;
+			public ITextualStreamingRecord record;
 			public long recordIndex;
 			public StringBuilder transientStringBuilder;
 			public long valueIndex;

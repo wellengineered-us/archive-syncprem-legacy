@@ -11,7 +11,7 @@ using _Message = TextMetal.Middleware.Solder.Primitives.Message;
 
 namespace SyncPrem.Pipeline.Abstractions.Configuration
 {
-	public class StageSpecificConfiguration : ConfigurationObject
+	public class StageSpecificConfiguration : ComponentConfiguration
 	{
 		#region Constructors/Destructors
 

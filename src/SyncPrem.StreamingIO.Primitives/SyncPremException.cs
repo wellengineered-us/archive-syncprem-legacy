@@ -10,7 +10,7 @@ namespace SyncPrem.StreamingIO.Primitives
 	/// <summary>
 	/// The exception thrown when a SyncPrem runtime error occurs.
 	/// </summary>
-	public sealed class SyncPremException : Exception
+	public class SyncPremException : Exception
 	{
 		#region Constructors/Destructors
 

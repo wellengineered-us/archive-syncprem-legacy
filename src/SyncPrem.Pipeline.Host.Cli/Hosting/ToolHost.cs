@@ -4,10 +4,8 @@
 */
 
 using System;
-using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using System.Reflection.PortableExecutable;
 using System.Threading;
 
 using SyncPrem.Infrastructure.Configuration;
@@ -32,9 +30,31 @@ namespace SyncPrem.Pipeline.Host.Cli.Hosting
 
 		#endregion
 
+		#region Fields/Constants
+
+		private PipelineConfiguration configuration;
+
+		#endregion
+
+		#region Properties/Indexers/Events
+
+		public PipelineConfiguration Configuration
+		{
+			get
+			{
+				return this.configuration;
+			}
+			set
+			{
+				this.configuration = value;
+			}
+		}
+
+		#endregion
+
 		#region Methods/Operators
 
-		static void ExecutePipelineThreadProc(object stateInfo)
+		private static void ExecutePipelineThreadProc(object stateInfo)
 		{
 			IPipeline pipeline;
 			Tuple<Type, PipelineConfiguration> tuple;
@@ -50,7 +70,7 @@ namespace SyncPrem.Pipeline.Host.Cli.Hosting
 
 			using (pipeline)
 			{
-				pipeline.PipelineConfiguration = tuple.Item2;
+				pipeline.Configuration = tuple.Item2;
 				pipeline.Create();
 
 				using (IContext context = pipeline.CreateContext())
@@ -72,29 +92,6 @@ namespace SyncPrem.Pipeline.Host.Cli.Hosting
 			return configuration;
 		}
 
-		public void Host(PipelineConfiguration pipelineConfiguration)
-		{
-			Type realPipelineType;
-			Message[] messages;
-
-			if ((object)pipelineConfiguration == null)
-				throw new ArgumentNullException(nameof(pipelineConfiguration));
-
-			messages = pipelineConfiguration.Validate().ToArray();
-
-			if (messages.Length > 0)
-				throw new InvalidOperationException(string.Format("PipelineConfiguration validation failed:\r\n{0}", string.Join("\r\n", messages.Select(m => m.Description).ToArray())));
-
-			realPipelineType = pipelineConfiguration.GetPipelineType();
-
-			if ((object)realPipelineType == null)
-				throw new InvalidOperationException(nameof(realPipelineType));
-
-			ThreadPool.QueueUserWorkItem(ExecutePipelineThreadProc, Tuple.Create(realPipelineType, pipelineConfiguration));
-
-			Console.ReadLine();
-		}
-
 		public void Host(string sourceFilePath)
 		{
 			PipelineConfiguration pipelineConfiguration;
@@ -102,7 +99,40 @@ namespace SyncPrem.Pipeline.Host.Cli.Hosting
 			sourceFilePath = Path.GetFullPath(sourceFilePath);
 			pipelineConfiguration = FromJsonFile<PipelineConfiguration>(sourceFilePath);
 
-			this.Host(pipelineConfiguration);
+			this.Configuration = pipelineConfiguration;
+			this.Create();
+			this.RunHost();
+		}
+
+		private void RunHost()
+		{
+			Type pipelineType;
+			Message[] messages;
+
+			if ((object)this.Configuration == null)
+				throw new InvalidOperationException(string.Format("Pipeline configuration is required"));
+
+			messages = this.Configuration.Validate().ToArray();
+
+			if (messages.Length > 0)
+				throw new InvalidOperationException(string.Format("PipelineConfiguration validation failed:\r\n{0}", string.Join("\r\n", messages.Select(m => m.Description).ToArray())));
+
+			pipelineType = this.Configuration.GetPipelineType();
+
+			if ((object)pipelineType == null)
+				throw new InvalidOperationException(nameof(pipelineType));
+			
+			//while (true)
+			{
+				//var t = new Thread(ExecutePipelineThreadProc);
+				//t.Start(Tuple.Create(pipelineType, this.Configuration));
+				//t.Join();
+			}
+
+			ExecutePipelineThreadProc(Tuple.Create(pipelineType, this.Configuration));
+
+			//ThreadPool.QueueUserWorkItem(ExecutePipelineThreadProc, Tuple.Create(pipelineType, this.Configuration));
+			//Thread.Sleep(int.MaxValue);
 		}
 
 		#endregion

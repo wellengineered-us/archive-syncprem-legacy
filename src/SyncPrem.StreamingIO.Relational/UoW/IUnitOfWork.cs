@@ -6,16 +6,18 @@
 using System;
 using System.Data.Common;
 
+using TextMetal.Middleware.Solder.Primitives;
+
 namespace SyncPrem.StreamingIO.Relational.UoW
 {
-	public interface IUnitOfWork : IDisposable
+	public interface IUnitOfWork : IDisposableEx
 	{
 		#region Properties/Indexers/Events
 
 		/// <summary>
 		/// Gets a value indicating whether the current instance has been completed.
 		/// </summary>
-		bool Completed
+		bool IsCompleted
 		{
 			get;
 		}
@@ -29,17 +31,9 @@ namespace SyncPrem.StreamingIO.Relational.UoW
 		}
 
 		/// <summary>
-		/// Gets a value indicating whether the current instance has been disposed.
-		/// </summary>
-		bool Disposed
-		{
-			get;
-		}
-
-		/// <summary>
 		/// Gets a value indicating whether the current instance has been diverged.
 		/// </summary>
-		bool Diverged
+		bool IsDiverged
 		{
 			get;
 		}
@@ -55,7 +49,7 @@ namespace SyncPrem.StreamingIO.Relational.UoW
 		/// <summary>
 		/// Gets the context object.
 		/// </summary>
-		IDisposable Context
+		IDisposableEx Context
 		{
 			get;
 			set;

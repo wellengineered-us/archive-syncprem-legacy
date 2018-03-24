@@ -38,21 +38,6 @@ namespace SyncPrem.StreamingIO.Relational
 			return record;
 		}
 
-		public static IEnumerable<IAdoNetStreamingResult> ToResults(this IEnumerable<IPayload> records)
-		{
-			IEnumerable<IAdoNetStreamingResult> results;
-
-			if ((object)records == null)
-				throw new ArgumentNullException(nameof(records));
-
-			results = new IAdoNetStreamingResult[]
-					{
-						new AdoNetStreamingResult(0) { Records = records, RecordsAffected = -1 }
-					};
-
-			return results;
-		}
-
 		#endregion
 	}
 }

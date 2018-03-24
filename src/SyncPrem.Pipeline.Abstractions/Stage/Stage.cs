@@ -22,7 +22,7 @@ namespace SyncPrem.Pipeline.Abstractions.Stage
 
 		#region Fields/Constants
 
-		private StageConfiguration stageConfiguration;
+		private StageConfiguration configuration;
 
 		#endregion
 
@@ -33,15 +33,15 @@ namespace SyncPrem.Pipeline.Abstractions.Stage
 			get;
 		}
 
-		public StageConfiguration StageConfiguration
+		public StageConfiguration Configuration
 		{
 			get
 			{
-				return this.stageConfiguration;
+				return this.configuration;
 			}
 			set
 			{
-				this.stageConfiguration = value;
+				this.configuration = value;
 			}
 		}
 

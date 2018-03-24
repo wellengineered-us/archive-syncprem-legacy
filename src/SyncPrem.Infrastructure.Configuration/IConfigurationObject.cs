@@ -12,7 +12,7 @@ namespace SyncPrem.Infrastructure.Configuration
 	/// <summary>
 	/// Represents an configuration object and it's "schema".
 	/// </summary>
-	public interface IConfigurationObject : IValidate
+	public interface IConfigurationObject : IValidatable
 	{
 		#region Properties/Indexers/Events
 

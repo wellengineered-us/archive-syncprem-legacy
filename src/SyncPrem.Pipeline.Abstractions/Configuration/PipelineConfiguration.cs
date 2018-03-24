@@ -12,7 +12,7 @@ using _Message = TextMetal.Middleware.Solder.Primitives.Message;
 
 namespace SyncPrem.Pipeline.Abstractions.Configuration
 {
-	public class PipelineConfiguration : ConfigurationObject
+	public class PipelineConfiguration : ComponentConfiguration
 	{
 		#region Constructors/Destructors
 
@@ -112,12 +112,12 @@ namespace SyncPrem.Pipeline.Abstractions.Configuration
 			if ((object)this.SourceConfiguration == null)
 				messages.Add(NewError("SourceConfiguration is required."));
 			else
-				messages.AddRange(this.SourceConfiguration.Validate("PRODUCER"));
+				messages.AddRange(this.SourceConfiguration.Validate("SOURCE"));
 
 			if ((object)this.DestinationConfiguration == null)
 				messages.Add(NewError("DestinationConfiguration is required."));
 			else
-				messages.AddRange(this.DestinationConfiguration.Validate("CONSUMER"));
+				messages.AddRange(this.DestinationConfiguration.Validate("DESTINATION"));
 
 			return messages;
 		}

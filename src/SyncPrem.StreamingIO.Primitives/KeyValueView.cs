@@ -8,81 +8,137 @@ using System.Linq;
 
 namespace SyncPrem.StreamingIO.Primitives
 {
-	public class KeyValueView
+	public class KeyValueView : IKeyValueView
 	{
 		#region Constructors/Destructors
 
-		public KeyValueView(ISchema schema, IPayload payload)
+		public KeyValueView(ISchema originalSchema, IPayload originalPayload)
 		{
 			IPayload key, value;
+			ISchemaBuilder k, v;
 
-			if ((object)schema == null)
-				throw new ArgumentNullException(nameof(schema));
+			if ((object)originalSchema == null)
+				throw new ArgumentNullException(nameof(originalSchema));
 
-			if ((object)payload == null)
-				throw new ArgumentNullException(nameof(payload));
+			if ((object)originalPayload == null)
+				throw new ArgumentNullException(nameof(originalPayload));
 
-			var groups = schema.Fields.Values.OrderBy(f => f.FieldIndex).GroupBy(f => f.IsFieldKeyComponent);
+			var groups = originalSchema.Fields.Values.OrderBy(f => f.FieldIndex).GroupBy(f => f.IsFieldKeyComponent);
 
 			key = new Payload();
 			value = new Payload();
+			k = new SchemaBuilder();
+			v = new SchemaBuilder();
 
 			foreach (IGrouping<bool, IField> grouping in groups)
 			{
 				foreach (IField field in grouping)
 				{
-					(grouping.Key ? key : value).Add(field.FieldName, payload[field.FieldName]);
+					originalPayload.TryGetValue(field.FieldName, out object fieldValue);
+
+					(grouping.Key ? key : value).Add(field.FieldName, fieldValue);
+					(grouping.Key ? k : v).AddField(field.FieldName, field.FieldType, field.IsFieldOptional, field.IsFieldKeyComponent, field.FieldSchema);
 				}
 			}
 
-			this.schema = schema;
-			this.payload = payload;
-			this.key = key;
-			this.value = value;
+			this.originalSchema = originalSchema;
+			this.originalPayload = originalPayload;
+			this.keyPayload = key;
+			this.valuePayload = value;
+			this.keySchema = k.Build();
+			this.valueSchema = v.Build();
+		}
+
+		public KeyValueView(ISchema originalSchema, IPayload originalPayload,
+			ISchema keySchema, IPayload keyPayload,
+			ISchema valueSchema, IPayload valuePayload)
+		{
+			if ((object)originalSchema == null)
+				throw new ArgumentNullException(nameof(originalSchema));
+
+			if ((object)originalPayload == null)
+				throw new ArgumentNullException(nameof(originalPayload));
+
+			if ((object)keySchema == null)
+				throw new ArgumentNullException(nameof(keySchema));
+
+			if ((object)keyPayload == null)
+				throw new ArgumentNullException(nameof(keyPayload));
+
+			if ((object)valueSchema == null)
+				throw new ArgumentNullException(nameof(keySchema));
+
+			if ((object)valuePayload == null)
+				throw new ArgumentNullException(nameof(valuePayload));
+
+			this.originalSchema = originalSchema;
+			this.originalPayload = originalPayload;
+			this.keySchema = keySchema;
+			this.keyPayload = keyPayload;
+			this.valueSchema = valueSchema;
+			this.valuePayload = valuePayload;
 		}
 
 		#endregion
 
 		#region Fields/Constants
 
-		private readonly IPayload key;
-		private readonly IPayload payload;
-		private readonly ISchema schema;
-		private readonly IPayload value;
+		private readonly IPayload keyPayload;
+		private readonly ISchema keySchema;
+		private readonly IPayload originalPayload;
+		private readonly ISchema originalSchema;
+		private readonly IPayload valuePayload;
+		private readonly ISchema valueSchema;
 
 		#endregion
 
 		#region Properties/Indexers/Events
 
-		public IPayload Key
+		public IPayload KeyPayload
 		{
 			get
 			{
-				return this.key;
+				return this.keyPayload;
 			}
 		}
 
-		public IPayload Payload
+		public ISchema KeySchema
 		{
 			get
 			{
-				return this.payload;
+				return this.keySchema;
 			}
 		}
 
-		public ISchema Schema
+		public IPayload OriginalPayload
 		{
 			get
 			{
-				return this.schema;
+				return this.originalPayload;
 			}
 		}
 
-		public IPayload Value
+		public ISchema OriginalSchema
 		{
 			get
 			{
-				return this.value;
+				return this.originalSchema;
+			}
+		}
+
+		public IPayload ValuePayload
+		{
+			get
+			{
+				return this.valuePayload;
+			}
+		}
+
+		public ISchema ValueSchema
+		{
+			get
+			{
+				return this.valueSchema;
 			}
 		}
 

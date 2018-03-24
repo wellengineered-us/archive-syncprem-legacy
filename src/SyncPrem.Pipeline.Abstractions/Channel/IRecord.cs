@@ -13,12 +13,12 @@ namespace SyncPrem.Pipeline.Abstractions.Channel
 	{
 		#region Properties/Indexers/Events
 
-		IPayload Offset
+		IOffset Offset
 		{
 			get;
 		}
 
-		int Partition
+		IPartition Partition
 		{
 			get;
 		}
