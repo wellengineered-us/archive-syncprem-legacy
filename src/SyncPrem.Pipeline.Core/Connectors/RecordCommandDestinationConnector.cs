@@ -47,16 +47,9 @@ namespace SyncPrem.Pipeline.Core.Connectors
 			if ((object)sourceDataReader == null)
 				throw new ArgumentNullException(nameof(sourceDataReader));
 
-			if ((object)this.Configuration == null)
-				throw new InvalidOperationException(nameof(this.Configuration));
+			this.AssertValidConfiguration();
 
-			if ((object)this.Specification == null)
-				throw new InvalidOperationException(nameof(this.Specification));
-
-			if ((object)this.Configuration.StageSpecificConfiguration == null)
-				throw new InvalidOperationException(nameof(this.Configuration.StageSpecificConfiguration));
-
-			AdoNetConnectorSpecificConfiguration fsConfig = this.Specification;
+			AdoNetConnectorSpecificConfiguration fsConfig = this.Configuration.StageSpecificConfiguration;
 
 			if ((object)fsConfig.ExecuteCommand == null)
 				throw new InvalidOperationException(string.Format("Configuration missing: '{0}'.", nameof(fsConfig.ExecuteCommand)));

@@ -13,21 +13,21 @@ using System.Text;
 
 namespace TextMetal.Middleware.Solder.Primitives
 {
-	public static class OnlyWhen
+	public static class LeakDetector
 	{
 		#region Fields/Constants
 
-		private static readonly ConcurrentDictionary<Guid, DisposableList<IDisposable>> tracker = new ConcurrentDictionary<Guid, DisposableList<IDisposable>>();
+		private static readonly ConcurrentDictionary<Guid, DisposableList<IDisposable>> trackedResources = new ConcurrentDictionary<Guid, DisposableList<IDisposable>>();
 
 		#endregion
 
 		#region Properties/Indexers/Events
 
-		private static ConcurrentDictionary<Guid, DisposableList<IDisposable>> Tracker
+		private static ConcurrentDictionary<Guid, DisposableList<IDisposable>> TrackedResources
 		{
 			get
 			{
-				return tracker;
+				return trackedResources;
 			}
 		}
 
@@ -43,23 +43,23 @@ namespace TextMetal.Middleware.Solder.Primitives
 			int count = 0;
 			sb = new StringBuilder();
 
-			foreach (KeyValuePair<Guid, DisposableList<IDisposable>> tracked in Tracker)
+			foreach (KeyValuePair<Guid, DisposableList<IDisposable>> trackedResource in TrackedResources)
 			{
-				using (tracked.Value)
+				using (trackedResource.Value)
 				{
-					sb.AppendFormat("[{0} -> {1}]", tracked.Key, tracked.Value.Count);
+					sb.AppendFormat("[{0} -> {1}]", trackedResource.Key, trackedResource.Value.Count);
 					sb.AppendLine();
 				}
 
-				if(tracked.Value.Count > 0)
+				if(trackedResource.Value.Count > 0)
 					count++;
 			}
 
-			__out__(obj, string.Format("leak_check {0}", sb.ToString()), value);
+			__print(obj, string.Format("leak_check {0}", sb.ToString()), value);
 
 			if (count > 0)
 			{
-				__out__(obj, string.Format("leak_check FAILED with {0} leaked disposables", count), value);
+				__print(obj, string.Format("leak_check FAILED with {0} leaked disposables", count), value);
 				Environment.FailFast(string.Format("leak_check FAILED with {0} leaked disposables", count));
 			}
 		}
@@ -77,12 +77,12 @@ namespace TextMetal.Middleware.Solder.Primitives
 		{
 			DisposableList<IDisposable> disps;
 
-			if (!Tracker.TryGetValue(_, out disps) || !disps.Contains(disposable))
+			if (!TrackedResources.TryGetValue(_, out disps) || !disps.Contains(disposable))
 				throw new InvalidOperationException();
 
 			disps.Remove(disposable);
 
-			__out__(obj, string.Format("dispose ({1})@{0:N}", _, disposable.GetType().Name), value);
+			__print(obj, string.Format("dispose ({1})@{0:N}", _, disposable.GetType().Name), value);
 		}
 
 		public static Guid __enter(this object obj, [CallerMemberName] string value = null)
@@ -90,7 +90,7 @@ namespace TextMetal.Middleware.Solder.Primitives
 #if DEBUG
 			Guid _ = Guid.NewGuid();
 
-			__out__(obj, string.Format("enter@{0:N}", _), value);
+			__print(obj, string.Format("enter@{0:N}", _), value);
 
 			return _;
 #else
@@ -101,7 +101,7 @@ namespace TextMetal.Middleware.Solder.Primitives
 		[Conditional("DEBUG")]
 		public static void __leave(this object obj, Guid _, [CallerMemberName] string value = null)
 		{
-			__out__(obj, string.Format("leave@{0:N}", _), value);
+			__print(obj, string.Format("leave@{0:N}", _), value);
 		}
 
 		[Conditional("DEBUG")]
@@ -111,7 +111,7 @@ namespace TextMetal.Middleware.Solder.Primitives
 		}
 
 		[Conditional("DEBUG")]
-		private static void __out__(object obj, string message, string value)
+		private static void __print(object obj, string message, string value)
 		{
 			/* THIS METHOD SHOULD NOT BE DEFINED IN RELEASE/PRODUCTION BUILDS */
 			string temp = string.Format("{0}::{1}: {2}", obj?.GetType().Name, value, message);
@@ -131,7 +131,7 @@ namespace TextMetal.Middleware.Solder.Primitives
 		[Conditional("DEBUG")]
 		public static void __trace(this object obj, Guid _, string message, [CallerMemberName] string value = null)
 		{
-			__out__(obj, string.Format("{1}@{0:N}", _, message), value);
+			__print(obj, string.Format("{1}@{0:N}", _, message), value);
 		}
 
 		public static T __use<T>(this object obj, T disposable, [CallerMemberName] string value = null)
@@ -146,7 +146,7 @@ namespace TextMetal.Middleware.Solder.Primitives
 #if DEBUG
 			DisposableList<IDisposable> disps;
 
-			if (Tracker.TryGetValue(_, out disps))
+			if (TrackedResources.TryGetValue(_, out disps))
 			{
 				if (disps.Contains(disposable))
 					throw new InvalidOperationException();
@@ -154,27 +154,14 @@ namespace TextMetal.Middleware.Solder.Primitives
 			else
 			{
 				disps = new DisposableList<IDisposable>();
-				Tracker.TryAdd(_, disps);
+				TrackedResources.TryAdd(_, disps);
 			}
 
 			disps.Add(disposable);
 
-			__out__(obj, string.Format("using ({1})@{0:N}", _, disposable.GetType().Name), value);
+			__print(obj, string.Format("using ({1})@{0:N}", _, disposable.GetType().Name), value);
 #endif
 			return disposable;
-		}
-
-		[Conditional("DEBUG")]
-		public static void _DEBUG_ThenPrint(string message)
-		{
-#if DEBUG
-			/* THIS METHOD SHOULD NOT BE DEFINED IN RELEASE/PRODUCTION BUILDS */
-
-			ConsoleColor oldConsoleColor = Console.ForegroundColor;
-			Console.ForegroundColor = ConsoleColor.DarkGray;
-			Console.WriteLine(message);
-			Console.ForegroundColor = oldConsoleColor;
-#endif
 		}
 
 		#endregion

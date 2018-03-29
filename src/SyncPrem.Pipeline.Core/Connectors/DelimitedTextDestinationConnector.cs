@@ -67,6 +67,8 @@ namespace SyncPrem.Pipeline.Core.Connectors
 			if ((object)channel == null)
 				throw new ArgumentNullException(nameof(channel));
 
+			this.AssertValidConfiguration();
+
 			records = channel.Records;
 
 			if ((object)records == null)
@@ -97,16 +99,9 @@ namespace SyncPrem.Pipeline.Core.Connectors
 			if ((object)configuration == null)
 				throw new ArgumentNullException(nameof(configuration));
 
-			if ((object)this.Configuration == null)
-				throw new InvalidOperationException(nameof(this.Configuration));
+			this.AssertValidConfiguration();
 
-			if ((object)this.Specification == null)
-				throw new InvalidOperationException(nameof(this.Specification));
-
-			if ((object)this.Configuration.StageSpecificConfiguration == null)
-				throw new InvalidOperationException(nameof(this.Configuration.StageSpecificConfiguration));
-
-			DelimitedTextConnectorSpecificConfiguration fsConfig = this.Specification;
+			DelimitedTextConnectorSpecificConfiguration fsConfig = this.Configuration.StageSpecificConfiguration;
 
 			if ((object)this.DelimitedTextualWriter != null)
 			{
@@ -127,16 +122,9 @@ namespace SyncPrem.Pipeline.Core.Connectors
 			if ((object)configuration == null)
 				throw new ArgumentNullException(nameof(configuration));
 
-			if ((object)this.Configuration == null)
-				throw new InvalidOperationException(nameof(this.Configuration));
+			this.AssertValidConfiguration();
 
-			if ((object)this.Specification == null)
-				throw new InvalidOperationException(nameof(this.Specification));
-
-			if ((object)this.Configuration.StageSpecificConfiguration == null)
-				throw new InvalidOperationException(nameof(this.Configuration.StageSpecificConfiguration));
-
-			DelimitedTextConnectorSpecificConfiguration fsConfig = this.Specification;
+			DelimitedTextConnectorSpecificConfiguration fsConfig = this.Configuration.StageSpecificConfiguration;
 
 			if (SolderFascadeAccessor.DataTypeFascade.IsNullOrWhiteSpace(fsConfig.DelimitedTextFilePath))
 				throw new InvalidOperationException(string.Format("Configuration missing: '{0}'.", nameof(fsConfig.DelimitedTextFilePath)));

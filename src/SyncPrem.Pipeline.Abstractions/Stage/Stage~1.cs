@@ -7,9 +7,11 @@ using System;
 
 using SyncPrem.Pipeline.Abstractions.Configuration;
 
+using TextMetal.Middleware.Solder.Primitives;
+
 namespace SyncPrem.Pipeline.Abstractions.Stage
 {
-	public abstract class Stage<TStageSpecificConfiguration> : Stage, ISpecifiable<TStageSpecificConfiguration>
+	public abstract class Stage<TStageSpecificConfiguration> : Stage
 		where TStageSpecificConfiguration : StageSpecificConfiguration, new()
 	{
 		#region Constructors/Destructors
@@ -22,13 +24,13 @@ namespace SyncPrem.Pipeline.Abstractions.Stage
 
 		#region Fields/Constants
 
-		private TStageSpecificConfiguration specification;
+		private StageConfiguration<TStageSpecificConfiguration> configuration;
 
 		#endregion
 
 		#region Properties/Indexers/Events
 
-		public Type SpecificationType
+		public override Type StageSpecificConfigurationType
 		{
 			get
 			{
@@ -36,29 +38,38 @@ namespace SyncPrem.Pipeline.Abstractions.Stage
 			}
 		}
 
-		public override Type StageSpecificConfigurationType
+		public override IValidatable StageSpecificValidatable
 		{
 			get
 			{
-				return this.SpecificationType;
+				return this?.Configuration?.StageSpecificConfiguration;
 			}
 		}
 
-		public TStageSpecificConfiguration Specification
+		public new StageConfiguration<TStageSpecificConfiguration> Configuration
 		{
 			get
 			{
-				return this.specification;
+				return this.configuration;
 			}
-			set
+			private set
 			{
-				this.specification = value;
+				this.configuration = value;
 			}
 		}
 
 		#endregion
 
 		#region Methods/Operators
+
+		protected void AssertValidConfiguration()
+		{
+			if ((object)this.Configuration == null)
+				throw new InvalidOperationException(string.Format("Configuration missing: '{0}'.", nameof(this.Configuration)));
+
+			if ((object)this.Configuration.StageSpecificConfiguration == null)
+				throw new InvalidOperationException(string.Format("Configuration missing: '{0}'.", nameof(this.Configuration.StageSpecificConfiguration)));
+		}
 
 		protected override void Create(bool creating)
 		{
@@ -70,7 +81,7 @@ namespace SyncPrem.Pipeline.Abstractions.Stage
 			if (!creating)
 				return;
 
-			untypedStageConfiguration = this.Configuration;
+			untypedStageConfiguration = base.Configuration;
 
 			if ((object)untypedStageConfiguration == null)
 				throw new InvalidOperationException(string.Format("Configuration missing: '{0}'.", nameof(untypedStageConfiguration)));
@@ -83,7 +94,9 @@ namespace SyncPrem.Pipeline.Abstractions.Stage
 			if ((object)typedStageConfiguration.StageSpecificConfiguration == null)
 				throw new InvalidOperationException(string.Format("Configuration missing: '{0}'.", nameof(typedStageConfiguration.StageSpecificConfiguration)));
 
-			this.Specification = typedStageConfiguration.StageSpecificConfiguration;
+			this.Configuration = typedStageConfiguration;
+
+			this.AssertValidConfiguration();
 		}
 
 		protected override void Dispose(bool disposing)
@@ -91,7 +104,6 @@ namespace SyncPrem.Pipeline.Abstractions.Stage
 			if (disposing)
 			{
 				this.Configuration = null;
-				this.Specification = null;
 			}
 
 			base.Dispose(disposing);

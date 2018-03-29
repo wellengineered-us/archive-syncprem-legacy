@@ -8,6 +8,8 @@ using System;
 using SyncPrem.Pipeline.Abstractions.Configuration;
 using SyncPrem.Pipeline.Abstractions.Runtime;
 
+using TextMetal.Middleware.Solder.Primitives;
+
 namespace SyncPrem.Pipeline.Abstractions.Stage
 {
 	public abstract class Stage : Component, IStage
@@ -29,6 +31,11 @@ namespace SyncPrem.Pipeline.Abstractions.Stage
 		#region Properties/Indexers/Events
 
 		public abstract Type StageSpecificConfigurationType
+		{
+			get;
+		}
+
+		public abstract IValidatable StageSpecificValidatable
 		{
 			get;
 		}

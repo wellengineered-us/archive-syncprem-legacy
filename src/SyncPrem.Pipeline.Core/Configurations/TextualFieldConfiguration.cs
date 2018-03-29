@@ -36,18 +36,6 @@ namespace SyncPrem.Pipeline.Core.Configurations
 
 		#region Properties/Indexers/Events
 
-		public long? FieldOrdinal
-		{
-			get
-			{
-				return this.fieldOrdinal;
-			}
-			set
-			{
-				this.fieldOrdinal = value;
-			}
-		}
-
 		public string FieldFormat
 		{
 			get
@@ -57,6 +45,18 @@ namespace SyncPrem.Pipeline.Core.Configurations
 			set
 			{
 				this.fieldFormat = value;
+			}
+		}
+
+		public long? FieldOrdinal
+		{
+			get
+			{
+				return this.fieldOrdinal;
+			}
+			set
+			{
+				this.fieldOrdinal = value;
 			}
 		}
 

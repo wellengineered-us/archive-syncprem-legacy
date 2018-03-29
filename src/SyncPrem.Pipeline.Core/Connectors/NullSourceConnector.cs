@@ -124,6 +124,8 @@ namespace SyncPrem.Pipeline.Core.Connectors
 
 			if ((object)configuration == null)
 				throw new ArgumentNullException(nameof(configuration));
+
+			this.AssertValidConfiguration();
 		}
 
 		protected override void PreExecuteRecord(IContext context, RecordConfiguration configuration)
@@ -135,6 +137,8 @@ namespace SyncPrem.Pipeline.Core.Connectors
 
 			if ((object)configuration == null)
 				throw new ArgumentNullException(nameof(configuration));
+
+			this.AssertValidConfiguration();
 
 			if (!context.LocalState.TryGetValue(this, out IDictionary<string, object> localState))
 			{
@@ -162,6 +166,8 @@ namespace SyncPrem.Pipeline.Core.Connectors
 
 			if ((object)configuration == null)
 				throw new ArgumentNullException(nameof(configuration));
+
+			this.AssertValidConfiguration();
 
 			if (!context.LocalState.TryGetValue(this, out IDictionary<string, object> localState))
 			{

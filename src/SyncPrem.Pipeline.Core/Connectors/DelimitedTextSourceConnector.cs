@@ -77,16 +77,9 @@ namespace SyncPrem.Pipeline.Core.Connectors
 			if ((object)configuration == null)
 				throw new ArgumentNullException(nameof(configuration));
 
-			if ((object)this.Configuration == null)
-				throw new InvalidOperationException(nameof(this.Configuration));
+			this.AssertValidConfiguration();
 
-			if ((object)this.Configuration.StageSpecificConfiguration == null)
-				throw new InvalidOperationException(nameof(this.Configuration.StageSpecificConfiguration));
-
-			if ((object)this.Specification == null)
-				throw new InvalidOperationException(nameof(this.Specification));
-
-			DelimitedTextConnectorSpecificConfiguration fsConfig = this.Specification;
+			DelimitedTextConnectorSpecificConfiguration fsConfig = this.Configuration.StageSpecificConfiguration;
 
 			if ((object)this.DelimitedTextualReader != null)
 				this.DelimitedTextualReader.Dispose();
@@ -107,16 +100,9 @@ namespace SyncPrem.Pipeline.Core.Connectors
 			if ((object)configuration == null)
 				throw new ArgumentNullException(nameof(configuration));
 
-			if ((object)this.Configuration == null)
-				throw new InvalidOperationException(nameof(this.Configuration));
+			this.AssertValidConfiguration();
 
-			if ((object)this.Configuration.StageSpecificConfiguration == null)
-				throw new InvalidOperationException(nameof(this.Configuration.StageSpecificConfiguration));
-
-			if ((object)this.Specification == null)
-				throw new InvalidOperationException(nameof(this.Specification));
-
-			DelimitedTextConnectorSpecificConfiguration fsConfig = this.Specification;
+			DelimitedTextConnectorSpecificConfiguration fsConfig = this.Configuration.StageSpecificConfiguration;
 
 			if ((object)fsConfig.DelimitedTextualConfiguration == null)
 				throw new InvalidOperationException(string.Format("Configuration missing: '{0}'.", nameof(fsConfig.DelimitedTextualConfiguration)));
@@ -168,16 +154,9 @@ namespace SyncPrem.Pipeline.Core.Connectors
 			if ((object)configuration == null)
 				throw new ArgumentNullException(nameof(configuration));
 
-			if ((object)this.Configuration == null)
-				throw new InvalidOperationException(nameof(this.Configuration));
+			this.AssertValidConfiguration();
 
-			if ((object)this.Configuration.StageSpecificConfiguration == null)
-				throw new InvalidOperationException(nameof(this.Configuration.StageSpecificConfiguration));
-
-			if ((object)this.Specification == null)
-				throw new InvalidOperationException(nameof(this.Specification));
-
-			DelimitedTextConnectorSpecificConfiguration fsConfig = this.Specification;
+			DelimitedTextConnectorSpecificConfiguration fsConfig = this.Configuration.StageSpecificConfiguration;
 
 			if (!context.LocalState.TryGetValue(this, out IDictionary<string, object> localState))
 			{

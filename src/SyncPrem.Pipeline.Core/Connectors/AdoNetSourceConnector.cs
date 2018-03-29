@@ -71,6 +71,46 @@ namespace SyncPrem.Pipeline.Core.Connectors
 			base.Dispose(disposing);
 		}
 
+		private IEnumerable<IChannel> GetMultiplexedChannels(IContext context, IEnumerable<IAdoNetStreamingResult> results)
+		{
+			IChannel channel;
+
+			IEnumerable<IPayload> payloads;
+
+			if ((object)context == null)
+				throw new ArgumentNullException(nameof(context));
+
+			if ((object)results == null)
+				throw new ArgumentNullException(nameof(results));
+
+			foreach (IAdoNetStreamingResult result in results)
+			{
+				ISchema schema; // prevent closure bug
+
+				if (!context.LocalState.TryGetValue(this, out IDictionary<string, object> localState))
+				{
+					localState = new Dictionary<string, object>(StringComparer.OrdinalIgnoreCase);
+					context.LocalState.Add(this, localState);
+				}
+
+				schema = localState[Constants.ContextComponentScopedSchema] as ISchema;
+
+				if ((object)schema == null)
+					throw new SyncPremException(nameof(schema));
+
+				payloads = result.Records;
+
+				if ((object)payloads == null)
+					throw new SyncPremException(nameof(payloads));
+
+				var records = payloads.Select(rec => new Record(schema, rec, string.Empty, Partition.None, Offset.None));
+
+				channel = context.CreateChannel(records);
+
+				yield return channel;
+			}
+		}
+
 		protected override void PostExecuteRecord(IContext context, RecordConfiguration configuration)
 		{
 			IEnumerable<IAdoNetStreamingResult> results;
@@ -82,16 +122,9 @@ namespace SyncPrem.Pipeline.Core.Connectors
 			if ((object)configuration == null)
 				throw new ArgumentNullException(nameof(configuration));
 
-			if ((object)this.Configuration == null)
-				throw new InvalidOperationException(nameof(this.Configuration));
+			this.AssertValidConfiguration();
 
-			if ((object)this.Specification == null)
-				throw new InvalidOperationException(nameof(this.Specification));
-
-			if ((object)this.Configuration.StageSpecificConfiguration == null)
-				throw new InvalidOperationException(nameof(this.Configuration.StageSpecificConfiguration));
-
-			AdoNetConnectorSpecificConfiguration fsConfig = this.Specification;
+			AdoNetConnectorSpecificConfiguration fsConfig = this.Configuration.StageSpecificConfiguration;
 
 			if (fsConfig.PostExecuteCommand != null &&
 				!SolderFascadeAccessor.DataTypeFascade.IsNullOrWhiteSpace(fsConfig.PostExecuteCommand.CommandText))
@@ -129,16 +162,9 @@ namespace SyncPrem.Pipeline.Core.Connectors
 			if ((object)configuration == null)
 				throw new ArgumentNullException(nameof(configuration));
 
-			if ((object)this.Configuration == null)
-				throw new InvalidOperationException(nameof(this.Configuration));
+			this.AssertValidConfiguration();
 
-			if ((object)this.Specification == null)
-				throw new InvalidOperationException(nameof(this.Specification));
-
-			if ((object)this.Configuration.StageSpecificConfiguration == null)
-				throw new InvalidOperationException(nameof(this.Configuration.StageSpecificConfiguration));
-
-			AdoNetConnectorSpecificConfiguration fsConfig = this.Specification;
+			AdoNetConnectorSpecificConfiguration fsConfig = this.Configuration.StageSpecificConfiguration;
 
 			this.SourceUnitOfWork = fsConfig.GetUnitOfWork();
 
@@ -226,16 +252,9 @@ namespace SyncPrem.Pipeline.Core.Connectors
 			if ((object)configuration == null)
 				throw new ArgumentNullException(nameof(configuration));
 
-			if ((object)this.Configuration == null)
-				throw new InvalidOperationException(nameof(this.Configuration));
+			this.AssertValidConfiguration();
 
-			if ((object)this.Specification == null)
-				throw new InvalidOperationException(nameof(this.Specification));
-
-			if ((object)this.Configuration.StageSpecificConfiguration == null)
-				throw new InvalidOperationException(nameof(this.Configuration.StageSpecificConfiguration));
-
-			AdoNetConnectorSpecificConfiguration fsConfig = this.Specification;
+			AdoNetConnectorSpecificConfiguration fsConfig = this.Configuration.StageSpecificConfiguration;
 
 			if ((object)fsConfig.ExecuteCommand == null)
 				throw new InvalidOperationException(string.Format("Configuration missing: '{0}'.", nameof(fsConfig.ExecuteCommand)));
@@ -254,72 +273,7 @@ namespace SyncPrem.Pipeline.Core.Connectors
 			var records = channels.SelectMany(x => x.Records);
 			channel = context.CreateChannel(records);
 
-			/*foreach (IAdoNetStreamingResult result in results)
-			{
-				if (!context.LocalState.TryGetValue(this, out IDictionary<string, object> localState))
-				{
-					localState = new Dictionary<string, object>(StringComparer.OrdinalIgnoreCase);
-					context.LocalState.Add(this, localState);
-				}
-
-				schema = localState[Constants.ContextComponentScopedSchema] as ISchema;
-
-				if ((object)schema == null)
-					throw new SyncPremException(nameof(schema));
-
-				payloads = result.Records;
-
-				if ((object)payloads == null)
-					throw new SyncPremException(nameof(payloads));
-
-				var records = payloads.Select(rec => new Record(schema, rec, string.Empty, Partition.None, Offset.None));
-
-				channel = context.CreateChannel(records);
-
-				break; // first only in this version
-			}*/
-
 			return channel;
-		}
-
-		private IEnumerable<IChannel> GetMultiplexedChannels(IContext context, IEnumerable<IAdoNetStreamingResult> results)
-		{
-			IChannel channel;
-
-			IEnumerable<IPayload> payloads;
-
-			if ((object)context == null)
-				throw new ArgumentNullException(nameof(context));
-
-			if ((object)results == null)
-				throw new ArgumentNullException(nameof(results));
-
-			foreach (IAdoNetStreamingResult result in results)
-			{
-				ISchema schema; // prevent closure bug
-
-				if (!context.LocalState.TryGetValue(this, out IDictionary<string, object> localState))
-				{
-					localState = new Dictionary<string, object>(StringComparer.OrdinalIgnoreCase);
-					context.LocalState.Add(this, localState);
-				}
-
-				schema = localState[Constants.ContextComponentScopedSchema] as ISchema;
-
-				if ((object)schema == null)
-					throw new SyncPremException(nameof(schema));
-
-				payloads = result.Records;
-
-				if ((object)payloads == null)
-					throw new SyncPremException(nameof(payloads));
-
-				var records = payloads.Select(rec => new Record(schema, rec, string.Empty, Partition.None, Offset.None));
-
-				channel = context.CreateChannel(records);
-
-				yield return channel;
-			}
 		}
 
 		#endregion

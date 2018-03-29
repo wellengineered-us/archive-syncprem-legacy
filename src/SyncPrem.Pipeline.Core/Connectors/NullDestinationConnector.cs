@@ -40,6 +40,8 @@ namespace SyncPrem.Pipeline.Core.Connectors
 			if ((object)channel == null)
 				throw new ArgumentNullException(nameof(channel));
 
+			this.AssertValidConfiguration();
+
 			records = channel.Records;
 
 			if ((object)records == null)
@@ -67,6 +69,8 @@ namespace SyncPrem.Pipeline.Core.Connectors
 
 			if ((object)configuration == null)
 				throw new ArgumentNullException(nameof(configuration));
+
+			this.AssertValidConfiguration();
 		}
 
 		protected override void PreExecuteRecord(IContext context, RecordConfiguration configuration)
@@ -76,6 +80,8 @@ namespace SyncPrem.Pipeline.Core.Connectors
 
 			if ((object)configuration == null)
 				throw new ArgumentNullException(nameof(configuration));
+
+			this.AssertValidConfiguration();
 		}
 
 		#endregion

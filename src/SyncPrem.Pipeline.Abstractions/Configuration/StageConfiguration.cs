@@ -6,9 +6,6 @@
 using System;
 using System.Collections.Generic;
 
-using Newtonsoft.Json.Linq;
-
-using SyncPrem.Infrastructure.Configuration;
 using SyncPrem.Pipeline.Abstractions.Stage;
 
 using TextMetal.Middleware.Solder.Extensions;
@@ -31,7 +28,6 @@ namespace SyncPrem.Pipeline.Abstractions.Configuration
 
 		private readonly Dictionary<string, object> stageSpecificConfiguration = new Dictionary<string, object>();
 		private string stageAqtn;
-		private StageSpecificConfiguration untypedStageSpecificConfiguration;
 
 		#endregion
 
@@ -57,51 +53,13 @@ namespace SyncPrem.Pipeline.Abstractions.Configuration
 			}
 		}
 
-		[ConfigurationIgnore]
-		private StageSpecificConfiguration UntypedStageSpecificConfiguration
-		{
-			get
-			{
-				this.ApplyStageSpecificConfiguration(); // special case
-				return this.untypedStageSpecificConfiguration;
-			}
-			set
-			{
-				this.untypedStageSpecificConfiguration = value;
-			}
-		}
-
 		#endregion
 
 		#region Methods/Operators
 
-		public virtual void ApplyStageSpecificConfiguration()
-		{
-			this.ApplyStageSpecificConfiguration(this.GetStageSpecificConfigurationType());
-		}
-
-		private void ApplyStageSpecificConfiguration(Type type)
-		{
-			if ((object)this.StageSpecificConfiguration != null)
-			{
-				this.UntypedStageSpecificConfiguration = (StageSpecificConfiguration)JObject.FromObject(this.StageSpecificConfiguration).ToObject(type);
-			}
-		}
-
-		public virtual Type GetStageSpecificConfigurationType()
-		{
-			return typeof(StageSpecificConfiguration);
-		}
-
 		public Type GetStageType()
 		{
 			return GetTypeFromString(this.StageAqtn);
-		}
-
-		public virtual void ResetStageSpecificConfiguration()
-		{
-			this.StageSpecificConfiguration.Clear();
-			this.UntypedStageSpecificConfiguration = null;
 		}
 
 		public override IEnumerable<_Message> Validate(object context)
@@ -139,9 +97,8 @@ namespace SyncPrem.Pipeline.Abstractions.Configuration
 							{
 								stage.Configuration = this;
 								stage.Create();
-								this.ApplyStageSpecificConfiguration(stage.StageSpecificConfigurationType);
 
-								messages.AddRange(this.ValidateStageSpecificConfiguration(stageContext));
+								messages.AddRange(stage.StageSpecificValidatable.Validate(stageContext));
 							}
 						}
 						catch (Exception ex)
@@ -153,17 +110,6 @@ namespace SyncPrem.Pipeline.Abstractions.Configuration
 			}
 
 			return messages;
-		}
-
-		public virtual IEnumerable<_Message> ValidateStageSpecificConfiguration(object context)
-		{
-			if ((object)this.StageSpecificConfiguration == null)
-				throw new InvalidOperationException(string.Format("Configuration missing: '{0}'.", nameof(this.StageSpecificConfiguration)));
-
-			if ((object)this.UntypedStageSpecificConfiguration == null)
-				throw new InvalidOperationException(string.Format("Configuration missing: '{0}'.", nameof(this.UntypedStageSpecificConfiguration)));
-
-			return this.UntypedStageSpecificConfiguration.Validate(context);
 		}
 
 		#endregion

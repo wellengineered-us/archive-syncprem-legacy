@@ -6,7 +6,6 @@
 using System;
 using System.IO;
 using System.Linq;
-using System.Threading;
 
 using SyncPrem.Infrastructure.Configuration;
 using SyncPrem.Pipeline.Abstractions;
@@ -121,7 +120,7 @@ namespace SyncPrem.Pipeline.Host.Cli.Hosting
 
 			if ((object)pipelineType == null)
 				throw new InvalidOperationException(nameof(pipelineType));
-			
+
 			//while (true)
 			{
 				//var t = new Thread(ExecutePipelineThreadProc);

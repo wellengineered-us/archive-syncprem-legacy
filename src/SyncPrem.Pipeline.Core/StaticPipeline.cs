@@ -17,7 +17,7 @@ using SyncPrem.Pipeline.Abstractions.Stage.Processor;
 
 using TextMetal.Middleware.Solder.Injection;
 
-using static TextMetal.Middleware.Solder.Primitives.OnlyWhen;
+using static TextMetal.Middleware.Solder.Primitives.LeakDetector;
 
 namespace SyncPrem.Pipeline.Core
 {

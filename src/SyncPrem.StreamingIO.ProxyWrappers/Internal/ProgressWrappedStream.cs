@@ -1,4 +1,9 @@
-﻿using System;
+﻿/*
+	Copyright ©2002-2017 Daniel P. Bullington (dpbullington@gmail.com)
+	Distributed under the MIT license: http://www.opensource.org/licenses/mit-license.php
+*/
+
+using System;
 using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
@@ -23,15 +28,6 @@ namespace SyncPrem.StreamingIO.ProxyWrappers.Internal
 		#endregion
 
 		#region Methods/Operators
-
-#if NETCOREAPP2_0
-		public override void CopyTo(Stream destination, int bufferSize)
-		{
-			/* disconnect between .NET Core and .NET Standard APIs */
-			Console.WriteLine("COPY");
-			base.CopyTo(destination, bufferSize);
-		}
-#endif
 
 		public override Task CopyToAsync(Stream destination, int bufferSize, CancellationToken cancellationToken)
 		{
@@ -81,5 +77,12 @@ namespace SyncPrem.StreamingIO.ProxyWrappers.Internal
 		}
 
 		#endregion
+
+		/*public override void CopyTo(Stream destination, int bufferSize)
+		{
+			// disconnect between .NET Core and .NET Standard APIs
+			Console.WriteLine("COPY");
+			base.CopyTo(destination, bufferSize);
+		}*/
 	}
 }

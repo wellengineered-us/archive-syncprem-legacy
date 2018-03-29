@@ -62,23 +62,12 @@ namespace SyncPrem.Pipeline.Abstractions.Configuration
 
 		#region Methods/Operators
 
-		public override void ApplyStageSpecificConfiguration()
+		private void ApplyStageSpecificConfiguration()
 		{
 			if ((object)base.StageSpecificConfiguration != null)
 			{
 				this.StageSpecificConfiguration = JObject.FromObject(base.StageSpecificConfiguration).ToObject<TStageSpecificConfiguration>();
 			}
-		}
-
-		public override Type GetStageSpecificConfigurationType()
-		{
-			return typeof(TStageSpecificConfiguration);
-		}
-
-		public override void ResetStageSpecificConfiguration()
-		{
-			base.ResetStageSpecificConfiguration();
-			this.StageSpecificConfiguration = null;
 		}
 
 		public override IEnumerable<_Message> Validate(object context)
@@ -91,17 +80,9 @@ namespace SyncPrem.Pipeline.Abstractions.Configuration
 			messages.AddRange(base.Validate(stageContext));
 
 			if ((object)this.StageSpecificConfiguration != null)
-				messages.AddRange(this.ValidateStageSpecificConfiguration(stageContext));
+				messages.AddRange(this.StageSpecificConfiguration.Validate(stageContext));
 
 			return messages;
-		}
-
-		public override IEnumerable<_Message> ValidateStageSpecificConfiguration(object context)
-		{
-			if ((object)this.StageSpecificConfiguration == null)
-				throw new InvalidOperationException(string.Format("Configuration missing: '{0}'.", nameof(this.StageSpecificConfiguration)));
-
-			return this.StageSpecificConfiguration.Validate(context);
 		}
 
 		#endregion

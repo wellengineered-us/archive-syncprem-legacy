@@ -9,28 +9,19 @@
 				"SOLDER_HOOK_UNHANDLED_EXCEPTIONS": "false"
 			}
 		},
-		"test_static_null_to_null":
+		"test_static_adonet_to_reccmd":
 		{
 			"commandName": "Project",
-			"commandLineArgs": "-sourcefile:_static_null_to_null.json",
+			"commandLineArgs": "-sourcefile:_static_adonet_to_reccmd.json",
 			"environmentVariables":
 			{
 				"SOLDER_HOOK_UNHANDLED_EXCEPTIONS": "false"
 			}
 		},
-		"test_static_null_to_cout":
+		"test_static_adonet_to_sqlbcp":
 		{
 			"commandName": "Project",
-			"commandLineArgs": "-sourcefile:_static_null_to_cout.json",
-			"environmentVariables":
-			{
-				"SOLDER_HOOK_UNHANDLED_EXCEPTIONS": "false"
-			}
-		},
-		"test_static_cin_to_null":
-		{
-			"commandName": "Project",
-			"commandLineArgs": "-sourcefile:_static_cin_to_null.json",
+			"commandLineArgs": "-sourcefile:_static_adonet_to_sqlbcp.json",
 			"environmentVariables":
 			{
 				"SOLDER_HOOK_UNHANDLED_EXCEPTIONS": "false"
@@ -45,20 +36,10 @@
 				"SOLDER_HOOK_UNHANDLED_EXCEPTIONS": "false"
 			}
 		},
-
-		"test_static_adonet_to_sqlbcp":
+		"test_static_cin_to_null":
 		{
 			"commandName": "Project",
-			"commandLineArgs": "-sourcefile:_static_adonet_to_sqlbcp.json",
-			"environmentVariables":
-			{
-				"SOLDER_HOOK_UNHANDLED_EXCEPTIONS": "false"
-			}
-		},
-		"test_static_adonet_to_reccmd":
-		{
-			"commandName": "Project",
-			"commandLineArgs": "-sourcefile:_static_adonet_to_reccmd.json",
+			"commandLineArgs": "-sourcefile:_static_cin_to_null.json",
 			"environmentVariables":
 			{
 				"SOLDER_HOOK_UNHANDLED_EXCEPTIONS": "false"
@@ -68,6 +49,33 @@
 		{
 			"commandName": "Project",
 			"commandLineArgs": "-sourcefile:_static_dtf_to_dtf.json",
+			"environmentVariables":
+			{
+				"SOLDER_HOOK_UNHANDLED_EXCEPTIONS": "false"
+			}
+		},
+		"test_static_null_to_cout":
+		{
+			"commandName": "Project",
+			"commandLineArgs": "-sourcefile:_static_null_to_cout.json",
+			"environmentVariables":
+			{
+				"SOLDER_HOOK_UNHANDLED_EXCEPTIONS": "false"
+			}
+		},
+		"test_static_null_to_null":
+		{
+			"commandName": "Project",
+			"commandLineArgs": "-sourcefile:_static_null_to_null.json",
+			"environmentVariables":
+			{
+				"SOLDER_HOOK_UNHANDLED_EXCEPTIONS": "false"
+			}
+		},
+		"test_static_null_to_webapi":
+		{
+			"commandName": "Project",
+			"commandLineArgs": "-sourcefile:_static_null_to_webapi.json",
 			"environmentVariables":
 			{
 				"SOLDER_HOOK_UNHANDLED_EXCEPTIONS": "false"

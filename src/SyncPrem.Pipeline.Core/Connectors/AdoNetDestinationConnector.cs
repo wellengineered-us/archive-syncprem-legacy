@@ -75,6 +75,8 @@ namespace SyncPrem.Pipeline.Core.Connectors
 			if ((object)channel == null)
 				throw new ArgumentNullException(nameof(channel));
 
+			this.AssertValidConfiguration();
+
 			records = channel.Records;
 
 			if ((object)records == null)
@@ -112,16 +114,9 @@ namespace SyncPrem.Pipeline.Core.Connectors
 			if ((object)configuration == null)
 				throw new ArgumentNullException(nameof(configuration));
 
-			if ((object)this.Configuration == null)
-				throw new InvalidOperationException(nameof(this.Configuration));
+			this.AssertValidConfiguration();
 
-			if ((object)this.Specification == null)
-				throw new InvalidOperationException(nameof(this.Specification));
-
-			if ((object)this.Configuration.StageSpecificConfiguration == null)
-				throw new InvalidOperationException(nameof(this.Configuration.StageSpecificConfiguration));
-
-			AdoNetConnectorSpecificConfiguration fsConfig = this.Specification;
+			AdoNetConnectorSpecificConfiguration fsConfig = this.Configuration.StageSpecificConfiguration;
 
 			if (fsConfig.PostExecuteCommand != null &&
 				!SolderFascadeAccessor.DataTypeFascade.IsNullOrWhiteSpace(fsConfig.PostExecuteCommand.CommandText))
@@ -153,16 +148,9 @@ namespace SyncPrem.Pipeline.Core.Connectors
 			if ((object)configuration == null)
 				throw new ArgumentNullException(nameof(configuration));
 
-			if ((object)this.Configuration == null)
-				throw new InvalidOperationException(nameof(this.Configuration));
+			this.AssertValidConfiguration();
 
-			if ((object)this.Specification == null)
-				throw new InvalidOperationException(nameof(this.Specification));
-
-			if ((object)this.Configuration.StageSpecificConfiguration == null)
-				throw new InvalidOperationException(nameof(this.Configuration.StageSpecificConfiguration));
-
-			AdoNetConnectorSpecificConfiguration fsConfig = this.Specification;
+			AdoNetConnectorSpecificConfiguration fsConfig = this.Configuration.StageSpecificConfiguration;
 
 			this.DestinationUnitOfWork = fsConfig.GetUnitOfWork();
 

@@ -1,0 +1,42 @@
+{
+	"PipelineAqtn": "SyncPrem.Pipeline.Core.StaticPipeline, SyncPrem.Pipeline.Core",
+
+	"SourceConfiguration":
+	{
+		"StageAqtn": "SyncPrem.Pipeline.Core.Connectors.NullSourceConnector, SyncPrem.Pipeline.Core",
+		"StageSpecificConfiguration":
+		{
+		}
+	},
+
+	"ProcessorConfigurations":
+	[
+		{
+			"StageAqtn": "SyncPrem.Pipeline.Core.Processors.NullProcessor, SyncPrem.Pipeline.Core",
+			"StageSpecificConfiguration":
+			{
+			}
+		},
+		{
+			"StageAqtn": "SyncPrem.Pipeline.Core.Processors.NullProcessor, SyncPrem.Pipeline.Core",
+			"StageSpecificConfiguration":
+			{
+			}
+		},
+		{
+			"StageAqtn": "SyncPrem.Pipeline.Core.Processors.NullProcessor, SyncPrem.Pipeline.Core",
+			"StageSpecificConfiguration":
+			{
+			}
+		}
+	],
+
+	"DestinationConfiguration":
+	{
+		"StageAqtn": "SyncPrem.Pipeline.Core.Connectors.RestfulWebApiDestinationConnector, SyncPrem.Pipeline.Core",
+		"StageSpecificConfiguration":
+		{
+			"WebEndpointUri": ""
+		}
+	}
+}

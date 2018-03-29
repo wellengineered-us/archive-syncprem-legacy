@@ -5,6 +5,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using System.Reflection;
 using System.Threading;
@@ -140,6 +141,19 @@ namespace TextMetal.Middleware.Solder.Injection
 
 		#region Methods/Operators
 
+		[Conditional("DEBUG")]
+		public static void _DebugTrace(string message)
+		{
+#if DEBUG
+			/* THIS METHOD SHOULD NOT BE DEFINED IN RELEASE/PRODUCTION BUILDS */
+
+			ConsoleColor oldConsoleColor = Console.ForegroundColor;
+			Console.ForegroundColor = ConsoleColor.DarkGray;
+			Console.WriteLine(message);
+			Console.ForegroundColor = oldConsoleColor;
+#endif
+		}
+
 		private static void AddTrustedDependencies(IDependencyManager dependencyManager)
 		{
 			IDataTypeFascade dataTypeFascade;
@@ -185,7 +199,7 @@ namespace TextMetal.Middleware.Solder.Injection
 
 		private void ___Dispose()
 		{
-			OnlyWhen._DEBUG_ThenPrint(string.Format("{0}::{1} --> {2}", nameof(AssemblyDomain), nameof(this.Dispose), Environment.CurrentManagedThreadId));
+			_DebugTrace(string.Format("{0}::{1} --> {2}", nameof(AssemblyDomain), nameof(this.Dispose), Environment.CurrentManagedThreadId));
 
 			// cop a reader lock
 			this.ReaderWriterLock.EnterUpgradeableReadLock();
@@ -314,7 +328,7 @@ namespace TextMetal.Middleware.Solder.Injection
 						continue;
 
 					// notify
-					OnlyWhen._DEBUG_ThenPrint(string.Format("{1}::{0}", methodInfo.Name, methodInfo.DeclaringType.FullName));
+					_DebugTrace(string.Format("{1}::{0}", methodInfo.Name, methodInfo.DeclaringType.FullName));
 
 					// execute (assuming under existing SRWL)
 					dependencyMagicMethod(this.DependencyManager);
@@ -345,7 +359,7 @@ namespace TextMetal.Middleware.Solder.Injection
 
 				try
 				{
-					OnlyWhen._DEBUG_ThenPrint(string.Format("{0}::{1} --> {2}", nameof(AssemblyDomain), nameof(this.Initialize), Environment.CurrentManagedThreadId));
+					_DebugTrace(string.Format("{0}::{1} --> {2}", nameof(AssemblyDomain), nameof(this.Initialize), Environment.CurrentManagedThreadId));
 
 					// add trusted dependencies
 					AddTrustedDependencies(this.DependencyManager);
@@ -456,7 +470,7 @@ namespace TextMetal.Middleware.Solder.Injection
 			if (this.KnownAssemblies.ContainsKey(assemblyName))
 				return;
 
-			OnlyWhen._DEBUG_ThenPrint(string.Format("{0}.", assembly.FullName));
+			_DebugTrace(string.Format("{0}.", assembly.FullName));
 
 			// track which ones we have seen - not sure if AN is fully ==...
 			this.KnownAssemblies.Add(assemblyName, assembly);
