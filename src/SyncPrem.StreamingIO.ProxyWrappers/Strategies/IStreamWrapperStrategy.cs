@@ -4,18 +4,15 @@
 */
 
 using System;
-using System.Collections.Generic;
+using System.IO;
 
-namespace SyncPrem.Pipeline.Abstractions.Channel
+namespace SyncPrem.StreamingIO.ProxyWrappers.Strategies
 {
-	public interface IChannel : IComponent
+	public interface IStreamWrapperStrategy
 	{
-		#region Properties/Indexers/Events
+		#region Methods/Operators
 
-		IEnumerable<IRecord> Records
-		{
-			get;
-		}
+		Stream ApplyStreamWrap(Stream stream);
 
 		#endregion
 	}

@@ -85,8 +85,10 @@ namespace SyncPrem.Pipeline.Host.Cli.Hosting
 			where TConfiguration : class, IConfigurationObject, new()
 		{
 			TConfiguration configuration;
+			ISerializationStrategy serializationStrategy;
 
-			configuration = JsonSerializationStrategy.Instance.GetObjectFromFile<TConfiguration>(jsonFilePath);
+			serializationStrategy = new JsonSerializationStrategy();
+			configuration = serializationStrategy.GetObjectFromFile<TConfiguration>(jsonFilePath);
 
 			return configuration;
 		}

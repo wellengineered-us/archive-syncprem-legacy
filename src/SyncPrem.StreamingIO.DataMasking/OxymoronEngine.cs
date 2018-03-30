@@ -163,20 +163,6 @@ namespace SyncPrem.StreamingIO.DataMasking
 			return (int)hashCode;
 		}
 
-		public static IEnumerable<IPayload> RecordsFromJsonFile(string jsonFilePath)
-		{
-			IEnumerable<IPayload> records;
-
-			records = JsonSerializationStrategy.Instance.GetObjectFromFile<Payload[]>(jsonFilePath);
-
-			return records;
-		}
-
-		public static void RecordsToJsonFile(IEnumerable<IPayload> records, string jsonFilePath)
-		{
-			JsonSerializationStrategy.Instance.SetObjectToFile<IEnumerable<IPayload>>(jsonFilePath, records);
-		}
-
 		private object _GetObfuscatedValue(IField field, object originalFieldValue)
 		{
 			IObfuscationStrategy obfuscationStrategy;

@@ -1,14 +1,14 @@
 {
-	"PipelineAqtn": "SyncPrem.Pipeline.Core.StaticPipeline, SyncPrem.Pipeline.Core",
+	"PipelineAqtn": "SyncPrem.Pipeline.Core.Runtime.StaticPipeline, SyncPrem.Pipeline.Core",
 
 	"SourceConfiguration":
 	{
 		"StageAqtn": "SyncPrem.Pipeline.Core.Connectors.DelimitedTextSourceConnector, SyncPrem.Pipeline.Core",
 		"StageSpecificConfiguration":
 		{
-			"DelimitedTextFilePath": "d:\\Confidential_Banking_Data.txt",
+			"TextualFilePath": "d:\\Confidential_Banking_Data.txt",
 
-			"DelimitedTextualConfiguration":
+			"TextualConfiguration":
 			{
 				"FirstRecordIsHeader": true,
 				"LastRecordIsFooter": false,
@@ -82,9 +82,9 @@
 		"StageAqtn": "SyncPrem.Pipeline.Core.Connectors.DelimitedTextDestinationConnector, SyncPrem.Pipeline.Core",
 		"StageSpecificConfiguration":
 		{
-			"DelimitedTextFilePath": "d:\\Public_Banking_Data.csv",
+			"TextualFilePath": "d:\\Public_Banking_Data.csv",
 
-			"DelimitedTextualConfiguration":
+			"TextualConfiguration":
 			{
 				"FirstRecordIsHeader": true,
 				"LastRecordIsFooter": false,

@@ -27,11 +27,38 @@ namespace SyncPrem.StreamingIO.ProxyWrappers.Internal
 
 		#endregion
 
+		#region Properties/Indexers/Events
+
+		private long Total
+		{
+			get
+			{
+				return this.total;
+			}
+			set
+			{
+				this.total = value;
+			}
+		}
+
+		#endregion
+
 		#region Methods/Operators
+
+		public override void Close()
+		{
+			Console.WriteLine("CLOSE: total={0}", this.Total);
+			base.Close();
+		}
+
+		private void Write(string message, params object[] formats)
+		{
+			//Console.WriteLine(message, formats);
+		}
 
 		public override Task CopyToAsync(Stream destination, int bufferSize, CancellationToken cancellationToken)
 		{
-			Console.WriteLine("COPY_ASYNCH");
+			Write("COPY_ASYNC");
 			return base.CopyToAsync((destination), bufferSize, cancellationToken);
 		}
 
@@ -41,8 +68,8 @@ namespace SyncPrem.StreamingIO.ProxyWrappers.Internal
 
 			retval = base.Read(buffer, offset, count);
 
-			this.total += retval;
-			Console.WriteLine("READ: offset={0}, count={1}; retval={2}; total={3}", offset, count, retval, this.total);
+			this.Total += retval;
+			Write("READ: offset={0}, count={1}; retval={2}; total={3}", offset, count, retval, this.Total);
 
 			return retval;
 		}
@@ -51,7 +78,7 @@ namespace SyncPrem.StreamingIO.ProxyWrappers.Internal
 		{
 			Task<int> retval = base.ReadAsync(buffer, offset, count, cancellationToken);
 
-			Console.WriteLine("READ: offset={0}, count={1}; retval={2}; total={3}", offset, count, retval, this.total);
+			Write("READ_ASYNC: offset={0}, count={1}; retval={2}; total={3}", offset, count, retval, this.Total);
 
 			return retval;
 		}
@@ -63,15 +90,15 @@ namespace SyncPrem.StreamingIO.ProxyWrappers.Internal
 			base.Write(buffer, offset, count);
 			retval = count;
 
-			this.total += retval;
-			Console.WriteLine("WRITE: offset={0}, count={1}; retval={2}; total={3}", offset, count, retval, this.total);
+			this.Total += retval;
+			Write("WRITE: offset={0}, count={1}; retval={2}; total={3}", offset, count, retval, this.Total);
 		}
 
 		public override Task WriteAsync(byte[] buffer, int offset, int count, CancellationToken cancellationToken)
 		{
 			Task retval = base.WriteAsync(buffer, offset, count, cancellationToken);
 
-			Console.WriteLine("WRITE: offset={0}, count={1}; retval={2}; total={3}", offset, count, retval, this.total);
+			Write("WRITE_ASYNC: offset={0}, count={1}; retval={2}; total={3}", offset, count, retval, this.Total);
 
 			return retval;
 		}

@@ -5,22 +5,31 @@
 
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 
 using SyncPrem.Pipeline.Abstractions;
 using SyncPrem.Pipeline.Abstractions.Configuration;
 using SyncPrem.Pipeline.Abstractions.Runtime;
 using SyncPrem.Pipeline.Abstractions.Stage.Connector.Source;
+using SyncPrem.Pipeline.Core.Configurations;
 using SyncPrem.Pipeline.Core.Runtime;
 using SyncPrem.StreamingIO.Primitives;
+using SyncPrem.StreamingIO.Textual;
 
 namespace SyncPrem.Pipeline.Core.Connectors
 {
-	public class NullSourceConnector : SourceConnector<StageSpecificConfiguration>
+	public abstract class TextualSourceConnector<TTextualFieldConfiguration, TTextualConfiguration, TTextualFieldSpec, TTextualSpec, TTextualConnectorSpecificConfiguration, TTextualReader> : SourceConnector<TTextualConnectorSpecificConfiguration>
+		where TTextualFieldConfiguration : TextualFieldConfiguration
+		where TTextualConfiguration : TextualConfiguration<TTextualFieldConfiguration, TTextualFieldSpec, TTextualSpec>
+		where TTextualFieldSpec : ITextualFieldSpec
+		where TTextualSpec : ITextualSpec<TTextualFieldSpec>
+		where TTextualConnectorSpecificConfiguration : TextualConnectorSpecificConfiguration<TTextualFieldConfiguration, TTextualConfiguration, TTextualFieldSpec, TTextualSpec>, new()
+		where TTextualReader : TextualReader<TTextualFieldSpec, TTextualSpec>
 	{
 		#region Constructors/Destructors
 
-		public NullSourceConnector()
+		protected TextualSourceConnector()
 		{
 		}
 
@@ -28,29 +37,21 @@ namespace SyncPrem.Pipeline.Core.Connectors
 
 		#region Fields/Constants
 
-		private const int FIELD_COUNT = 5;
-		private const string FIELD_NAME = "RandomValue_{0:00}";
-		private const int MAX_RECORD_COUNT = 1000;
-		private static readonly Random random = new Random();
-		private static readonly ISchema schema = GetSchema();
+		private TTextualReader textualReader;
 
 		#endregion
 
 		#region Properties/Indexers/Events
 
-		private static Random Random
+		protected TTextualReader TextualReader
 		{
 			get
 			{
-				return random;
+				return this.textualReader;
 			}
-		}
-
-		private static ISchema Schema
-		{
-			get
+			private set
 			{
-				return schema;
+				this.textualReader = value;
 			}
 		}
 
@@ -58,58 +59,13 @@ namespace SyncPrem.Pipeline.Core.Connectors
 
 		#region Methods/Operators
 
-		private static IEnumerable<IPayload> GetRandomPayloads(ISchema schema)
-		{
-			IPayload payload;
-			IField[] fields;
-
-			long recordCount;
-
-			if ((object)schema == null)
-				throw new ArgumentNullException(nameof(schema));
-
-			fields = schema.Fields.Values.ToArray();
-			recordCount = Random.Next(0, MAX_RECORD_COUNT);
-
-			for (long recordIndex = 0; recordIndex < recordCount; recordIndex++)
-			{
-				payload = new Payload();
-
-				for (int fieldIndex = 0; fieldIndex < fields.Length; fieldIndex++)
-				{
-					if (fields[fieldIndex].IsFieldKeyComponent)
-						payload.Add(fields[fieldIndex].FieldName, Guid.NewGuid());
-					else
-						payload.Add(fields[fieldIndex].FieldName, Random.NextDouble());
-				}
-
-				yield return payload;
-			}
-		}
-
-		private static ISchema GetSchema()
-		{
-			SchemaBuilder schemaBuilder;
-
-			schemaBuilder = SchemaBuilder.Create();
-
-			schemaBuilder.AddField(string.Empty, typeof(Guid), false, true);
-
-			for (long fieldIndex = 0; fieldIndex < FIELD_COUNT; fieldIndex++)
-			{
-				string fieldName = string.Format(FIELD_NAME, fieldIndex);
-
-				schemaBuilder.AddField(fieldName, typeof(double), false, false);
-			}
-
-			return schemaBuilder.Build();
-		}
-
 		protected override void Create(bool creating)
 		{
 			// do nothing
 			base.Create(creating);
 		}
+
+		protected abstract TTextualReader CreateTextualReader(StreamReader streamReader, TTextualSpec textualSpec);
 
 		protected override void Dispose(bool disposing)
 		{
@@ -126,11 +82,21 @@ namespace SyncPrem.Pipeline.Core.Connectors
 				throw new ArgumentNullException(nameof(configuration));
 
 			this.AssertValidConfiguration();
+
+			TTextualConnectorSpecificConfiguration fsConfig = this.Configuration.StageSpecificConfiguration;
+
+			if ((object)this.TextualReader != null)
+				this.TextualReader.Dispose();
+
+			this.TextualReader = null;
 		}
 
 		protected override void PreExecuteRecord(IContext context, RecordConfiguration configuration)
 		{
+			SchemaBuilder schemaBuilder;
 			ISchema schema;
+			IEnumerable<TTextualFieldSpec> headers;
+			TTextualSpec spec;
 
 			if ((object)context == null)
 				throw new ArgumentNullException(nameof(context));
@@ -140,13 +106,32 @@ namespace SyncPrem.Pipeline.Core.Connectors
 
 			this.AssertValidConfiguration();
 
+			TTextualConnectorSpecificConfiguration fsConfig = this.Configuration.StageSpecificConfiguration;
+
+			spec = fsConfig.TextualConfiguration.MapToSpec();
+
+			if ((object)spec == null)
+				throw new SyncPremException(nameof(spec));
+
+			this.TextualReader = this.CreateTextualReader(new StreamReader(File.Open(fsConfig.TextualFilePath, FileMode.Open, FileAccess.Read, FileShare.None)), spec);
+
+			headers = this.TextualReader.ReadHeaderFields();
+
+			if ((object)headers == null)
+				throw new SyncPremException(nameof(headers));
+
 			if (!context.LocalState.TryGetValue(this, out IDictionary<string, object> localState))
 			{
 				localState = new Dictionary<string, object>(StringComparer.OrdinalIgnoreCase);
 				context.LocalState.Add(this, localState);
 			}
 
-			schema = Schema;
+			schemaBuilder = SchemaBuilder.Create();
+
+			foreach (TTextualFieldSpec header in spec.TextualHeaderSpecs)
+				schemaBuilder.AddField(header.FieldTitle, header.FieldType.ToClrType(), header.IsFieldRequired, header.IsFieldIdentity);
+
+			schema = schemaBuilder.Build();
 
 			if ((object)schema == null)
 				throw new SyncPremException(nameof(schema));
@@ -169,6 +154,8 @@ namespace SyncPrem.Pipeline.Core.Connectors
 
 			this.AssertValidConfiguration();
 
+			TTextualConnectorSpecificConfiguration fsConfig = this.Configuration.StageSpecificConfiguration;
+
 			if (!context.LocalState.TryGetValue(this, out IDictionary<string, object> localState))
 			{
 				localState = new Dictionary<string, object>(StringComparer.OrdinalIgnoreCase);
@@ -180,7 +167,12 @@ namespace SyncPrem.Pipeline.Core.Connectors
 			if ((object)schema == null)
 				throw new SyncPremException(nameof(schema));
 
-			payloads = GetRandomPayloads(schema);
+			schema = localState[Constants.ContextComponentScopedSchema] as ISchema;
+
+			if ((object)schema == null)
+				throw new SyncPremException(nameof(schema));
+
+			payloads = this.TextualReader.ReadRecords();
 
 			if ((object)payloads == null)
 				throw new SyncPremException(nameof(payloads));

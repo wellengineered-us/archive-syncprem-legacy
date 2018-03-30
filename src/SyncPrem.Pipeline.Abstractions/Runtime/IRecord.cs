@@ -7,7 +7,7 @@ using System;
 
 using SyncPrem.StreamingIO.Primitives;
 
-namespace SyncPrem.Pipeline.Abstractions.Channel
+namespace SyncPrem.Pipeline.Abstractions.Runtime
 {
 	public interface IRecord
 	{
@@ -41,6 +41,12 @@ namespace SyncPrem.Pipeline.Abstractions.Channel
 		string Topic
 		{
 			get;
+		}
+
+		long? Index
+		{
+			get;
+			set;
 		}
 
 		#endregion

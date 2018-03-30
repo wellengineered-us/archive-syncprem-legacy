@@ -9,11 +9,10 @@ using System.IO;
 using System.Linq;
 
 using SyncPrem.Pipeline.Abstractions;
-using SyncPrem.Pipeline.Abstractions.Channel;
 using SyncPrem.Pipeline.Abstractions.Configuration;
 using SyncPrem.Pipeline.Abstractions.Runtime;
 using SyncPrem.Pipeline.Abstractions.Stage.Connector.Source;
-using SyncPrem.Pipeline.Core.Channels;
+using SyncPrem.Pipeline.Core.Runtime;
 using SyncPrem.StreamingIO.Primitives;
 
 using TextMetal.Middleware.Solder.Extensions;

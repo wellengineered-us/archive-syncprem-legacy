@@ -1,5 +1,5 @@
 {
-	"PipelineAqtn": "SyncPrem.Pipeline.Core.StaticPipeline, SyncPrem.Pipeline.Core",
+	"PipelineAqtn": "SyncPrem.Pipeline.Core.Runtime.StaticPipeline, SyncPrem.Pipeline.Core",
 
 	"SourceConfiguration":
 	{
@@ -7,8 +7,7 @@
 		"StageSpecificConfiguration":
 		{
 			"ConnectionAqtn": "System.Data.SqlClient.SqlConnection, System.Data.SqlClient",
-			"ConnectionString":
-				"Server=(local);User ID=bank_account_demo_mssql_lcl_login;PWD=LrJGmP6UfW8TEp7x3wWhECUYULE6zzMcWQ03R6UxeB4xzVmnq5S4Lx0vApegZVH;Database=bank_account_demo;",
+			"ConnectionString": "Server=(local);User ID=bank_account_demo_mssql_lcl_login;PWD=LrJGmP6UfW8TEp7x3wWhECUYULE6zzMcWQ03R6UxeB4xzVmnq5S4Lx0vApegZVH;Database=bank_account_demo;",
 
 			"PreExecuteCommand":
 			{
@@ -51,8 +50,7 @@
 			"ExecuteCommand":
 			{
 				"CommandType": "Text",
-				"CommandText":
-					"INSERT INTO [bank_account_demo].[dbo].[stage_confidential_banking_data_txt] VALUES (@InstitutionName, @TransactionNumber, @RefNumber, @TheDate, @PayeeName, @TheAmount, @IsCleared, @CategoryName, @DueDate, @Comments)",
+				"CommandText": "INSERT INTO [bank_account_demo].[dbo].[stage_confidential_banking_data_txt] VALUES (@InstitutionName, @TransactionNumber, @RefNumber, @TheDate, @PayeeName, @TheAmount, @IsCleared, @CategoryName, @DueDate, @Comments)",
 
 				"AdoNetParameterConfigurations":
 				[

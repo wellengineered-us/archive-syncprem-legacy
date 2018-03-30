@@ -7,15 +7,15 @@ using System;
 using System.Collections.Generic;
 
 using SyncPrem.Pipeline.Abstractions;
-using SyncPrem.Pipeline.Abstractions.Channel;
+using SyncPrem.Pipeline.Abstractions.Runtime;
 
-namespace SyncPrem.Pipeline.Core.Channels
+namespace SyncPrem.Pipeline.Core.Runtime
 {
-	public sealed class Channel : Component, IChannel
+	public sealed class DefaultChannel : Component, IChannel
 	{
 		#region Constructors/Destructors
 
-		public Channel(IEnumerable<IRecord> records)
+		public DefaultChannel(IEnumerable<IRecord> records)
 		{
 			if ((object)records == null)
 				throw new ArgumentNullException(nameof(records));

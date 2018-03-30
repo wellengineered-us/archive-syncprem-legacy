@@ -8,7 +8,6 @@ using System.Collections.Generic;
 using System.Linq;
 
 using SyncPrem.Pipeline.Abstractions;
-using SyncPrem.Pipeline.Abstractions.Channel;
 using SyncPrem.Pipeline.Abstractions.Configuration;
 using SyncPrem.Pipeline.Abstractions.Runtime;
 using SyncPrem.Pipeline.Abstractions.Stage.Connector.Destination;
@@ -16,10 +15,9 @@ using SyncPrem.Pipeline.Abstractions.Stage.Connector.Source;
 using SyncPrem.Pipeline.Abstractions.Stage.Processor;
 
 using TextMetal.Middleware.Solder.Injection;
+using TextMetal.Middleware.Solder.Primitives;
 
-using static TextMetal.Middleware.Solder.Primitives.LeakDetector;
-
-namespace SyncPrem.Pipeline.Core
+namespace SyncPrem.Pipeline.Core.Runtime
 {
 	public sealed class StaticPipeline : Component, IPipeline
 	{

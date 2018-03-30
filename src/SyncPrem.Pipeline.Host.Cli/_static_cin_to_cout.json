@@ -1,5 +1,5 @@
 {
-	"PipelineAqtn": "SyncPrem.Pipeline.Core.StaticPipeline, SyncPrem.Pipeline.Core",
+	"PipelineAqtn": "SyncPrem.Pipeline.Core.Runtime.StaticPipeline, SyncPrem.Pipeline.Core",
 
 	"SourceConfiguration":
 	{

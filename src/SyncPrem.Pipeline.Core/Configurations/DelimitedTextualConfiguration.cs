@@ -113,6 +113,8 @@ namespace SyncPrem.Pipeline.Core.Configurations
 
 			messages = new List<Message>();
 
+			messages.AddRange(base.Validate(context));
+
 			return messages;
 		}
 

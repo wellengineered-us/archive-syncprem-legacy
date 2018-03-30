@@ -8,12 +8,10 @@ using System.Collections.Concurrent;
 using System.Collections.Generic;
 
 using SyncPrem.Pipeline.Abstractions;
-using SyncPrem.Pipeline.Abstractions.Channel;
 using SyncPrem.Pipeline.Abstractions.Runtime;
-using SyncPrem.Pipeline.Core.Channels;
 using SyncPrem.StreamingIO.ProxyWrappers;
 
-namespace SyncPrem.Pipeline.Core
+namespace SyncPrem.Pipeline.Core.Runtime
 {
 	public sealed class DefaultContext : Component, IContext
 	{
@@ -70,7 +68,22 @@ namespace SyncPrem.Pipeline.Core
 			if ((object)records == null)
 				throw new ArgumentNullException(nameof(records));
 
-			return new Channel(records.GetMetricsWrappedEnumerable("records", LogItem, LogMetrics)); // TODO DI/IoC
+			records = ApplyRecordIndex(records);
+			return new DefaultChannel(records.GetMetricsWrappedEnumerable("records", LogItem, LogMetrics)); // TODO DI/IoC
+		}
+
+		private static IEnumerable<IRecord> ApplyRecordIndex(IEnumerable<IRecord> records)
+		{
+			long recordIndex = 0;
+
+			if ((object)records == null)
+				throw new ArgumentNullException(nameof(records));
+
+			foreach (IRecord record in records)
+			{
+				record.Index = recordIndex++;
+				yield return record;
+			}
 		}
 
 		#endregion

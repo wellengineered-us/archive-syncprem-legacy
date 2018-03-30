@@ -5,10 +5,10 @@
 
 using System;
 
-using SyncPrem.Pipeline.Abstractions.Channel;
+using SyncPrem.Pipeline.Abstractions.Runtime;
 using SyncPrem.StreamingIO.Primitives;
 
-namespace SyncPrem.Pipeline.Core.Channels
+namespace SyncPrem.Pipeline.Core.Runtime
 {
 	public sealed class Record : IRecord
 	{
@@ -43,6 +43,7 @@ namespace SyncPrem.Pipeline.Core.Channels
 		private readonly ISchema schema;
 		private readonly DateTimeOffset timestamp;
 		private readonly string topic;
+		private long? index;
 
 		#endregion
 
@@ -93,6 +94,18 @@ namespace SyncPrem.Pipeline.Core.Channels
 			get
 			{
 				return this.topic;
+			}
+		}
+
+		public long? Index
+		{
+			get
+			{
+				return this.index;
+			}
+			set
+			{
+				this.index = value;
 			}
 		}
 

@@ -40,13 +40,14 @@ namespace SyncPrem.Controller.Web.Controllers
 
 		// POST api/values
 		[HttpPost]
+		[DisableRequestSizeLimit]
 		public IActionResult Post()
 		{
 			Stream stream = this.Request.Body;
 
 			using (ProgressWrappedStream inputStream = new ProgressWrappedStream(stream))
 			{
-				using (ProgressWrappedStream outputStream = new ProgressWrappedStream(System.IO.File.OpenWrite(Path.Combine("d:\\", "OUT.shakespeare.txt"))))
+				using (ProgressWrappedStream outputStream = new ProgressWrappedStream(System.IO.File.Create(Path.Combine("d:\\", "api-post.json"))))
 				{
 					inputStream.CopyTo(outputStream);
 				}

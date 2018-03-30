@@ -10,15 +10,15 @@ using System.Net;
 using System.Net.Http;
 using System.Threading.Tasks;
 
-using Newtonsoft.Json;
-
-using SyncPrem.Pipeline.Abstractions.Channel;
 using SyncPrem.Pipeline.Abstractions.Configuration;
 using SyncPrem.Pipeline.Abstractions.Runtime;
 using SyncPrem.Pipeline.Abstractions.Stage.Connector.Destination;
 using SyncPrem.Pipeline.Core.Configurations;
 using SyncPrem.StreamingIO.Primitives;
 using SyncPrem.StreamingIO.ProxyWrappers.Internal;
+using SyncPrem.StreamingIO.ProxyWrappers.Strategies;
+
+using TextMetal.Middleware.Solder.Serialization;
 
 namespace SyncPrem.Pipeline.Core.Connectors
 {
@@ -50,7 +50,7 @@ namespace SyncPrem.Pipeline.Core.Connectors
 			this.AssertValidConfiguration();
 
 			RestfulWebApiConnectorSpecificConfiguration fsConfig = this.Configuration.StageSpecificConfiguration;
-//"http://localhost:57087/api/values"
+
 			records = channel.Records;
 
 			if ((object)records == null)
@@ -58,13 +58,15 @@ namespace SyncPrem.Pipeline.Core.Connectors
 
 			using (HttpClient httpClient = new HttpClient())
 			{
-				using (HttpContent httpContent = new PushStreamContent((s) => this.SerializeRecordsToStream(new ProgressWrappedStream(s), records)))
+				using (HttpContent httpContent = new PushStreamContent((s) => this.SerializeRecordsToStream(s, records)))
 				{
 					using (Task<HttpResponseMessage> streamTask = httpClient.PostAsync(fsConfig.WebEndpointUri, httpContent))
 					{
+						HttpResponseMessage result;
 						streamTask.Wait();
-						HttpResponseMessage result = streamTask.Result;
-						Console.WriteLine(result.StatusCode);
+
+						result = streamTask.Result;
+						result.EnsureSuccessStatusCode();
 					}
 				}
 			}
@@ -116,22 +118,42 @@ namespace SyncPrem.Pipeline.Core.Connectors
 		/// <returns> </returns>
 		private void SerializeRecordsToStream(Stream stream, IEnumerable<IRecord> records)
 		{
-			StreamWriter streamWriter;
-			JsonTextWriter jsonTextWriter;
-			JsonSerializer jsonSerializer;
+			Type serializationStrategyType;
+			Type compressionStrategyType;
+
+			ISerializationStrategy serializationStrategy;
+			ICompressionStrategy compressionStrategy;
 
 			if ((object)stream == null)
 				throw new ArgumentNullException(nameof(stream));
 
-			// TODO: verify if we should dispose here since we do not own the stream technically
-			using (streamWriter = new StreamWriter(stream))
-			{
-				using (jsonTextWriter = new JsonTextWriter(streamWriter))
-				{
-					jsonSerializer = new JsonSerializer();
-					jsonSerializer.Serialize(jsonTextWriter, records);
-				}
-			}
+			this.AssertValidConfiguration();
+
+			RestfulWebApiConnectorSpecificConfiguration fsConfig = this.Configuration.StageSpecificConfiguration;
+
+			serializationStrategyType = fsConfig.GetSerializationStrategyType();
+
+			if ((object)serializationStrategyType == null)
+				throw new InvalidOperationException(nameof(serializationStrategyType));
+
+			serializationStrategy = (ISerializationStrategy)Activator.CreateInstance(serializationStrategyType);
+
+			if ((object)serializationStrategy == null)
+				throw new InvalidOperationException(nameof(serializationStrategy));
+
+			compressionStrategyType = fsConfig.GetCompressionStrategyType();
+
+			if ((object)compressionStrategyType == null)
+				throw new InvalidOperationException(nameof(compressionStrategyType));
+
+			compressionStrategy = (ICompressionStrategy)Activator.CreateInstance(compressionStrategyType);
+
+			if ((object)compressionStrategy == null)
+				throw new InvalidOperationException(nameof(compressionStrategy));
+
+			stream = compressionStrategy.ApplyStreamWrap(stream);
+			stream = new ProgressWrappedStream(stream); // uncompressed
+			serializationStrategy.SetObjectToStream(stream, records);
 		}
 
 		#endregion

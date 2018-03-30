@@ -8,25 +8,14 @@ using System.Collections.Generic;
 
 namespace SyncPrem.Pipeline.Abstractions.Runtime
 {
-	public interface IContext : IComponent
+	public interface IChannel : IComponent
 	{
 		#region Properties/Indexers/Events
 
-		IDictionary<string, object> GlobalState
+		IEnumerable<IRecord> Records
 		{
 			get;
 		}
-
-		IDictionary<IComponent, IDictionary<string, object>> LocalState
-		{
-			get;
-		}
-
-		#endregion
-
-		#region Methods/Operators
-
-		IChannel CreateChannel(IEnumerable<IRecord> records);
 
 		#endregion
 	}
