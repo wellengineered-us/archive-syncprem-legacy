@@ -1,0 +1,230 @@
+<!DOCTYPE html>
+<html lang="en-US">
+<head>
+	<!-- Global Site Tag (gtag.js) - Google Analytics -->
+	<script async src="https://www.googletagmanager.com/gtag/js?id=UA-107119544-1"></script>
+	<script>
+		window.dataLayer = window.dataLayer || [];
+
+		function gtag()
+		{
+			dataLayer.push(arguments);
+		};
+
+		gtag('js', new Date());
+
+		gtag('config', 'UA-107119544-1');
+	</script>
+
+	<meta charset="UTF-8"/>
+	<title>SyncPrem | Zero Friction On-premises to Cloud Data Connectivity</title>
+	<meta name="viewport" content="width=device-width, initial-scale=1.0001">
+	<meta name="description" content="A platform that enables data integration and synchronization between on-premises and cloud environments."/>
+	<link rel="canonical" href="http://www.syncprem.com/"/>
+
+	<meta property="og:locale" content="en_US"/>
+	<meta property="og:type" content="website"/>
+	<meta property="og:title" content="SyncPrem | Zero Friction On-premises to Cloud Data Connectivity"/>
+	<meta property="og:description" content="A platform that enables data integration and synchronization between on-premises and cloud environments."/>
+	<meta property="og:url" content="http://www.syncprem.com/"/>
+	<meta property="og:image" content="http://www.syncprem.com/images/syncprem-banner.png"/>
+	<meta property="og:site_name" content="SyncPrem"/>
+
+	<meta name="twitter:card" content="summary"/>
+	<meta name="twitter:description" content="A platform that enables data integration and synchronization between on-premises and cloud environments."/>
+	<meta name="twitter:title" content="SyncPrem | Zero Friction On-premises to Cloud Data Connectivity"/>
+	<meta name="twitter:image" content="http://www.syncprem.com/images/syncprem-banner.png"/>
+
+	<script type="application/ld+json">{"@context":"http:\/\/schema.org","@type":"WebSite","@id":"#website","url":"http:\/\/www.syncprem.com\/","name":"SyncPrem","potentialAction":{"@type":"SearchAction","target":"http:\/\/www.syncprem.com\/?s={search_term_string}","query-input":"required name=search_term_string"}}</script>
+
+	<link rel="icon" type="image/png" href="./images/syncprem-icon.png">
+	<link rel="stylesheet" type="text/css" media="screen" href="./styles/index.css">
+</head>
+<body>
+	<header>
+		<a href="./#home">
+			<h1 id="logo">SyncPrem</h1>
+		</a>
+		<nav>
+			<label for="show-menu" class="show-menu">Show menu</label>
+			<input type="checkbox" id="show-menu" value="button">
+			<ul id="menu">
+				<li>
+					<a href="./index.html#home">Home</a>
+				</li>
+				<li>
+					<a href="./index.html#about">About</a>
+				</li>
+				<li>
+					<a href="./index.html#solutions">Solutions</a>
+				</li>
+				<li>
+					<a href="./index.html#contact">Contact</a>
+				</li>
+
+				<li>
+					<label for="show-menu2" class="show-menu2">Login...</label>
+					<input type="checkbox" id="show-menu2" value="button">
+					<div id="menu2">
+						<p>Approved EAPs: Sign in to use SyncPrem...</p>
+						<form name="login_form" action="./tenant/login" method="post">
+							<input type="tel" name="login_tid_control" placeholder="Tenant ID" required="" style="width: 85%;">
+							<input type="password" name="login_skey_control" placeholder="Secret Key" required="" style="width: 85%;">
+							<button type="submit" name="submit" style="width: 97%;">Login</button>
+						</form>
+					</div>
+					<a class="show-menu3" href="./index.html#login">Login</a>
+				</li>
+			</ul>
+		</nav>
+	</header>
+	<section class="dark" id="home">
+		<div id="spacer"></div>
+		<div id="intro" class="two columns">
+			<h3>Hello, Welcome to SyncPrem.</h3>
+			<p>SyncPrem is the zero friction on-premises to cloud data integration and synchronization solution.</p>
+			<p>SyncPrem is currently only available for use by approved Early Adopter Partners (EAPs).</p>
+
+			<p>Already an approved Early Adopter Partner? <label for="show-menu4" class="show-menu4">Login here</label><a class="show-menu5 dark" href="./index.html#login">Login here</a>.</p>
+			<input type="checkbox" id="show-menu4" value="button">
+			<div id="menu4">
+				<form name="login_form" action="./tenant/login" method="post">
+					<input type="hidden" name="csrf_token" value="">
+					<input type="tel" name="login_tid_control" placeholder="Tenant ID" required="" style="width: 85%;">
+					<input type="password" name="login_skey_control" placeholder="Secret Key" required="" style="width: 85%;">
+					<button type="submit" name="submit" style="width: 97%;">Login</button>
+				</form>
+			</div>
+		</div>
+		<div class="two columns">
+			<h3>Fun Fact</h3>
+			<p>At SyncPrem, we spell 'on-premises' the proper way: with the trailing letter 's'. Call it being particular.</p>
+			<p>We also think you should be just as particular when choosing cloud to on-premises data solutions.</p>
+		</div>
+		<a href="./index.html#about" id="arrow"></a>
+	</section>
+	<span id="about"></span>
+	<section class="padding">
+		<h2>Why SyncPrem?</h2>
+		<div class="three columns">
+			<img src="./images/svg/blue-cloudsaas.svg" class="about-img" alt="Cloud Software-as-a-Service"/>
+			<p>The number of Software-as-a-Service (SaaS) solutions requiring access to on-premises data is increasing.</p>
+		</div>
+		<div class="three columns">
+			<img src="./images/svg/blue-dataxfer.svg" class="about-img" alt="Extract, Transform, and Load"/>
+			<p>Traditional extract, transform, and load (ETL) between on-premises and cloud environments is complex and brittle.</p>
+		</div>
+		<div class="three columns">
+			<img src="./images/svg/blue-infrastructure.svg" class="about-img" alt="Costly Infrastructure"/>
+			<p>Vendor mandated, purpose-built infrastructure requires large up-front capital investment and on-going operational costs.</p>
+		</div>
+
+		<div class="three columns">
+			<img src="./images/svg/blue-hubspoke.svg" class="about-img" alt="Hub and Spoke"/>
+			<p>Building a specialized on-premises to cloud data movement and mapping platform that readily scales is no trival task.</p>
+		</div>
+		<div class="three columns">
+			<img src="./images/svg/blue-lock.svg" class="about-img" alt="Security Challenges"/>
+			<p>Inbound firewall rules, installs of data prcoessing daemons, and vendor access to production is a security nightmare.</p>
+		</div>
+		<div class="three columns">
+			<img src="./images/svg/blue-people.svg" class="about-img" alt="User Experience"/>
+			<p>Users should be delighted with fully syndicated data between their on-premises systems and their cloud solution.</p>
+		</div>
+
+
+		<h2>What is SyncPrem?</h2>
+		<p>SyncPrem is a platform that enables data integration and synchronization between on-premises and cloud environments without the complexity and overhead of traditional approaches.</p>
+		<p>
+			The SyncPrem platform combines custom hardware (appliance) and software components
+			to get on-premise data to the cloud and back – securely, efficiently, and economically.
+
+			For example, SyncPrem is working with a healthcare cloud SaaS vendor. The vendor drop-ships a low cost, disposable SyncPrem appliance to their customers needing to
+			integrate on-premise EMR/EHR data with the cloud/SaaS product. The vendor's Client Implementation Team works with their customer to build an ideal integration profile
+			for which is stored in the SyncPrem cloud and recognized by the SyncPrem appliance. Data flow can flow in both directions based on thier unique needs! The best part is
+			if for any reason, the appliance begins to exhibit hardware or software issues, these can be swapped out and cloud integration profile is automatically recognized.
+			Additional SyncPrem appliances and be used to scale a tenant horizontally without needing load balancers or complex infrastructure - it simply works!
+		</p>
+
+		<h2>The 'How' of SyncPrem?</h2>
+		<h3>SyncPrem Architecture</h3>
+		<p>
+			<img src="./images/syncprem-icon.png" alt="The SyncPrem Platform"/>
+		</p>
+
+		<h2>SyncPrem Who?</h2>
+
+		<ul>
+			<li style=""><img src="./images/hs-daniel-bullington.png" alt="Daniel P. Bullington" style="width: 33.33%"/><br/>Daniel P. Bullington, co-founder<br/>President & Chief Executive Officer</li>
+		</ul>
+		<ul>
+			<li style=""><img src="./images/hs-daniel-bullington.png" alt="Daniel P. Bullington" style="width: 33.33%"/><br/>Daniel P. Bullington, co-founder<br/>VP & Chief Operations Officer</li>
+			<li style=""><img src="./images/hs-daniel-bullington.png" alt="Daniel P. Bullington" style="width: 33.33%"/><br/>Daniel P. Bullington, co-founder<br/>VP & Chief Growth Officer</li>
+			<li style=""><img src="./images/hs-daniel-bullington.png" alt="Daniel P. Bullington" style="width: 33.33%"/><br/>Daniel P. Bullington, co-founder<br/>VP & Chief Client Officer</li>
+		</ul>
+
+		<p>
+			SyncPrem was founded by Daniel P. Bullington, a seasoned technology expert, executive, and entrepreneaur.
+			He has held impressive roles such as SVP & CTO for a KLAS-recognized healthcare product company,
+			Clinical IT Architecture Leader for a Fortune 100 healthcare provider,
+			Software Engineering Leader for multiple billion-dollar financial services firms, et al.
+			Daniel also has been tapped to provide enterprise cloud architecture and strategy guidance to a
+			large, multinational audit & assurance, consulting, risk and financial advisory, risk management, and tax firm.
+		</p>
+		<p>
+			Daniel drafted the initial Founders' Vision for SyncPrem, based on observed data integration and synchronization blind-spots in the healthcare technology ecosystem; further diligence revealed applicability to the broader technology landscape.
+		</p>
+
+		<h2>SyncPrem is Where?</h2>
+		<p>
+			<img src="./images/nashville-tn-map-pin.jpg" alt="Nashville, TN (USA) map, pinned"/><br/>
+			SyncPrem is based in Franklin, Tennessee (USA), a suburb outside of Nashville, Tennessee (USA).
+		</p>
+
+		<h2>SyncPrem for the When?</h2>
+		<p>SyncPrem is currently only available for use by approved Early Adopter Partners (EAPs).</p>
+	</section>
+	<span id="solutions"></span>
+	<section class="padding dark">
+		<h2>Solutions</h2>
+
+		<div class="two columns">
+			<h3>Healthcare</h3>
+			<p>Connect any cloud healthcare SaaS platform to customers’ on-premises EHR/PM/RCM systems and consume clinical, claims, and administrative data with ease and comfort.</p>
+		</div>
+
+		<p>Although SyncPrem has its roots in healthcare, we have come to discover that many more industries can benefit from better on-premises and cloud data connectivity.</p>
+		<p>Fintech | Legal | Real Estate | Construction | Manufacturing | Automotive | Retail | Hospitality | Consumer | Entertainment | Government | Education | Agriculture | Transportation | Energy | Utilities</p>
+
+
+	</section>
+	<span id="contact"></span>
+	<section class="padding">
+		<h2>Get More Information...</h2>
+
+		<div id="signup">
+			<form name="newaccount" action="https://formspree.io/info@syncprem.com" method="POST">
+				<input type="hidden" name="_next" value="">
+				<input type="hidden" name="_subject" value="SyncPrem - Information Request">
+				<input type="hidden" name="_cc" value="">
+				<input type="hidden" name="_format" value="plain">
+				<input type="hidden" name="_language" value="en">
+				<input type="hidden" name="_gotcha" value="">
+				<input class="name left" type="text" name="fname" placeholder="First name" required="">
+				<input class="name right" type="text" name="lname" placeholder="Last name" required="">
+				<input class="field" type="text" name="cname" placeholder="Company name" required="">
+				<input class="field" type="tel" name="phone" placeholder="Telephone number" required="">
+				<input class="field" type="email" name="email" placeholder="Email address" required="">
+				<textarea class="field" name="message" rows="5" placeholder="Briefly describe your cloud data integration and/or synchronization challenges and environments..." required=""></textarea>
+				<p class="disclaimer">By submitting the requested information above, you agree to occasional SyncPrem marketing emails. You may opt-out at any time.</p>
+				<button type="submit" name="submit">Submit</button>
+			</form>
+		</div>
+	</section>
+	<footer class="dark">
+		<p>©2017 SyncPrem, all rights reserved.</p>
+	</footer>
+	<script src="./scripts/jquery.min.js"></script>
+	<script src="./scripts/scroll.js"></script>
+</body>
+</html>

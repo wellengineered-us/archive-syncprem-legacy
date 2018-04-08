@@ -1,0 +1,512 @@
+@font-face
+{
+	font-family: "opticsans";
+	src: url('../fonts/OpticSans-201-Book.woff') format('woff');
+}
+
+@media only screen and (max-width: 624px)
+{
+	ul
+	{
+		display: none;
+	}
+
+	ul li, li a
+	{
+		width: 100%;
+	}
+
+	.show-menu2, .show-menu4
+	{
+		display: none;
+	}
+
+	#intro
+	{
+		margin-top: 1%;
+	}
+
+	#arrow
+	{
+		display: none;
+	}
+
+	input[type=checkbox]:checked ~ #menu
+	{
+		background-color: #fff;
+		display: block;
+		line-height: 1.5em;
+		margin: 30px 0 0 -100px;
+		padding: 25px 25px 25px 0;
+		position: fixed;
+	}
+}
+
+@media screen and (min-width: 625px)
+{
+	.show-menu, .show-menu3, .show-menu5
+	{
+		display: none;
+	}
+
+	#home
+	{
+		background-attachment: fixed;
+	}
+
+	#home h2
+	{
+		text-align: left;
+	}
+
+	#intro
+	{
+		margin-top: 10%;
+	}
+
+	input[type=checkbox]:checked ~ #menu2
+	{
+		-moz-box-shadow: -1px 1px 0 rgba(0, 0, 0, 0.12);
+		-webkit-box-shadow: -1px 1px 0 rgba(0, 0, 0, 0.12);
+		background-color: #fff;
+		box-shadow: -1px 1px 0 rgba(0, 0, 0, 0.12);
+		display: block;
+		line-height: 1.5em;
+		margin-top: 33px;
+		padding: 10px 25px 25px 25px;
+		position: fixed;
+		right: 0;
+		width: 350px;
+	}
+
+	input[type=checkbox]:checked ~ #menu4
+	{
+		-moz-box-shadow: -1px 1px 0 rgba(0, 0, 0, 0.12);
+		-webkit-box-shadow: -1px 1px 0 rgba(0, 0, 0, 0.12);
+		background-color: #fff;
+		box-shadow: -1px 1px 0 rgba(0, 0, 0, 0.12);
+		display: block;
+		line-height: 1.5em;
+		margin: 1.5em 8% 0;
+		min-width: 200px;
+		padding: 1.5%;
+		position: absolute;
+		width: 25%;
+	}
+}
+
+@media only screen and (max-width: 933px)
+{
+	h2
+	{
+		margin-top: 0.7em;
+	}
+
+	#spacer
+	{
+		height: 6em;
+	}
+
+	.name, .age, .city, .state
+	{
+		width: 88%;
+	}
+}
+
+@media screen and (min-width: 934px)
+{
+	h2
+	{
+		margin-top: 0.25em;
+	}
+
+	#spacer
+	{
+		height: 7.5em;
+	}
+
+	.name
+	{
+		width: 37%;
+	}
+
+	.left
+	{
+		float: left;
+	}
+
+	.right
+	{
+		float: right;
+	}
+}
+
+@media only screen and (min-width: 934px) and (max-width: 1308px)
+{
+	#signup h2
+	{
+		margin: 0 0 0.6em 0;
+	}
+
+	.age, .state
+	{
+		width: 37%;
+	}
+
+	.city
+	{
+		width: 88%;
+	}
+
+	.disclaimer
+	{
+		line-height: 1.3em;
+	}
+}
+
+@media only screen and (min-width: 1309px)
+{
+	.age, .state
+	{
+		width: 15%;
+	}
+
+	.city
+	{
+		width: 33%;
+	}
+}
+
+@media screen and (max-device-width: 320px)
+{
+	#home
+	{
+		background-image: url('../images/franklin-tn-square.jpg');
+	}
+}
+
+@media screen and (min-device-width: 321px)
+{
+	#home
+	{
+		background-image: url('../images/franklin-tn-square.jpg');
+	}
+}
+
+html, body
+{
+	color: #555;
+	font: 100% "opticsans", Arial, Helvetica, sans-serif;
+	height: 100%;
+	margin: 0;
+	min-height: 500px;
+}
+
+header
+{
+	-moz-box-shadow: 0 1px 0 rgba(0, 0, 0, 0.12);
+	-webkit-box-shadow: 0 1px 0 rgba(0, 0, 0, 0.12);
+	background: #fff;
+	box-shadow: 0 1px 0 rgba(0, 0, 0, 0.12);
+	padding: 15px 3%;
+	position: fixed;
+	width: 94%;
+	z-index: 1;
+}
+
+h1
+{
+	font-size: 0;
+	margin: 0;
+}
+
+h2
+{
+	color: #333;
+	font-size: 2em;
+	font-variant: small-caps;
+	font-weight: 700;
+	/
+	/
+	letter-spacing: 0.1em;
+	line-height: 1em;
+	margin-bottom: 1em;
+	text-transform: uppercase;
+}
+
+h3
+{
+	color: #d0d0d0;
+	font-size: 1.25em;
+	font-variant: small-caps;
+	font-weight: 700;
+	/
+	/
+	letter-spacing: 0.1em;
+	line-height: 1em;
+	margin-bottom: 1em;
+	text-transform: uppercase;
+}
+
+nav
+{
+	float: right;
+	padding-top: 12px;
+}
+
+input[type=checkbox]
+{
+	-moz-appearance: none;
+	-webkit-appearance: none;
+	display: none;
+}
+
+ul
+{
+	list-style: none;
+	margin: 0;
+	padding: 0;
+}
+
+li
+{
+	display: inline-block;
+	margin-right: 1px;
+}
+
+a
+{
+	color: #448;
+	text-decoration: none;
+}
+
+a:hover
+{
+	border-bottom: 1px solid;
+}
+
+section
+{
+	text-align: center;
+}
+
+p
+{
+	font-weight: 400;
+	line-height: 1.5em;
+}
+
+input, textarea
+{
+	font: 1em "opticsans", Arial, Helvetica, sans-serif;
+	margin-bottom: 2%;
+	padding: 15px 5%;
+}
+
+button
+{
+	background-color: #448;
+	border: 0;
+	color: #fff;
+	cursor: pointer;
+	font-size: 1em;
+	line-height: 1.5;
+	padding: 13px 5% 17px;
+	width: 100%;
+}
+
+footer
+{
+	font-size: 0.9em;
+	padding: 1% 5%;
+	text-align: left;
+}
+
+#logo
+{
+	background: url('../images/syncprem-logo.png') center no-repeat;
+	background-size: 170px 50px;
+	float: left;
+	height: 50px;
+	width: 170px;
+}
+
+#menu li
+{
+	margin-left: 25px;
+	position: relative;
+}
+
+#menu li a, .show-menu2
+{
+	color: #333;
+	font-size: 18px;
+	font-variant: small-caps;
+	/
+	/
+	font-weight: 400;
+	text-transform: uppercase;
+}
+
+#menu li a:hover, .show-menu2:hover
+{
+	border-bottom: #448 1px solid;
+	color: #448;
+}
+
+.show-menu
+{
+	background: url('../images/arrow.png') no-repeat 21px 26px #448;
+	cursor: pointer;
+	font-size: 0;
+	padding: 35px;
+	text-decoration: none;
+}
+
+#menu2, #menu4
+{
+	display: none;
+}
+
+.show-menu2, .show-menu4
+{
+	cursor: pointer;
+}
+
+#arrow
+{
+	background: url('../images/arrow.png') no-repeat 21px 26px #448;
+	background-size: 28px 16px;
+	border: 0;
+	bottom: 0;
+	height: 100px;
+	left: 50%;
+	margin-left: -35px;
+	position: absolute;
+	width: 70px;
+}
+
+#home
+{
+	background-position: center center;
+	background-repeat: no-repeat;
+	background-size: cover;
+	min-height: 100%;
+	position: relative;
+	text-shadow: 0 0 25px #000;
+}
+
+.dark
+{
+	background-color: #448;
+	color: #fff;
+}
+
+.dark a, .dark h2, .show-menu4
+{
+	background-color: transparent;
+	color: #fff;
+}
+
+.dark a, .show-menu4
+{
+	border-bottom: 1px solid;
+}
+
+#signup
+{
+	margin: 0 auto 15px;
+	width: 65%;
+}
+
+#signup p
+{
+	margin-top: 0;
+}
+
+.field
+{
+	width: 88%;
+}
+
+.disclaimer
+{
+	font-size: 0.8em;
+	text-align: left;
+}
+
+#about, #solutions, #contact
+{
+	display: block;
+	margin-top: -80px;
+	padding-bottom: 80px;
+}
+
+.about-img
+{
+	height: 33%;
+	width: 33%;
+}
+
+.padding
+{
+	padding: 3% 5%;
+}
+
+.columns
+{
+	display: inline-block;
+	padding: 0 1%;
+	vertical-align: top;
+}
+
+.two
+{
+	min-width: 297.5px;
+	width: 45%;
+}
+
+.three
+{
+	min-width: 230px;
+	width: 30%;
+}
+
+.four
+{
+	min-width: 200px;
+	width: 22.5%;
+}
+
+.photo
+{
+	-moz-border-radius: 150px;
+	-webkit-border-radius: 150px;
+	border-radius: 150px;
+	height: 190px;
+	margin: 0 auto;
+	width: 190px;
+}
+
+.small-form
+{
+	margin: 0 auto;
+	max-width: 350px;
+	width: 75%;
+}
+
+.login
+{
+	bottom: 0;
+	position: absolute;
+	width: 90%;
+}
+
+.outer
+{
+	left: 0;
+	margin-top: -170px;
+	position: absolute;
+	top: 50%;
+	width: 100%;
+}
