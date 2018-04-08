@@ -4,6 +4,7 @@
 */
 
 using System;
+using System.Threading.Tasks;
 
 using SyncPrem.Pipeline.Host.Cli.Hosting;
 
@@ -24,9 +25,9 @@ namespace SyncPrem.Pipeline.Host.Cli
 		/// <param name="args"> The command line arguments passed from the executing environment. </param>
 		/// <returns> The resulting exit code. </returns>
 		[STAThread]
-		public static int Main(string[] args)
+		public static async Task<int> Main(string[] args)
 		{
-			return ConsoleApplicationFascade.Run<PipelineHostConsoleApplication>(args);
+			return await ConsoleApplicationFascade.Run<PipelineHostConsoleApplication>(args);
 		}
 
 		#endregion

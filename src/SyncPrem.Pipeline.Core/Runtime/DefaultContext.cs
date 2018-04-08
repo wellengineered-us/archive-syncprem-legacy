@@ -52,15 +52,25 @@ namespace SyncPrem.Pipeline.Core.Runtime
 
 		#region Methods/Operators
 
-		private static T LogItem<T>(T item)
+		private static IRecord ApplyRecordIndex(long recordIndex, IRecord record)
+		{
+			if ((object)record == null)
+				throw new ArgumentNullException(nameof(record));
+
+			record.Index = recordIndex;
+			return record;
+		}
+
+		private static T LogItem<T>(long itemIndex, T item)
 		{
 			//Console.WriteLine(item.SafeToString(null, "<null>"));
 			return item;
 		}
 
-		private static void LogMetrics(string label, ulong count, bool done, double timing)
+		private static void LogMetrics(string sourceLabel, long itemIndex, bool isCompleted, double rollingTiming)
 		{
-			Console.WriteLine("{0}: count = {1}, done = {2}, timing = {3}", label, count, done, timing);
+			if (itemIndex == -1 || isCompleted)
+				Console.WriteLine("{0}@{4}: itemIndex = {1}, isCompleted = {2}, rollingTiming = {3}", sourceLabel, itemIndex, isCompleted, rollingTiming, Environment.CurrentManagedThreadId);
 		}
 
 		public IChannel CreateChannel(IEnumerable<IRecord> records)
@@ -68,22 +78,9 @@ namespace SyncPrem.Pipeline.Core.Runtime
 			if ((object)records == null)
 				throw new ArgumentNullException(nameof(records));
 
-			records = ApplyRecordIndex(records);
-			return new DefaultChannel(records.GetMetricsWrappedEnumerable("records", LogItem, LogMetrics)); // TODO DI/IoC
-		}
-
-		private static IEnumerable<IRecord> ApplyRecordIndex(IEnumerable<IRecord> records)
-		{
-			long recordIndex = 0;
-
-			if ((object)records == null)
-				throw new ArgumentNullException(nameof(records));
-
-			foreach (IRecord record in records)
-			{
-				record.Index = recordIndex++;
-				yield return record;
-			}
+			records = records.GetWrappedEnumerable(ApplyRecordIndex);
+			records = records.GetWrappedEnumerable("records", LogItem, LogMetrics);
+			return new DefaultChannel(records);
 		}
 
 		#endregion

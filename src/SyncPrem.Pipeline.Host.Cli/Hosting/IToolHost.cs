@@ -11,10 +11,5 @@ namespace SyncPrem.Pipeline.Host.Cli.Hosting
 {
 	public interface IToolHost : IHost
 	{
-		#region Methods/Operators
-
-		void Host(string sourceFilePath);
-
-		#endregion
 	}
 }

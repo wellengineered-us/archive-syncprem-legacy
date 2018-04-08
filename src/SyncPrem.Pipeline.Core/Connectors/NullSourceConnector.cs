@@ -6,6 +6,8 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading;
+using System.Threading.Tasks;
 
 using SyncPrem.Pipeline.Abstractions;
 using SyncPrem.Pipeline.Abstractions.Configuration;
@@ -30,7 +32,7 @@ namespace SyncPrem.Pipeline.Core.Connectors
 
 		private const int FIELD_COUNT = 5;
 		private const string FIELD_NAME = "RandomValue_{0:00}";
-		private const int MAX_RECORD_COUNT = 1000;
+		private const int MAX_RECORD_COUNT = 100000;
 		private static readonly Random random = new Random();
 		private static readonly ISchema schema = GetSchema();
 
@@ -117,7 +119,12 @@ namespace SyncPrem.Pipeline.Core.Connectors
 			base.Dispose(disposing);
 		}
 
-		protected override void PostExecuteRecord(IContext context, RecordConfiguration configuration)
+		protected override Task PostExecuteAsyncInternal(IContext context, RecordConfiguration configuration, CancellationToken cancellationToken, IProgress<int> progress)
+		{
+			throw new NotImplementedException();
+		}
+
+		protected override void PostExecuteInternal(IContext context, RecordConfiguration configuration)
 		{
 			if ((object)context == null)
 				throw new ArgumentNullException(nameof(context));
@@ -128,7 +135,12 @@ namespace SyncPrem.Pipeline.Core.Connectors
 			this.AssertValidConfiguration();
 		}
 
-		protected override void PreExecuteRecord(IContext context, RecordConfiguration configuration)
+		protected override Task PreExecuteAsyncInternal(IContext context, RecordConfiguration configuration, CancellationToken cancellationToken, IProgress<int> progress)
+		{
+			throw new NotImplementedException();
+		}
+
+		protected override void PreExecuteInternal(IContext context, RecordConfiguration configuration)
 		{
 			ISchema schema;
 
@@ -154,7 +166,12 @@ namespace SyncPrem.Pipeline.Core.Connectors
 			localState.Add(Constants.ContextComponentScopedSchema, schema);
 		}
 
-		protected override IChannel ProduceRecord(IContext context, RecordConfiguration configuration)
+		protected override Task<IChannel> ProduceAsyncInternal(IContext context, RecordConfiguration configuration, CancellationToken cancellationToken, IProgress<int> progress)
+		{
+			throw new NotImplementedException();
+		}
+
+		protected override IChannel ProduceInternal(IContext context, RecordConfiguration configuration)
 		{
 			IChannel channel;
 			ISchema schema;

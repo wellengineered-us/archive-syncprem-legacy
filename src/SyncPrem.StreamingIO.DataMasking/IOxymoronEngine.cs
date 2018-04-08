@@ -18,6 +18,8 @@ namespace SyncPrem.StreamingIO.DataMasking
 
 		IEnumerable<IPayload> GetObfuscatedValues(IEnumerable<IPayload> records);
 
+		IAsyncEnumerable<IPayload> GetObfuscatedValuesAsync(IEnumerable<IPayload> records);
+
 		#endregion
 	}
 }

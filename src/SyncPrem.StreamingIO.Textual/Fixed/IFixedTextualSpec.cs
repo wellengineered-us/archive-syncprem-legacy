@@ -9,17 +9,17 @@ namespace SyncPrem.StreamingIO.Textual.Fixed
 	{
 		#region Properties/Indexers/Events
 
+		char FillCharacter
+		{
+			get;
+		}
+
 		long RecordLength
 		{
 			get;
 		}
 
 		bool UsingRecordDelimiter
-		{
-			get;
-		}
-
-		char FillCharacter
 		{
 			get;
 		}

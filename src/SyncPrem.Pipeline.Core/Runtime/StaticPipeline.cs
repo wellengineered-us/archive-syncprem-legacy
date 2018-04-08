@@ -6,8 +6,9 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading;
+using System.Threading.Tasks;
 
-using SyncPrem.Pipeline.Abstractions;
 using SyncPrem.Pipeline.Abstractions.Configuration;
 using SyncPrem.Pipeline.Abstractions.Runtime;
 using SyncPrem.Pipeline.Abstractions.Stage.Connector.Destination;
@@ -19,7 +20,7 @@ using TextMetal.Middleware.Solder.Primitives;
 
 namespace SyncPrem.Pipeline.Core.Runtime
 {
-	public sealed class StaticPipeline : Component, IPipeline
+	public sealed class StaticPipeline : Abstractions.Runtime.Pipeline
 	{
 		#region Constructors/Destructors
 
@@ -30,36 +31,29 @@ namespace SyncPrem.Pipeline.Core.Runtime
 
 		#endregion
 
-		#region Fields/Constants
-
-		private PipelineConfiguration configuration;
-
-		#endregion
-
-		#region Properties/Indexers/Events
-
-		public PipelineConfiguration Configuration
-		{
-			get
-			{
-				return this.configuration;
-			}
-			set
-			{
-				this.configuration = value;
-			}
-		}
-
-		#endregion
-
 		#region Methods/Operators
 
-		public IContext CreateContext()
+		protected override IContext CreateContextInternal()
 		{
-			return new DefaultContext(); // TODO DI/IoC
+			IContext context;
+			Type contextType;
+
+			contextType = this.Configuration.GetContextType() ?? typeof(DefaultContext); // TODO DI/IoC
+
+			context = (IContext)Activator.CreateInstance(contextType);
+
+			if ((object)context == null)
+				throw new InvalidOperationException(nameof(context));
+
+			return context;
 		}
 
-		public int Execute(IContext context)
+		protected override async Task<int> ExecuteAsyncInternal(IContext context, CancellationToken cancellationToken, IProgress<int> progress)
+		{
+			return await Task.Run(() => this.ExecuteInternal(context), cancellationToken);
+		}
+
+		protected override int ExecuteInternal(IContext context)
 		{
 			IChannel channel;
 

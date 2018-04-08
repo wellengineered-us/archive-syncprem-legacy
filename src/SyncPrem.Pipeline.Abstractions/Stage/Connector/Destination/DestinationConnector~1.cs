@@ -4,6 +4,8 @@
 */
 
 using System;
+using System.Threading;
+using System.Threading.Tasks;
 
 using SyncPrem.Pipeline.Abstractions.Configuration;
 using SyncPrem.Pipeline.Abstractions.Runtime;
@@ -34,10 +36,17 @@ namespace SyncPrem.Pipeline.Abstractions.Stage.Connector.Destination
 			if ((object)channel == null)
 				throw new ArgumentNullException(nameof(channel));
 
-			this.ConsumeRecord(context, configuration, channel);
+			this.ConsumeInternal(context, configuration, channel);
 		}
 
-		protected abstract void ConsumeRecord(IContext context, RecordConfiguration configuration, IChannel channel);
+		public Task ConsumeAsync(IContext context, RecordConfiguration configuration, IChannel channel, CancellationToken cancellationToken)
+		{
+			return this.ConsumeAsyncInternal(context, configuration, channel, cancellationToken, null);
+		}
+
+		protected abstract Task ConsumeAsyncInternal(IContext context, RecordConfiguration configuration, IChannel channel, CancellationToken cancellationToken, IProgress<int> progress);
+
+		protected abstract void ConsumeInternal(IContext context, RecordConfiguration configuration, IChannel channel);
 
 		#endregion
 	}

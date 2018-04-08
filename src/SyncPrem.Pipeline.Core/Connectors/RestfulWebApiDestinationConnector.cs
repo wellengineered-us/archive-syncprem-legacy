@@ -8,6 +8,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Net;
 using System.Net.Http;
+using System.Threading;
 using System.Threading.Tasks;
 
 using SyncPrem.Pipeline.Abstractions.Configuration;
@@ -34,7 +35,12 @@ namespace SyncPrem.Pipeline.Core.Connectors
 
 		#region Methods/Operators
 
-		protected override void ConsumeRecord(IContext context, RecordConfiguration configuration, IChannel channel)
+		protected override Task ConsumeAsyncInternal(IContext context, RecordConfiguration configuration, IChannel channel, CancellationToken cancellationToken, IProgress<int> progress)
+		{
+			throw new NotImplementedException();
+		}
+
+		protected override void ConsumeInternal(IContext context, RecordConfiguration configuration, IChannel channel)
 		{
 			IEnumerable<IRecord> records;
 
@@ -60,12 +66,13 @@ namespace SyncPrem.Pipeline.Core.Connectors
 			{
 				using (HttpContent httpContent = new PushStreamContent((s) => this.SerializeRecordsToStream(s, records)))
 				{
-					using (Task<HttpResponseMessage> streamTask = httpClient.PostAsync(fsConfig.WebEndpointUri, httpContent))
+					using (Task<HttpResponseMessage> task = httpClient.PostAsync(fsConfig.WebEndpointUri, httpContent))
 					{
 						HttpResponseMessage result;
-						streamTask.Wait();
+						task.Wait();
 
-						result = streamTask.Result;
+						result = task.Result;
+						result.Content.ReadAsStreamAsync().Wait();
 						result.EnsureSuccessStatusCode();
 					}
 				}
@@ -84,7 +91,12 @@ namespace SyncPrem.Pipeline.Core.Connectors
 			base.Dispose(disposing);
 		}
 
-		protected override void PostExecuteRecord(IContext context, RecordConfiguration configuration)
+		protected override Task PostExecuteAsyncInternal(IContext context, RecordConfiguration configuration, CancellationToken cancellationToken, IProgress<int> progress)
+		{
+			throw new NotImplementedException();
+		}
+
+		protected override void PostExecuteInternal(IContext context, RecordConfiguration configuration)
 		{
 			if ((object)context == null)
 				throw new ArgumentNullException(nameof(context));
@@ -97,7 +109,12 @@ namespace SyncPrem.Pipeline.Core.Connectors
 			RestfulWebApiConnectorSpecificConfiguration fsConfig = this.Configuration.StageSpecificConfiguration;
 		}
 
-		protected override void PreExecuteRecord(IContext context, RecordConfiguration configuration)
+		protected override Task PreExecuteAsyncInternal(IContext context, RecordConfiguration configuration, CancellationToken cancellationToken, IProgress<int> progress)
+		{
+			throw new NotImplementedException();
+		}
+
+		protected override void PreExecuteInternal(IContext context, RecordConfiguration configuration)
 		{
 			if ((object)context == null)
 				throw new ArgumentNullException(nameof(context));

@@ -19,9 +19,10 @@ namespace SyncPrem.StreamingIO.Textual
 
 		#region Fields/Constants
 
+		private string fieldFormat;
+
 		private long fieldOrdinal;
 		private string fieldTitle;
-		private string fieldFormat;
 		private TextualFieldType fieldType;
 		private bool isFieldIdentity;
 		private bool isFieldRequired;
@@ -29,18 +30,6 @@ namespace SyncPrem.StreamingIO.Textual
 		#endregion
 
 		#region Properties/Indexers/Events
-
-		public long FieldOrdinal
-		{
-			get
-			{
-				return this.fieldOrdinal;
-			}
-			set
-			{
-				this.fieldOrdinal = value;
-			}
-		}
 
 		public string FieldFormat
 		{
@@ -51,6 +40,18 @@ namespace SyncPrem.StreamingIO.Textual
 			set
 			{
 				this.fieldFormat = value;
+			}
+		}
+
+		public long FieldOrdinal
+		{
+			get
+			{
+				return this.fieldOrdinal;
+			}
+			set
+			{
+				this.fieldOrdinal = value;
 			}
 		}
 

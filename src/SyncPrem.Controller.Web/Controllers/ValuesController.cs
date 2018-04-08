@@ -1,6 +1,6 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.IO;
+using System.Threading.Tasks;
 
 using Microsoft.AspNetCore.Mvc;
 
@@ -13,53 +13,31 @@ namespace SyncPrem.Controller.Web.Controllers
 	{
 		#region Methods/Operators
 
-		// DELETE api/values/5
-		[HttpDelete("{id}")]
-		public void Delete(int id)
-		{
-		}
-
-		// GET api/values
-		[HttpGet]
-		public IEnumerable<string> Get()
-		{
-			return new string[] { "value1", "value2" };
-		}
-
-		// GET api/values/5
-		[HttpGet("{id}")]
-		public string Get(int id)
-		{
-			return "value";
-		}
-
-		//[HttpPost]
-		//public void Post([FromBody] string value)
-		//{
-		//}
-
-		// POST api/values
 		[HttpPost]
 		[DisableRequestSizeLimit]
-		public IActionResult Post()
+		public async Task<IActionResult> Post()
 		{
-			Stream stream = this.Request.Body;
+			Task task;
 
-			using (ProgressWrappedStream inputStream = new ProgressWrappedStream(stream))
-			{
-				using (ProgressWrappedStream outputStream = new ProgressWrappedStream(System.IO.File.Create(Path.Combine("d:\\", "api-post.json"))))
-				{
-					inputStream.CopyTo(outputStream);
-				}
-			}
+			task = Task.Run(() =>
+							{
+								Stream stream = this.Request.Body;
 
-			return this.Ok("test");
-		}
+								using (ProgressWrappedStream inputStream = new ProgressWrappedStream(stream))
+								{
+									using (ProgressWrappedStream outputStream = new ProgressWrappedStream(System.IO.File.Create(Path.Combine("d:\\", $"api-post-{Guid.NewGuid().ToString("N")}.json"))))
+									{
+										inputStream.CopyTo(outputStream);
+									}
+								}
+							});
 
-		// PUT api/values/5
-		[HttpPut("{id}")]
-		public void Put(int id, [FromBody] string value)
-		{
+			await task;
+
+			if (task.IsCompletedSuccessfully)
+				return this.Ok();
+			else
+				return this.StatusCode(500);
 		}
 
 		#endregion

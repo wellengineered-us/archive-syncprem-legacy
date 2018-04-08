@@ -4,6 +4,8 @@
 */
 
 using System;
+using System.Threading;
+using System.Threading.Tasks;
 
 using SyncPrem.Pipeline.Abstractions.Configuration;
 using SyncPrem.Pipeline.Abstractions.Runtime;
@@ -58,17 +60,31 @@ namespace SyncPrem.Pipeline.Abstractions.Stage
 
 		public void PostExecute(IContext context, RecordConfiguration configuration)
 		{
-			this.PostExecuteRecord(context, configuration);
+			this.PostExecuteInternal(context, configuration);
 		}
 
-		protected abstract void PostExecuteRecord(IContext context, RecordConfiguration configuration);
+		public Task PostExecuteAsync(IContext context, RecordConfiguration configuration, CancellationToken cancellationToken)
+		{
+			return this.PostExecuteAsyncInternal(context, configuration, cancellationToken, null);
+		}
+
+		protected abstract Task PostExecuteAsyncInternal(IContext context, RecordConfiguration configuration, CancellationToken cancellationToken, IProgress<int> progress);
+
+		protected abstract void PostExecuteInternal(IContext context, RecordConfiguration configuration);
 
 		public void PreExecute(IContext context, RecordConfiguration configuration)
 		{
-			this.PreExecuteRecord(context, configuration);
+			this.PreExecuteInternal(context, configuration);
 		}
 
-		protected abstract void PreExecuteRecord(IContext context, RecordConfiguration configuration);
+		public Task PreExecuteAsync(IContext context, RecordConfiguration configuration, CancellationToken cancellationToken)
+		{
+			return this.PreExecuteAsyncInternal(context, configuration, cancellationToken, null);
+		}
+
+		protected abstract Task PreExecuteAsyncInternal(IContext context, RecordConfiguration configuration, CancellationToken cancellationToken, IProgress<int> progress);
+
+		protected abstract void PreExecuteInternal(IContext context, RecordConfiguration configuration);
 
 		#endregion
 	}

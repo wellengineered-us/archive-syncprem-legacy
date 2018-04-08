@@ -7,6 +7,7 @@ using System;
 using System.Collections.Generic;
 using System.Data;
 using System.Data.Common;
+using System.Threading.Tasks;
 
 namespace SyncPrem.StreamingIO.Relational
 {
@@ -49,6 +50,23 @@ namespace SyncPrem.StreamingIO.Relational
 		AdoNetStreamingDataReader ExecuteReader(DbConnection dbConnection, DbTransaction dbTransaction, CommandType commandType, string commandText, IEnumerable<DbParameter> commandParameters, CommandBehavior commandBehavior, int? commandTimeout, bool commandPrepare);
 
 		/// <summary>
+		/// Executes a command, returning a data reader, against a data source.
+		/// This method perfoms ASYNC/TASK EXECUTION.
+		/// This method DOES NOT DISPOSE OF CONNECTION/TRANSACTION - UP TO THE CALLER.
+		/// This method DOES NOT DISPOSE OF DATA READER - UP TO THE CALLER.
+		/// </summary>
+		/// <param name="dbConnection"> The database connection. </param>
+		/// <param name="dbTransaction"> An optional local database transaction. </param>
+		/// <param name="commandType"> The type of the command. </param>
+		/// <param name="commandText"> The SQL text or stored procedure name. </param>
+		/// <param name="commandParameters"> The parameters to use during the operation. </param>
+		/// <param name="commandBehavior"> The reader behavior. </param>
+		/// <param name="commandTimeout"> The command timeout (use null for default). </param>
+		/// <param name="commandPrepare"> Whether to prepare the command at the data source. </param>
+		/// <returns> The asynchronous task-wrapped data reader result. </returns>
+		Task<AdoNetStreamingDataReader> ExecuteReaderAsync(DbConnection dbConnection, DbTransaction dbTransaction, CommandType commandType, string commandText, IEnumerable<DbParameter> commandParameters, CommandBehavior commandBehavior, int? commandTimeout, bool commandPrepare);
+
+		/// <summary>
 		/// Execute a command against a data source, mapping the data reader to an enumerable of record dictionaries.
 		/// This method perfoms LAZY LOADING/DEFERRED EXECUTION.
 		/// This method DOES NOT DISPOSE OF CONNECTION/TRANSACTION - UP TO THE CALLER.
@@ -63,6 +81,21 @@ namespace SyncPrem.StreamingIO.Relational
 		IEnumerable<IAdoNetStreamingRecord> ExecuteRecords(DbConnection dbConnection, DbTransaction dbTransaction, CommandType commandType, string commandText, IEnumerable<DbParameter> commandParameters, Action<int> recordsAffectedCallback);
 
 		/// <summary>
+		/// Execute a command against a data source, mapping the data reader to an enumerable of record dictionaries.
+		/// This method perfoms LAZY LOADING/DEFERRED EXECUTION.
+		/// This method perfoms ASYNC/TASK EXECUTION.
+		/// This method DOES NOT DISPOSE OF CONNECTION/TRANSACTION - UP TO THE CALLER.
+		/// </summary>
+		/// <param name="dbConnection"> The database connection. </param>
+		/// <param name="dbTransaction"> An optional local database transaction. </param>
+		/// <param name="commandType"> The type of the command. </param>
+		/// <param name="commandText"> The SQL text or stored procedure name. </param>
+		/// <param name="commandParameters"> The parameters to use during the operation. </param>
+		/// <param name="recordsAffectedCallback"> Executed when the output count of records affected is available to return (post enumeration). </param>
+		/// <returns> An asynchronous enumerable of task-wrapped result instances, each containing an enumerable of dictionaries with record key/value pairs of schema metadata. </returns>
+		IAsyncEnumerable<IAdoNetStreamingRecord> ExecuteRecordsAsync(DbConnection dbConnection, DbTransaction dbTransaction, CommandType commandType, string commandText, IEnumerable<DbParameter> commandParameters, Action<int> recordsAffectedCallback);
+
+		/// <summary>
 		/// Execute a command against a data source, mapping the data reader to an enumerable of results, each with an enumerable of record dictionaries.
 		/// This method perfoms LAZY LOADING/DEFERRED EXECUTION.
 		/// This method DOES NOT DISPOSE OF CONNECTION/TRANSACTION - UP TO THE CALLER.
@@ -74,6 +107,20 @@ namespace SyncPrem.StreamingIO.Relational
 		/// <param name="commandParameters"> The parameters to use during the operation. </param>
 		/// <returns> An enumerable of result instances, each containing an enumerable of dictionaries with record key/value pairs of data. </returns>
 		IEnumerable<IAdoNetStreamingResult> ExecuteResults(DbConnection dbConnection, DbTransaction dbTransaction, CommandType commandType, string commandText, IEnumerable<DbParameter> commandParameters);
+
+		/// <summary>
+		/// Execute a command against a data source, mapping the data reader to an enumerable of results, each with an enumerable of record dictionaries.
+		/// This method perfoms LAZY LOADING/DEFERRED EXECUTION.
+		/// This method perfoms ASYNC/TASK EXECUTION.
+		/// This method DOES NOT DISPOSE OF CONNECTION/TRANSACTION - UP TO THE CALLER.
+		/// </summary>
+		/// <param name="dbConnection"> The database connection. </param>
+		/// <param name="dbTransaction"> An optional local database transaction. </param>
+		/// <param name="commandType"> The type of the command. </param>
+		/// <param name="commandText"> The SQL text or stored procedure name. </param>
+		/// <param name="commandParameters"> The parameters to use during the operation. </param>
+		/// <returns> An asynchronous enumerable of task-wrapped result instances, each containing an enumerable of dictionaries with record key/value pairs of data. </returns>
+		IAsyncEnumerable<IAdoNetStreamingResult> ExecuteResultsAsync(DbConnection dbConnection, DbTransaction dbTransaction, CommandType commandType, string commandText, IEnumerable<DbParameter> commandParameters);
 
 		/// <summary>
 		/// Execute a command against a data source, mapping the data reader GetSchemaTable() result to an enumerable of enumerable of record dictionaries.
@@ -90,6 +137,21 @@ namespace SyncPrem.StreamingIO.Relational
 		IEnumerable<IAdoNetStreamingRecord> ExecuteSchemaRecords(DbConnection dbConnection, DbTransaction dbTransaction, CommandType commandType, string commandText, IEnumerable<DbParameter> commandParameters, Action<int> recordsAffectedCallback);
 
 		/// <summary>
+		/// Execute a command against a data source, mapping the data reader GetSchemaTable() result to an enumerable of enumerable of record dictionaries.
+		/// This method perfoms LAZY LOADING/DEFERRED EXECUTION.
+		/// This method perfoms ASYNC/TASK EXECUTION.
+		/// This method DOES NOT DISPOSE OF CONNECTION/TRANSACTION - UP TO THE CALLER.
+		/// </summary>
+		/// <param name="dbConnection"> The database connection. </param>
+		/// <param name="dbTransaction"> An optional local database transaction. </param>
+		/// <param name="commandType"> The type of the command. </param>
+		/// <param name="commandText"> The SQL text or stored procedure name. </param>
+		/// <param name="commandParameters"> The parameters to use during the operation. </param>
+		/// <param name="recordsAffectedCallback"> Executed when the output count of records affected is available to return (post enumeration). </param>
+		/// <returns> An asynchronous enumerable of task-wrapped result instances, each containing an enumerable of dictionaries with record key/value pairs of schema metadata. </returns>
+		IAsyncEnumerable<IAdoNetStreamingRecord> ExecuteSchemaRecordsAsync(DbConnection dbConnection, DbTransaction dbTransaction, CommandType commandType, string commandText, IEnumerable<DbParameter> commandParameters, Action<int> recordsAffectedCallback);
+
+		/// <summary>
 		/// Execute a command against a data source, mapping the data reader GetSchemaTable() result to an results, each with an enumerable of record dictionaries.
 		/// This method perfoms LAZY LOADING/DEFERRED EXECUTION.
 		/// This method DOES NOT DISPOSE OF CONNECTION/TRANSACTION - UP TO THE CALLER.
@@ -103,6 +165,20 @@ namespace SyncPrem.StreamingIO.Relational
 		IEnumerable<IAdoNetStreamingResult> ExecuteSchemaResults(DbConnection dbConnection, DbTransaction dbTransaction, CommandType commandType, string commandText, IEnumerable<DbParameter> commandParameters);
 
 		/// <summary>
+		/// Execute a command against a data source, mapping the data reader GetSchemaTable() result to an results, each with an enumerable of record dictionaries.
+		/// This method perfoms LAZY LOADING/DEFERRED EXECUTION.
+		/// This method perfoms ASYNC/TASK EXECUTION.
+		/// This method DOES NOT DISPOSE OF CONNECTION/TRANSACTION - UP TO THE CALLER.
+		/// </summary>
+		/// <param name="dbConnection"> The database connection. </param>
+		/// <param name="dbTransaction"> An optional local database transaction. </param>
+		/// <param name="commandType"> The type of the command. </param>
+		/// <param name="commandText"> The SQL text or stored procedure name. </param>
+		/// <param name="commandParameters"> The parameters to use during the operation. </param>
+		/// <returns> An asynchronous enumerable of task-wrapped result instances, each containing an enumerable of dictionaries with record key/value pairs of schema metadata. </returns>
+		IAsyncEnumerable<IAdoNetStreamingResult> ExecuteSchemaResultsAsync(DbConnection dbConnection, DbTransaction dbTransaction, CommandType commandType, string commandText, IEnumerable<DbParameter> commandParameters);
+
+		/// <summary>
 		/// Execute a command against a data source, mapping the data reader to an enumerable of record dictionaries.
 		/// This method perfoms LAZY LOADING/DEFERRED EXECUTION.
 		/// Note that THE DATA READER WILL NOT BE DISPOSED UPON ENUMERATION OR FOREACH BRANCH OUT.
@@ -113,6 +189,17 @@ namespace SyncPrem.StreamingIO.Relational
 		IEnumerable<IAdoNetStreamingRecord> GetRecordsFromReader(DbDataReader dbDataReader, Action<int> recordsAffectedCallback);
 
 		/// <summary>
+		/// Execute a command against a data source, mapping the data reader to an enumerable of record dictionaries.
+		/// This method perfoms LAZY LOADING/DEFERRED EXECUTION.
+		/// This method perfoms ASYNC/TASK EXECUTION.
+		/// Note that THE DATA READER WILL NOT BE DISPOSED UPON ENUMERATION OR FOREACH BRANCH OUT.
+		/// </summary>
+		/// <param name="dbDataReader"> The target data reader. </param>
+		/// <param name="recordsAffectedCallback"> Executed when the output count of records affected is available to return (post enumeration). </param>
+		/// <returns> An asynchronous enumerable of task-wrapped record dictionary instances, containing key/value pairs of data. </returns>
+		IAsyncEnumerable<IAdoNetStreamingRecord> GetRecordsFromReaderAsync(DbDataReader dbDataReader, Action<int> recordsAffectedCallback);
+
+		/// <summary>
 		/// Execute a command against a data source, mapping the data reader to an enumerable of results, each with an enumerable of records.
 		/// This method perfoms LAZY LOADING/DEFERRED EXECUTION.
 		/// Note that THE DATA READER WILL NOT BE DISPOSED UPON ENUMERATION OR FOREACH BRANCH OUT.
@@ -120,6 +207,16 @@ namespace SyncPrem.StreamingIO.Relational
 		/// <param name="dbDataReader"> The target data reader. </param>
 		/// <returns> An enumerable of result instances, each containing an enumerable of dictionaries with record key/value pairs of data. </returns>
 		IEnumerable<IAdoNetStreamingResult> GetResultsFromReader(DbDataReader dbDataReader);
+
+		/// <summary>
+		/// Execute a command against a data source, mapping the data reader to an enumerable of results, each with an enumerable of records.
+		/// This method perfoms LAZY LOADING/DEFERRED EXECUTION.
+		/// This method perfoms ASYNC/TASK EXECUTION.
+		/// Note that THE DATA READER WILL NOT BE DISPOSED UPON ENUMERATION OR FOREACH BRANCH OUT.
+		/// </summary>
+		/// <param name="dbDataReader"> The target data reader. </param>
+		/// <returns> An asynchronous enumerable of task-wrapped result instances, each containing an enumerable of dictionaries with record key/value pairs of data. </returns>
+		IAsyncEnumerable<IAdoNetStreamingResult> GetResultsFromReaderAsync(DbDataReader dbDataReader);
 
 		/// <summary>
 		/// Execute a command against a data source, mapping the data reader GetSchemaTable() result to an enumerable of record dictionaries.
@@ -132,6 +229,17 @@ namespace SyncPrem.StreamingIO.Relational
 		IEnumerable<IAdoNetStreamingRecord> GetSchemaRecordsFromReader(DbDataReader dbDataReader, Action<int> recordsAffectedCallback);
 
 		/// <summary>
+		/// Execute a command against a data source, mapping the data reader GetSchemaTable() result to an enumerable of record dictionaries.
+		/// This method perfoms LAZY LOADING/DEFERRED EXECUTION.
+		/// This method perfoms ASYNC/TASK EXECUTION.
+		/// Note that THE DATA READER WILL NOT BE DISPOSED UPON ENUMERATION OR FOREACH BRANCH OUT.
+		/// </summary>
+		/// <param name="dbDataReader"> The target data reader. </param>
+		/// <param name="recordsAffectedCallback"> Executed when the output count of records affected is available to return (post enumeration). </param>
+		/// <returns> An asynchronous enumerable of task-wrapped record dictionary instances, containing key/value pairs of schema metadata. </returns>
+		IAsyncEnumerable<IAdoNetStreamingRecord> GetSchemaRecordsFromReaderAsync(DbDataReader dbDataReader, Action<int> recordsAffectedCallback);
+
+		/// <summary>
 		/// Execute a command against a data source, mapping the data reader GetSchemaTable() result to an enumerable of results, each with an enumerable of records.
 		/// This method perfoms LAZY LOADING/DEFERRED EXECUTION.
 		/// Note that THE DATA READER WILL NOT BE DISPOSED UPON ENUMERATION OR FOREACH BRANCH OUT.
@@ -139,6 +247,16 @@ namespace SyncPrem.StreamingIO.Relational
 		/// <param name="dbDataReader"> The target data reader. </param>
 		/// <returns> An enumerable of result instances, each containing an enumerable of dictionaries with record key/value pairs of schema metadata. </returns>
 		IEnumerable<IAdoNetStreamingResult> GetSchemaResultsFromReader(DbDataReader dbDataReader);
+
+		/// <summary>
+		/// Execute a command against a data source, mapping the data reader GetSchemaTable() result to an enumerable of results, each with an enumerable of records.
+		/// This method perfoms LAZY LOADING/DEFERRED EXECUTION.
+		/// This method perfoms ASYNC/TASK EXECUTION.
+		/// Note that THE DATA READER WILL NOT BE DISPOSED UPON ENUMERATION OR FOREACH BRANCH OUT.
+		/// </summary>
+		/// <param name="dbDataReader"> The target data reader. </param>
+		/// <returns> An asynchronous enumerable of task-wrapped result instances, each containing an enumerable of dictionaries with record key/value pairs of schema metadata. </returns>
+		IAsyncEnumerable<IAdoNetStreamingResult> GetSchemaResultsFromReaderAsync(DbDataReader dbDataReader);
 
 		#endregion
 	}

@@ -4,7 +4,10 @@
 */
 
 using System;
+using System.Threading;
+using System.Threading.Tasks;
 
+using SyncPrem.Infrastructure.Configuration;
 using SyncPrem.Pipeline.Abstractions.Configuration;
 
 namespace SyncPrem.Pipeline.Abstractions.Runtime
@@ -16,6 +19,8 @@ namespace SyncPrem.Pipeline.Abstractions.Runtime
 		IContext CreateContext();
 
 		int Execute(IContext context);
+
+		Task<int> ExecuteAsync(IContext context, CancellationToken cancellationToken);
 
 		#endregion
 	}

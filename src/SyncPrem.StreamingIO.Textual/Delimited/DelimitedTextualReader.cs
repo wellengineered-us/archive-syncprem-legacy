@@ -8,6 +8,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Text;
+using System.Threading;
 
 using TextMetal.Middleware.Solder.Extensions;
 
@@ -305,6 +306,11 @@ namespace SyncPrem.StreamingIO.Textual.Delimited
 			throw new NotSupportedException(string.Format("Cannot read footer records (from fields) in this version."));
 		}
 
+		public override IAsyncEnumerable<ITextualStreamingRecord> ReadFooterRecordsAsync(IEnumerable<IDelimitedTextualFieldSpec> footers, CancellationToken cancellationToken)
+		{
+			throw new NotImplementedException();
+		}
+
 		public override IEnumerable<IDelimitedTextualFieldSpec> ReadHeaderFields()
 		{
 			if (this.ParserState.recordIndex == 0 &&
@@ -325,9 +331,19 @@ namespace SyncPrem.StreamingIO.Textual.Delimited
 			return this.TextualSpec.TextualHeaderSpecs;
 		}
 
+		public override IAsyncEnumerable<IDelimitedTextualFieldSpec> ReadHeaderFieldsAsync(CancellationToken cancellationToken)
+		{
+			throw new NotImplementedException();
+		}
+
 		public override IEnumerable<ITextualStreamingRecord> ReadRecords()
 		{
 			return this.ResumableParserMainLoop(false);
+		}
+
+		public override IAsyncEnumerable<ITextualStreamingRecord> ReadRecordsAsync(CancellationToken cancellationToken)
+		{
+			throw new NotImplementedException();
 		}
 
 		private void ResetParserState()

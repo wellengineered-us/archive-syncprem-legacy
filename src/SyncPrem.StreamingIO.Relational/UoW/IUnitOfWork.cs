@@ -15,17 +15,17 @@ namespace SyncPrem.StreamingIO.Relational.UoW
 		#region Properties/Indexers/Events
 
 		/// <summary>
-		/// Gets a value indicating whether the current instance has been completed.
+		/// Gets the underlying ADO.NET connection.
 		/// </summary>
-		bool IsCompleted
+		DbConnection Connection
 		{
 			get;
 		}
 
 		/// <summary>
-		/// Gets the underlying ADO.NET connection.
+		/// Gets a value indicating whether the current instance has been completed.
 		/// </summary>
-		DbConnection Connection
+		bool IsCompleted
 		{
 			get;
 		}

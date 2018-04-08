@@ -11,6 +11,11 @@ namespace SyncPrem.StreamingIO.Textual
 	{
 		#region Properties/Indexers/Events
 
+		string FieldFormat
+		{
+			get;
+		}
+
 		long FieldOrdinal
 		{
 			get;
@@ -35,11 +40,6 @@ namespace SyncPrem.StreamingIO.Textual
 		{
 			get;
 			set;
-		}
-
-		string FieldFormat
-		{
-			get;
 		}
 
 		#endregion

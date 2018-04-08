@@ -6,6 +6,8 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading;
+using System.Threading.Tasks;
 
 using TextMetal.Middleware.Solder.Executive;
 using TextMetal.Middleware.Solder.Injection;
@@ -33,6 +35,20 @@ namespace SyncPrem.Pipeline.Host.Cli.Hosting
 		private const string CMDLN_TOKEN_PROPERTY = "property";
 		private const string CMDLN_TOKEN_SOURCEFILE = "sourcefile";
 
+		private readonly CancellationTokenSource cancellationTokenSource = new CancellationTokenSource();
+
+		#endregion
+
+		#region Properties/Indexers/Events
+
+		private CancellationTokenSource CancellationTokenSource
+		{
+			get
+			{
+				return this.cancellationTokenSource;
+			}
+		}
+
 		#endregion
 
 		#region Methods/Operators
@@ -59,7 +75,18 @@ namespace SyncPrem.Pipeline.Host.Cli.Hosting
 			return argumentMap;
 		}
 
-		protected override int OnStartup(string[] args, IDictionary<string, IList<object>> arguments)
+		protected override bool OnCancelKeySignal(ConsoleSpecialKey consoleSpecialKey)
+		{
+			if (consoleSpecialKey == ConsoleSpecialKey.ControlC)
+			{
+				this.CancellationTokenSource.Cancel();
+				return true;
+			}
+
+			return base.OnCancelKeySignal(consoleSpecialKey);
+		}
+
+		protected override async Task<int> OnStartup(string[] args, IDictionary<string, IList<object>> arguments)
 		{
 			Dictionary<string, object> argz;
 			string sourceFilePath;
@@ -111,7 +138,9 @@ namespace SyncPrem.Pipeline.Host.Cli.Hosting
 			}
 
 			using (IToolHost toolHost = AssemblyDomain.Default.DependencyManager.ResolveDependency<IToolHost>(string.Empty, true))
-				toolHost.Host(sourceFilePath);
+			{
+				await toolHost.RunAsync(sourceFilePath, this.CancellationTokenSource.Token);
+			}
 
 			return 0;
 		}

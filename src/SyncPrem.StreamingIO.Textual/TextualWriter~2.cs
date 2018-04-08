@@ -6,6 +6,7 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Threading;
 
 using SyncPrem.StreamingIO.Primitives;
 
@@ -79,11 +80,19 @@ namespace SyncPrem.StreamingIO.Textual
 			this.BaseTextWriter.Flush();
 		}
 
+		public abstract void FlushAsync(CancellationToken cancellationToken);
+
 		public abstract void WriteFooterRecords(IEnumerable<TTextualFieldSpec> footers, IEnumerable<ITextualStreamingRecord> records);
+
+		public abstract void WriteFooterRecordsAsync(IEnumerable<TTextualFieldSpec> specs, IEnumerable<ITextualStreamingRecord> footers, CancellationToken cancellationToken);
 
 		public abstract void WriteHeaderFields(IEnumerable<TTextualFieldSpec> headers);
 
+		public abstract void WriteHeaderFieldsAsync(IEnumerable<TTextualFieldSpec> specs, CancellationToken cancellationToken);
+
 		public abstract void WriteRecords(IEnumerable<IPayload> records);
+
+		public abstract void WriteRecordsAsync(IEnumerable<IPayload> records, CancellationToken cancellationToken);
 
 		#endregion
 	}

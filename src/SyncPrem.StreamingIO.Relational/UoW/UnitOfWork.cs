@@ -33,8 +33,8 @@ namespace SyncPrem.StreamingIO.Relational.UoW
 
 		private readonly DbConnection connection;
 		private readonly DbTransaction transaction;
-		private bool isCompleted;
 		private IDisposableEx context;
+		private bool isCompleted;
 		private bool isDiverged;
 
 		#endregion
@@ -70,21 +70,6 @@ namespace SyncPrem.StreamingIO.Relational.UoW
 		}
 
 		/// <summary>
-		/// Gets a value indicating whether the current instance has been completed.
-		/// </summary>
-		public bool IsCompleted
-		{
-			get
-			{
-				return this.isCompleted;
-			}
-			private set
-			{
-				this.isCompleted = value;
-			}
-		}
-
-		/// <summary>
 		/// Gets the context object.
 		/// </summary>
 		public IDisposableEx Context
@@ -99,6 +84,21 @@ namespace SyncPrem.StreamingIO.Relational.UoW
 			set
 			{
 				this.context = value;
+			}
+		}
+
+		/// <summary>
+		/// Gets a value indicating whether the current instance has been completed.
+		/// </summary>
+		public bool IsCompleted
+		{
+			get
+			{
+				return this.isCompleted;
+			}
+			private set
+			{
+				this.isCompleted = value;
 			}
 		}
 
@@ -203,11 +203,6 @@ namespace SyncPrem.StreamingIO.Relational.UoW
 			}
 		}
 
-		protected override void Create(bool creating)
-		{
-			// do nothing
-		}
-
 		/// <summary>
 		/// Indicates that all operations within the unit of work have completed successfully. This method should only be called once.
 		/// </summary>
@@ -220,6 +215,11 @@ namespace SyncPrem.StreamingIO.Relational.UoW
 				throw new InvalidOperationException(string.Format("The current unit of work is already complete. You should dispose of the unit of work."));
 
 			this.IsCompleted = true;
+		}
+
+		protected override void Create(bool creating)
+		{
+			// do nothing
 		}
 
 		protected override void Dispose(bool disposing)

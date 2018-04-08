@@ -1,5 +1,6 @@
 <Project>
 	<PropertyGroup>
+		<LangVersion>latest</LangVersion>
 		<DebugType>portable</DebugType>
 		<SignAssembly>true</SignAssembly>
 		<AssemblyOriginatorKeyFile>..\SyncPrem.snk</AssemblyOriginatorKeyFile>
@@ -21,7 +22,7 @@
 		<GeneratePackageOnBuild>true</GeneratePackageOnBuild>
 		<Product>SyncPrem</Product>
 		<Description>$(MSBuildProjectName) Library</Description>
-		<VersionPrefix>0.0.1</VersionPrefix>
+		<VersionPrefix>0.1.0</VersionPrefix>
 		<VersionSuffix>mvp</VersionSuffix>
 		<Authors>Daniel P. Bullington (dpbullington@gmail.com)</Authors>
 		<Copyright>©2002-2017 Daniel P. Bullington (dpbullington@gmail.com)</Copyright>

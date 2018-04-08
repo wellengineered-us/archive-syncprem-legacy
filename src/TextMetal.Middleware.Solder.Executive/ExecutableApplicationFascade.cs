@@ -8,13 +8,14 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
 using System.Text.RegularExpressions;
+using System.Threading.Tasks;
 
 using TextMetal.Middleware.Solder.Primitives;
 using TextMetal.Middleware.Solder.Utilities;
 
 namespace TextMetal.Middleware.Solder.Executive
 {
-	public abstract class ExecutableApplicationFascade : IExecutableApplicationFascade
+	public abstract class ExecutableApplicationFascade : Lifecycle, IExecutableApplicationFascade
 	{
 		#region Constructors/Destructors
 
@@ -52,7 +53,6 @@ namespace TextMetal.Middleware.Solder.Executive
 		private readonly IAssemblyInformationFascade assemblyInformationFascade;
 		private readonly IDataTypeFascade dataTypeFascade;
 		private readonly IReflectionFascade reflectionFascade;
-		private bool disposed;
 
 		#endregion
 
@@ -150,34 +150,18 @@ namespace TextMetal.Middleware.Solder.Executive
 			}
 		}
 
-		/// <summary>
-		/// Gets a value indicating whether the current instance has been disposed.
-		/// </summary>
-		public bool Disposed
-		{
-			get
-			{
-				return this.disposed;
-			}
-			private set
-			{
-				this.disposed = value;
-			}
-		}
-
 		#endregion
 
 		#region Methods/Operators
 
-		public virtual void Close()
+		protected override void Create(bool creating)
 		{
-			if (this.Disposed)
-				return;
+			// do nothing
+		}
 
-			this.Dispose(true);
-			GC.SuppressFinalize(this);
-
-			this.Disposed = true;
+		protected override void Dispose(bool disposing)
+		{
+			// do nothing
 		}
 
 		/// <summary>
@@ -215,31 +199,12 @@ namespace TextMetal.Middleware.Solder.Executive
 
 		protected abstract void DisplaySuccessMessage(TimeSpan duration);
 
-		public void Dispose()
-		{
-			this.Close();
-		}
-
-		/// <summary>
-		/// Note: Never change this to call other virtual methods on this type
-		/// like Donkey(), since the state on subclasses has already been
-		/// torn down.  This is the last code to run on cleanup for this type.
-		/// </summary>
-		/// <param name="disposing"> </param>
-		protected virtual void Dispose(bool disposing)
-		{
-			if (disposing)
-			{
-				// do nothing
-			}
-		}
-
 		/// <summary>
 		/// The indirect entry point method for this application. Code is wrapped in this method to leverage the 'TryStartup'/'Startup' pattern. This method, if used, wraps the Startup() method in an exception handler. The handler will catch all exceptions and report a full detailed stack trace to the Console.Error stream; -1 is then returned as the exit code. Otherwise, if no exception is thrown, the exit code returned is that which is returned by Startup().
 		/// </summary>
 		/// <param name="args"> The command line arguments passed from the executing environment. </param>
 		/// <returns> The resulting exit code. </returns>
-		public int EntryPoint(string[] args)
+		public async Task<int> EntryPointAsync(string[] args)
 		{
 			try
 			{
@@ -249,19 +214,19 @@ namespace TextMetal.Middleware.Solder.Executive
 					Debugger.Launch();
 
 				if (this.HookUnhandledExceptions)
-					return this.TryStartup(args);
+					return await this.TryStartupAsync(args);
 				else
-					return this.Startup(args);
+					return await this.StartupAsync(args);
 			}
 			finally
 			{
-				Console.CancelKeyPress -= this.ConsoleOnCancelKeyPress;
+				//Console.CancelKeyPress -= this.ConsoleOnCancelKeyPress;
 			}
 		}
 
 		protected abstract IDictionary<string, ArgumentSpec> GetArgumentMap();
 
-		protected abstract int OnStartup(string[] args, IDictionary<string, IList<object>> arguments);
+		protected abstract Task<int> OnStartup(string[] args, IDictionary<string, IList<object>> arguments);
 
 		/// <summary>
 		/// Given a string array of command line arguments, this method will parse the arguments using a well know pattern match to obtain a loosely typed dictionary of key/multi-value pairs for use by applications.
@@ -328,7 +293,7 @@ namespace TextMetal.Middleware.Solder.Executive
 			return -1;
 		}
 
-		private int Startup(string[] args)
+		private async Task<int> StartupAsync(string[] args)
 		{
 			int returnCode;
 			DateTime start, end;
@@ -411,7 +376,7 @@ namespace TextMetal.Middleware.Solder.Executive
 				returnCode = -1;
 			}
 			else
-				returnCode = this.OnStartup(args, finalArguments);
+				returnCode = await this.OnStartup(args, finalArguments);
 
 			end = DateTime.UtcNow;
 			duration = end - start;
@@ -466,11 +431,11 @@ namespace TextMetal.Middleware.Solder.Executive
 			return true;
 		}
 
-		private int TryStartup(string[] args)
+		private async Task<int> TryStartupAsync(string[] args)
 		{
 			try
 			{
-				return this.Startup(args);
+				return await this.StartupAsync(args);
 			}
 			catch (Exception ex)
 			{

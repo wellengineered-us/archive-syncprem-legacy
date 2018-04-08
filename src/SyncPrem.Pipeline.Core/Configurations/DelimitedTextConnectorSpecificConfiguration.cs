@@ -5,7 +5,6 @@
 
 using System.Collections.Generic;
 
-using SyncPrem.Pipeline.Abstractions.Configuration;
 using SyncPrem.StreamingIO.Textual.Delimited;
 
 using TextMetal.Middleware.Solder.Extensions;

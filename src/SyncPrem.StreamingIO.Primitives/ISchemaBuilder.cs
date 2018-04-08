@@ -20,9 +20,9 @@ namespace SyncPrem.StreamingIO.Primitives
 
 		SchemaBuilder WithName(string value);
 
-		SchemaBuilder WithVersion(int value);
-
 		SchemaBuilder WithType(SchemaType value);
+
+		SchemaBuilder WithVersion(int value);
 
 		#endregion
 	}

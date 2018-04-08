@@ -57,9 +57,9 @@ namespace SyncPrem.Pipeline.Abstractions.Configuration
 
 		#region Methods/Operators
 
-		public Type GetStageType()
+		public Type GetStageType(IList<_Message> messages = null)
 		{
-			return GetTypeFromString(this.StageAqtn);
+			return GetTypeFromString(this.StageAqtn, messages);
 		}
 
 		public override IEnumerable<_Message> Validate(object context)
@@ -76,7 +76,7 @@ namespace SyncPrem.Pipeline.Abstractions.Configuration
 				messages.Add(NewError(string.Format("{0} stage AQTN is required.", stageContext)));
 			else
 			{
-				stageType = this.GetStageType();
+				stageType = this.GetStageType(messages);
 
 				if ((object)stageType == null)
 					messages.Add(NewError(string.Format("{0} stage failed to load type from AQTN.", stageContext)));

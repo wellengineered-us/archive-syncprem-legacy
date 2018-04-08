@@ -5,8 +5,12 @@
 
 using System;
 using System.Collections.Generic;
+using System.Linq;
 
 using SyncPrem.Infrastructure.Configuration;
+using SyncPrem.Pipeline.Abstractions.Runtime;
+
+using TextMetal.Middleware.Solder.Extensions;
 
 using _Message = TextMetal.Middleware.Solder.Primitives.Message;
 
@@ -26,7 +30,10 @@ namespace SyncPrem.Pipeline.Abstractions.Configuration
 		#region Fields/Constants
 
 		private readonly ConfigurationObjectCollection<StageConfiguration> processorConfigurations;
+
+		private string contextAqtn;
 		private StageConfiguration destinationConfiguration;
+		private bool? isEnabled;
 		private string pipelineAqtn;
 		private RecordConfiguration recordConfiguration;
 		private StageConfiguration sourceConfiguration;
@@ -43,6 +50,18 @@ namespace SyncPrem.Pipeline.Abstractions.Configuration
 			}
 		}
 
+		public string ContextAqtn
+		{
+			get
+			{
+				return this.contextAqtn;
+			}
+			set
+			{
+				this.contextAqtn = value;
+			}
+		}
+
 		public StageConfiguration DestinationConfiguration
 		{
 			get
@@ -53,6 +72,18 @@ namespace SyncPrem.Pipeline.Abstractions.Configuration
 			{
 				this.EnsureParentOnPropertySet(this.destinationConfiguration, value);
 				this.destinationConfiguration = value;
+			}
+		}
+
+		public bool? IsEnabled
+		{
+			get
+			{
+				return this.isEnabled;
+			}
+			set
+			{
+				this.isEnabled = value;
 			}
 		}
 
@@ -98,21 +129,74 @@ namespace SyncPrem.Pipeline.Abstractions.Configuration
 
 		#region Methods/Operators
 
-		public Type GetPipelineType()
+		public Type GetContextType(IList<_Message> messages = null)
 		{
-			return GetTypeFromString(this.PipelineAqtn);
+			return GetTypeFromString(this.ContextAqtn, messages);
+		}
+
+		public Type GetPipelineType(IList<_Message> messages = null)
+		{
+			return GetTypeFromString(this.PipelineAqtn, messages);
 		}
 
 		public override IEnumerable<_Message> Validate(object context)
 		{
 			List<_Message> messages;
 
+			Type contextType;
+			Type pipelineType;
+
+			IContext context_;
+			IPipeline pipeline;
+
 			messages = new List<_Message>();
+
+			if (SolderFascadeAccessor.DataTypeFascade.IsNullOrWhiteSpace(this.ContextAqtn))
+				; //messages.Add(NewError(string.Format("{0} pipeline context is required.", context)));
+			else
+			{
+				contextType = this.GetContextType(messages);
+
+				if ((object)contextType == null)
+					messages.Add(NewError(string.Format("{0} pipeline context failed to load type from AQTN.", context)));
+				else if (!typeof(IContext).IsAssignableFrom(contextType))
+					messages.Add(NewError(string.Format("{0} pipeline context loaded an unrecognized type via AQTN.", context)));
+				else
+				{
+					// new-ing up via default public contructor should be low friction
+					context_ = (IContext)Activator.CreateInstance(contextType);
+
+					if ((object)context_ == null)
+						messages.Add(NewError(string.Format("{0} pipeline context failed to instatiate type from AQTN.", context)));
+				}
+			}
+
+			if (SolderFascadeAccessor.DataTypeFascade.IsNullOrWhiteSpace(this.PipelineAqtn))
+				messages.Add(NewError(string.Format("{0} adapter serialization strategy is required.", context)));
+			else
+			{
+				pipelineType = this.GetPipelineType(messages);
+
+				if ((object)pipelineType == null)
+					messages.Add(NewError(string.Format("{0} adapter serialization strategy failed to load type from AQTN.", context)));
+				else if (!typeof(IPipeline).IsAssignableFrom(pipelineType))
+					messages.Add(NewError(string.Format("{0} adapter serialization strategy loaded an unrecognized type via AQTN.", context)));
+				else
+				{
+					// new-ing up via default public contructor should be low friction
+					pipeline = (IPipeline)Activator.CreateInstance(pipelineType);
+
+					if ((object)pipeline == null)
+						messages.Add(NewError(string.Format("{0} adapter serialization strategy failed to instatiate type from AQTN.", context)));
+				}
+			}
 
 			if ((object)this.SourceConfiguration == null)
 				messages.Add(NewError("SourceConfiguration is required."));
 			else
 				messages.AddRange(this.SourceConfiguration.Validate("SOURCE"));
+
+			messages.AddRange(this.ProcessorConfigurations.SelectMany(pc => pc.Validate("PROCESSOR")));
 
 			if ((object)this.DestinationConfiguration == null)
 				messages.Add(NewError("DestinationConfiguration is required."));

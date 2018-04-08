@@ -1,19 +1,25 @@
 {
-	"iisSettings": {
+	"iisSettings":
+	{
 		"windowsAuthentication": false,
 		"anonymousAuthentication": true,
-		"iisExpress": {
+		"iisExpress":
+		{
 			"applicationUrl": "http://localhost:57087/",
 			"sslPort": 0
 		}
 	},
-	"profiles": {
-		"SyncPrem.Controller.Web": {
+	"profiles":
+	{
+		"SyncPrem.Controller.Web":
+		{
 			"commandName": "Project",
-			"environmentVariables": {
+			"launchBrowser": false,
+			"environmentVariables":
+			{
 				"ASPNETCORE_ENVIRONMENT": "Development"
 			},
-			"applicationUrl": "http://localhost:57087/"
+			"applicationUrl": "http://localhost:55555/"
 		}
 	}
 }

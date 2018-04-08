@@ -35,7 +35,7 @@ namespace TextMetal.Middleware.Solder.Primitives
 
 		#region Methods/Operators
 
-		[Conditional("DEBUG")]
+		[Conditional("LEAK_CHECK")]
 		public static void __check(this object obj, [CallerMemberName] string value = null)
 		{
 			StringBuilder sb;
@@ -64,14 +64,14 @@ namespace TextMetal.Middleware.Solder.Primitives
 			}
 		}
 
-		[Conditional("DEBUG")]
+		[Conditional("LEAK_CHECK")]
 		public static void __disp<T>(this object obj, T disposable, [CallerMemberName] string value = null)
 			where T : IDisposable
 		{
 			__disp(obj, Guid.Empty, disposable, value);
 		}
 
-		[Conditional("DEBUG")]
+		[Conditional("LEAK_CHECK")]
 		public static void __disp<T>(this object obj, Guid _, T disposable, [CallerMemberName] string value = null)
 			where T : IDisposable
 		{
@@ -87,7 +87,7 @@ namespace TextMetal.Middleware.Solder.Primitives
 
 		public static Guid __enter(this object obj, [CallerMemberName] string value = null)
 		{
-#if DEBUG
+#if LEAK_CHECK
 			Guid _ = Guid.NewGuid();
 
 			__print(obj, string.Format("enter@{0:N}", _), value);
@@ -98,19 +98,19 @@ namespace TextMetal.Middleware.Solder.Primitives
 #endif
 		}
 
-		[Conditional("DEBUG")]
+		[Conditional("LEAK_CHECK")]
 		public static void __leave(this object obj, Guid _, [CallerMemberName] string value = null)
 		{
 			__print(obj, string.Format("leave@{0:N}", _), value);
 		}
 
-		[Conditional("DEBUG")]
+		[Conditional("LEAK_CHECK")]
 		public static void __leave(this object obj, [CallerMemberName] string value = null)
 		{
 			__leave(obj, Guid.Empty, value);
 		}
 
-		[Conditional("DEBUG")]
+		[Conditional("LEAK_CHECK")]
 		private static void __print(object obj, string message, string value)
 		{
 			/* THIS METHOD SHOULD NOT BE DEFINED IN RELEASE/PRODUCTION BUILDS */
@@ -122,13 +122,13 @@ namespace TextMetal.Middleware.Solder.Primitives
 			Console.ForegroundColor = oldConsoleColor;
 		}
 
-		[Conditional("DEBUG")]
+		[Conditional("LEAK_CHECK")]
 		public static void __trace(this object obj, string message, [CallerMemberName] string value = null)
 		{
 			__trace(obj, Guid.Empty, message, value);
 		}
 
-		[Conditional("DEBUG")]
+		[Conditional("LEAK_CHECK")]
 		public static void __trace(this object obj, Guid _, string message, [CallerMemberName] string value = null)
 		{
 			__print(obj, string.Format("{1}@{0:N}", _, message), value);
@@ -143,7 +143,7 @@ namespace TextMetal.Middleware.Solder.Primitives
 		public static T __use<T>(this object obj, Guid _, T disposable, [CallerMemberName] string value = null)
 			where T : IDisposable
 		{
-#if DEBUG
+#if LEAK_CHECK
 			DisposableList<IDisposable> disps;
 
 			if (TrackedResources.TryGetValue(_, out disps))

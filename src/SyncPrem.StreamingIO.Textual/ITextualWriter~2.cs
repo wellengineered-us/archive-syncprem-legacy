@@ -5,6 +5,7 @@
 
 using System.Collections.Generic;
 using System.IO;
+using System.Threading;
 
 using SyncPrem.StreamingIO.Primitives;
 
@@ -34,11 +35,19 @@ namespace SyncPrem.StreamingIO.Textual
 
 		void Flush();
 
+		void FlushAsync(CancellationToken cancellationToken);
+
 		void WriteFooterRecords(IEnumerable<TTextualFieldSpec> specs, IEnumerable<ITextualStreamingRecord> footers);
+
+		void WriteFooterRecordsAsync(IEnumerable<TTextualFieldSpec> specs, IEnumerable<ITextualStreamingRecord> footers, CancellationToken cancellationToken);
 
 		void WriteHeaderFields(IEnumerable<TTextualFieldSpec> specs);
 
+		void WriteHeaderFieldsAsync(IEnumerable<TTextualFieldSpec> specs, CancellationToken cancellationToken);
+
 		void WriteRecords(IEnumerable<IPayload /* SHOULD BE LCD INTERFACE */> records);
+
+		void WriteRecordsAsync(IEnumerable<IPayload /* SHOULD BE LCD INTERFACE */> records, CancellationToken cancellationToken);
 
 		#endregion
 	}

@@ -5,6 +5,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Threading.Tasks;
 
 namespace TextMetal.Middleware.Solder.Executive
 {
@@ -12,7 +13,9 @@ namespace TextMetal.Middleware.Solder.Executive
 	{
 		#region Methods/Operators
 
-		int EntryPoint(string[] args);
+		Task<int> EntryPointAsync(string[] args);
+
+		//int EntryPoint(string[] args);
 
 		/// <summary>
 		/// Given a string array of command line arguments, this method will parse the arguments using a well know pattern match to obtain a loosely typed dictionary of key/multi-value pairs for use by applications.

@@ -29,7 +29,6 @@ namespace SyncPrem.Pipeline.Core.Configurations
 
 		private string compressionStrategyAqtn;
 		private string serializationStrategyAqtn;
-
 		private string webEndpointUri;
 
 		#endregion
@@ -76,14 +75,14 @@ namespace SyncPrem.Pipeline.Core.Configurations
 
 		#region Methods/Operators
 
-		public Type GetCompressionStrategyType()
+		public Type GetCompressionStrategyType(IList<Message> messages = null)
 		{
-			return GetTypeFromString(this.CompressionStrategyAqtn);
+			return GetTypeFromString(this.CompressionStrategyAqtn, messages);
 		}
 
-		public Type GetSerializationStrategyType()
+		public Type GetSerializationStrategyType(IList<Message> messages = null)
 		{
-			return GetTypeFromString(this.SerializationStrategyAqtn);
+			return GetTypeFromString(this.SerializationStrategyAqtn, messages);
 		}
 
 		public override IEnumerable<Message> Validate(object context)
@@ -93,7 +92,7 @@ namespace SyncPrem.Pipeline.Core.Configurations
 
 			Type compressionStrategyType;
 			Type serializationStrategyType;
-			
+
 			ICompressionStrategy compressionStrategy;
 			ISerializationStrategy serializationStrategy;
 
@@ -106,34 +105,44 @@ namespace SyncPrem.Pipeline.Core.Configurations
 			if (!Uri.TryCreate(this.WebEndpointUri, UriKind.Absolute, out Uri uri))
 				messages.Add(NewError(string.Format("{0} adapter web endpoint URI is invalid.", adapterContext)));
 
-			compressionStrategyType = this.GetCompressionStrategyType();
-
-			if ((object)compressionStrategyType == null)
-				messages.Add(NewError(string.Format("{0} compression strategy failed to load type from AQTN.", adapterContext)));
-			else if (!typeof(ICompressionStrategy).IsAssignableFrom(compressionStrategyType))
-				messages.Add(NewError(string.Format("{0} compression strategy loaded an unrecognized type via AQTN.", adapterContext)));
+			if (SolderFascadeAccessor.DataTypeFascade.IsNullOrWhiteSpace(this.CompressionStrategyAqtn))
+				messages.Add(NewError(string.Format("{0} adapter compression strategy is required.", adapterContext)));
 			else
 			{
-				// new-ing up via default public contructor should be low friction
-				compressionStrategy = (ICompressionStrategy)Activator.CreateInstance(compressionStrategyType);
+				compressionStrategyType = this.GetCompressionStrategyType(messages);
 
-				if ((object)compressionStrategy == null)
-					messages.Add(NewError(string.Format("{0} compression strategy failed to instatiate type from AQTN.", adapterContext)));
+				if ((object)compressionStrategyType == null)
+					messages.Add(NewError(string.Format("{0} adapter compression strategy failed to load type from AQTN.", adapterContext)));
+				else if (!typeof(ICompressionStrategy).IsAssignableFrom(compressionStrategyType))
+					messages.Add(NewError(string.Format("{0} adapter compression strategy loaded an unrecognized type via AQTN.", adapterContext)));
+				else
+				{
+					// new-ing up via default public contructor should be low friction
+					compressionStrategy = (ICompressionStrategy)Activator.CreateInstance(compressionStrategyType);
+
+					if ((object)compressionStrategy == null)
+						messages.Add(NewError(string.Format("{0} adapter compression strategy failed to instatiate type from AQTN.", adapterContext)));
+				}
 			}
 
-			serializationStrategyType = this.GetSerializationStrategyType();
-
-			if ((object)serializationStrategyType == null)
-				messages.Add(NewError(string.Format("{0} serialization strategy failed to load type from AQTN.", adapterContext)));
-			else if (!typeof(ISerializationStrategy).IsAssignableFrom(serializationStrategyType))
-				messages.Add(NewError(string.Format("{0} serialization strategy loaded an unrecognized type via AQTN.", adapterContext)));
+			if (SolderFascadeAccessor.DataTypeFascade.IsNullOrWhiteSpace(this.SerializationStrategyAqtn))
+				messages.Add(NewError(string.Format("{0} adapter serialization strategy is required.", adapterContext)));
 			else
 			{
-				// new-ing up via default public contructor should be low friction
-				serializationStrategy = (ISerializationStrategy)Activator.CreateInstance(serializationStrategyType);
+				serializationStrategyType = this.GetSerializationStrategyType(messages);
 
-				if ((object)serializationStrategy == null)
-					messages.Add(NewError(string.Format("{0} serialization strategy failed to instatiate type from AQTN.", adapterContext)));
+				if ((object)serializationStrategyType == null)
+					messages.Add(NewError(string.Format("{0} adapter serialization strategy failed to load type from AQTN.", adapterContext)));
+				else if (!typeof(ISerializationStrategy).IsAssignableFrom(serializationStrategyType))
+					messages.Add(NewError(string.Format("{0} adapter serialization strategy loaded an unrecognized type via AQTN.", adapterContext)));
+				else
+				{
+					// new-ing up via default public contructor should be low friction
+					serializationStrategy = (ISerializationStrategy)Activator.CreateInstance(serializationStrategyType);
+
+					if ((object)serializationStrategy == null)
+						messages.Add(NewError(string.Format("{0} adapter serialization strategy failed to instatiate type from AQTN.", adapterContext)));
+				}
 			}
 
 			return messages;

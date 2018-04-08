@@ -23,7 +23,7 @@ namespace TextMetal.Middleware.Solder.Injection
 	/// <summary>
 	/// Serves as a logical run-time boundary for assemblies.
 	/// </summary>
-	public sealed class AssemblyDomain : IDisposable
+	public sealed class AssemblyDomain : Lifecycle, IDisposable
 	{
 		#region Constructors/Destructors
 
@@ -51,8 +51,6 @@ namespace TextMetal.Middleware.Solder.Injection
 		private readonly IDependencyManager dependencyManager = new DependencyManager();
 		private readonly IDictionary<AssemblyName, Assembly> knownAssemblies = new Dictionary<AssemblyName, Assembly>(___.ByValueEquality.AssemblyName);
 		private readonly ReaderWriterLockSlim readerWriterLock = new ReaderWriterLockSlim(LockRecursionPolicy.SupportsRecursion);
-		private bool disposed;
-		private bool initialized;
 
 		#endregion
 
@@ -107,51 +105,19 @@ namespace TextMetal.Middleware.Solder.Injection
 			}
 		}
 
-		/// <summary>
-		/// Gets a value indicating whether the current instance has been disposed.
-		/// </summary>
-		public bool Disposed
-		{
-			get
-			{
-				return this.disposed;
-			}
-			private set
-			{
-				this.disposed = value;
-			}
-		}
-
-		/// <summary>
-		/// Gets a value indicating whether the current instance has been initialized.
-		/// </summary>
-		private bool Initialized
-		{
-			get
-			{
-				return this.initialized;
-			}
-			set
-			{
-				this.initialized = value;
-			}
-		}
-
 		#endregion
 
 		#region Methods/Operators
 
-		[Conditional("DEBUG")]
+		[Conditional("ASSEMBLY_CHECK")]
 		public static void _DebugTrace(string message)
 		{
-#if DEBUG
 			/* THIS METHOD SHOULD NOT BE DEFINED IN RELEASE/PRODUCTION BUILDS */
 
 			ConsoleColor oldConsoleColor = Console.ForegroundColor;
 			Console.ForegroundColor = ConsoleColor.DarkGray;
 			Console.WriteLine(message);
 			Console.ForegroundColor = oldConsoleColor;
-#endif
 		}
 
 		private static void AddTrustedDependencies(IDependencyManager dependencyManager)
@@ -197,16 +163,85 @@ namespace TextMetal.Middleware.Solder.Injection
 			return configurationRoot;
 		}
 
-		private void ___Dispose()
+		private void AppDomain_AssemblyLoad(object sender, AssemblyLoadEventArgs e)
 		{
-			_DebugTrace(string.Format("{0}::{1} --> {2}", nameof(AssemblyDomain), nameof(this.Dispose), Environment.CurrentManagedThreadId));
+			if ((object)sender == null)
+				throw new ArgumentNullException(nameof(sender));
+
+			if ((object)e == null)
+				throw new ArgumentNullException(nameof(e));
+
+			this.OnAssemblyLoaded(e.LoadedAssembly);
+		}
+
+		private void AppDomain_ProcessExit(object sender, EventArgs e)
+		{
+			this.OnProcessExit();
+		}
+
+		protected override void Create(bool creating)
+		{
+			IEnumerable<Assembly> assemblies;
+
+			if (!creating)
+				return;
 
 			// cop a reader lock
 			this.ReaderWriterLock.EnterUpgradeableReadLock();
 
 			try
 			{
-				if (this.Disposed)
+				if (this.IsCreated)
+					throw new DependencyException(string.Format("This instance has already been initialized."));
+
+				if (this.IsDisposed)
+					throw new ObjectDisposedException(typeof(AssemblyDomain).FullName);
+
+				// cop a writer lock
+				this.ReaderWriterLock.EnterWriteLock();
+
+				try
+				{
+					_DebugTrace(string.Format("{0}::{1} --> {2}", nameof(AssemblyDomain), nameof(this.Initialize), Environment.CurrentManagedThreadId));
+
+					// add trusted dependencies
+					AddTrustedDependencies(this.DependencyManager);
+
+					// hook app domain events
+					this.AppDomain.ProcessExit += this.AppDomain_ProcessExit;
+					this.AppDomain.AssemblyLoad += this.AppDomain_AssemblyLoad;
+
+					// probe known assemblies at run-time
+					assemblies = this.AppDomain.GetAssemblies();
+					this.ScanAssemblies(assemblies);
+
+					// special case here since this class wil execute under multi-threaded scenarios
+					this.ExplicitSetIsCreated();
+				}
+				finally
+				{
+					this.ReaderWriterLock.ExitWriteLock();
+				}
+			}
+			finally
+			{
+				this.ReaderWriterLock.ExitUpgradeableReadLock();
+			}
+		}
+
+		protected override void Dispose(bool disposing)
+		{
+			_DebugTrace(string.Format("{0}::{1} --> {2}", nameof(AssemblyDomain), nameof(this.Dispose), Environment.CurrentManagedThreadId));
+
+			if (!disposing)
+				return;
+
+			// cop a reader lock
+			this.ReaderWriterLock.EnterUpgradeableReadLock();
+
+			try
+			{
+				if (this.IsDisposed)
 					return;
 
 				// cop a writer lock
@@ -230,8 +265,7 @@ namespace TextMetal.Middleware.Solder.Injection
 				finally
 				{
 					// special case here since this class wil execute under multi-threaded scenarios
-					GC.SuppressFinalize(this);
-					this.Disposed = true;
+					this.ExplicitSetIsDisposed();
 
 					this.ReaderWriterLock.ExitWriteLock();
 				}
@@ -239,47 +273,6 @@ namespace TextMetal.Middleware.Solder.Injection
 			finally
 			{
 				this.ReaderWriterLock.ExitUpgradeableReadLock();
-			}
-		}
-
-		private void AppDomain_AssemblyLoad(object sender, AssemblyLoadEventArgs e)
-		{
-			if ((object)sender == null)
-				throw new ArgumentNullException(nameof(sender));
-
-			if ((object)e == null)
-				throw new ArgumentNullException(nameof(e));
-
-			this.OnAssemblyLoaded(e.LoadedAssembly);
-		}
-
-		private void AppDomain_ProcessExit(object sender, EventArgs e)
-		{
-			this.OnProcessExit();
-		}
-
-		public /*virtual*/ void Close()
-		{
-			if (this.Disposed)
-				return;
-
-			this.Dispose(true);
-			// special case, see comments in call chain...
-			//GC.SuppressFinalize(this);
-
-			//this.IsDisposed = true;
-		}
-
-		public void Dispose()
-		{
-			this.Close();
-		}
-
-		private /*protected virtual*/ void Dispose(bool disposing)
-		{
-			if (disposing)
-			{
-				this.___Dispose();
 			}
 		}
 
@@ -336,55 +329,6 @@ namespace TextMetal.Middleware.Solder.Injection
 			}
 		}
 
-		/// <summary>
-		/// Private thread-safe method which bootstraps an assembly/dependency domain.
-		/// </summary>
-		private void Initialize()
-		{
-			IEnumerable<Assembly> assemblies;
-
-			// cop a reader lock
-			this.ReaderWriterLock.EnterUpgradeableReadLock();
-
-			try
-			{
-				if (this.Initialized)
-					throw new DependencyException(string.Format("This instance has already been initialized."));
-
-				if (this.Disposed)
-					throw new ObjectDisposedException(typeof(AssemblyDomain).FullName);
-
-				// cop a writer lock
-				this.ReaderWriterLock.EnterWriteLock();
-
-				try
-				{
-					_DebugTrace(string.Format("{0}::{1} --> {2}", nameof(AssemblyDomain), nameof(this.Initialize), Environment.CurrentManagedThreadId));
-
-					// add trusted dependencies
-					AddTrustedDependencies(this.DependencyManager);
-
-					// hook app domain events
-					this.AppDomain.ProcessExit += this.AppDomain_ProcessExit;
-					this.AppDomain.AssemblyLoad += this.AppDomain_AssemblyLoad;
-
-					// probe known assemblies at run-time
-					assemblies = this.AppDomain.GetAssemblies();
-					this.ScanAssemblies(assemblies);
-
-					this.Initialized = true;
-				}
-				finally
-				{
-					this.ReaderWriterLock.ExitWriteLock();
-				}
-			}
-			finally
-			{
-				this.ReaderWriterLock.ExitUpgradeableReadLock();
-			}
-		}
-
 		public Assembly LoadAssembly(AssemblyName assemblyName)
 		{
 			Assembly assembly;
@@ -397,7 +341,7 @@ namespace TextMetal.Middleware.Solder.Injection
 
 			try
 			{
-				if (this.Disposed)
+				if (this.IsDisposed)
 					throw new ObjectDisposedException(typeof(AssemblyDomain).FullName);
 
 				assembly = this.AppDomain.Load(assemblyName);
@@ -414,6 +358,16 @@ namespace TextMetal.Middleware.Solder.Injection
 			}
 		}
 
+		protected override void MaybeSetIsCreated()
+		{
+			// do nothing
+		}
+
+		protected override void MaybeSetIsDisposed()
+		{
+			// do nothing
+		}
+
 		private void OnAssemblyLoaded(Assembly assembly)
 		{
 			if ((object)assembly == null)
@@ -424,7 +378,7 @@ namespace TextMetal.Middleware.Solder.Injection
 
 			try
 			{
-				if (this.Disposed)
+				if (this.IsDisposed)
 					throw new ObjectDisposedException(typeof(AssemblyDomain).FullName);
 
 				// probe implicit dynamically loaded assmblies

@@ -115,7 +115,7 @@ namespace SyncPrem.Pipeline.Core.Runtime
 
 		public override string ToString()
 		{
-			return $"{this.Schema} | {this.Payload}";
+			return $"{this.Index} | {this.Payload}";
 		}
 
 		#endregion

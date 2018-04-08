@@ -6,6 +6,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading.Tasks;
 
 using TextMetal.Middleware.Solder.Injection;
 using TextMetal.Middleware.Solder.Primitives;
@@ -31,11 +32,14 @@ namespace TextMetal.Middleware.Solder.Executive
 		/// </summary>
 		/// <param name="args"> The command line arguments passed from the executing environment. </param>
 		/// <returns> The resulting exit code. </returns>
-		public static int Run<TConsoleApp>(string[] args)
+		public static async Task<int> Run<TConsoleApp>(string[] args)
 			where TConsoleApp : ConsoleApplicationFascade
 		{
 			using (TConsoleApp program = (TConsoleApp)AssemblyDomain.Default.DependencyManager.ResolveDependency<ConsoleApplicationFascade>(string.Empty, true))
-				return program.EntryPoint(args);
+			{
+				program.Create();
+				return await program.EntryPointAsync(args);
+			}
 		}
 
 		protected override bool OnCancelKeySignal(ConsoleSpecialKey consoleSpecialKey)

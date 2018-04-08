@@ -104,9 +104,9 @@ namespace SyncPrem.Pipeline.Core.Configurations
 
 		#region Methods/Operators
 
-		public Type GetConnectionType()
+		public Type GetConnectionType(IList<Message> messages = null)
 		{
-			return GetTypeFromString(this.ConnectionAqtn);
+			return GetTypeFromString(this.ConnectionAqtn, messages);
 		}
 
 		public virtual IUnitOfWork GetUnitOfWork(IsolationLevel isolationLevel = IsolationLevel.Unspecified)
@@ -135,11 +135,32 @@ namespace SyncPrem.Pipeline.Core.Configurations
 			const string POST_CONTEXT = "Post-Execution";
 			string adapterContext;
 
+			Type connectionType;
+
+			IDbConnection dbConnection;
+
 			adapterContext = context as string;
 			messages = new List<Message>();
 
 			if (SolderFascadeAccessor.DataTypeFascade.IsNullOrWhiteSpace(this.ConnectionAqtn))
 				messages.Add(NewError(string.Format("{0} adapter ADO.NET connection AQTN is required.", adapterContext)));
+			else
+			{
+				connectionType = this.GetConnectionType(messages);
+
+				if ((object)connectionType == null)
+					messages.Add(NewError(string.Format("{0} adapter ADO.NET connection failed to load type from AQTN.", adapterContext)));
+				else if (!typeof(IDbConnection).IsAssignableFrom(connectionType))
+					messages.Add(NewError(string.Format("{0} adapter ADO.NET connection loaded an unrecognized type via AQTN.", adapterContext)));
+				else
+				{
+					// new-ing up via default public contructor should be low friction
+					dbConnection = (IDbConnection)Activator.CreateInstance(connectionType);
+
+					if ((object)dbConnection == null)
+						messages.Add(NewError(string.Format("{0} adapter ADO.NET connection failed to instatiate type from AQTN.", adapterContext)));
+				}
+			}
 
 			if (SolderFascadeAccessor.DataTypeFascade.IsNullOrWhiteSpace(this.ConnectionString))
 				messages.Add(NewError(string.Format("{0} adapter ADO.NET connection string is required.", adapterContext)));

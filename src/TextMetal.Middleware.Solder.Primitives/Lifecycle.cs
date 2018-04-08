@@ -74,14 +74,35 @@ namespace TextMetal.Middleware.Solder.Primitives
 		/// <param name="disposing"> </param>
 		protected abstract void Dispose(bool disposing);
 
+		protected void ExplicitSetIsCreated()
+		{
+			//GC.ReRegisterForFinalize(this);
+			this.IsCreated = true;
+		}
+
+		protected void ExplicitSetIsDisposed()
+		{
+			this.IsDisposed = true;
+			GC.SuppressFinalize(this);
+		}
+
 		public void Initialize()
 		{
 			if (this.IsCreated)
 				return;
 
-			//GC.ReRegisterForFinalize(this);
 			this.Create(true);
-			this.IsCreated = true;
+			this.MaybeSetIsCreated();
+		}
+
+		protected virtual void MaybeSetIsCreated()
+		{
+			this.ExplicitSetIsCreated();
+		}
+
+		protected virtual void MaybeSetIsDisposed()
+		{
+			this.ExplicitSetIsDisposed();
 		}
 
 		public void Terminate()
@@ -90,8 +111,7 @@ namespace TextMetal.Middleware.Solder.Primitives
 				return;
 
 			this.Dispose(true);
-			GC.SuppressFinalize(this);
-			this.IsDisposed = true;
+			this.MaybeSetIsDisposed();
 		}
 
 		#endregion

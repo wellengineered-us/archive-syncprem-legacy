@@ -55,14 +55,6 @@ namespace SyncPrem.StreamingIO.Relational
 		{
 		}
 
-		private static IEnumerable<IBatch> GetBatch(IEnumerable<IPayload> payloads)
-		{
-			if ((object)payloads == null)
-				throw new ArgumentNullException(nameof(payloads));
-
-			return null;
-		}
-
 		#endregion
 
 		#region Fields/Constants
@@ -73,8 +65,8 @@ namespace SyncPrem.StreamingIO.Relational
 		private readonly IEnumerator<IBatch> targetBatchEnumerator;
 		private string[] currentKeys;
 		private object[] currentValues;
-		private bool? isPayloadEnumerableClosed;
 		private bool? isBatchEnumerableClosed;
+		private bool? isPayloadEnumerableClosed;
 		private IEnumerable<IPayload> targetPayloadEnumerable;
 		private IEnumerator<IPayload> targetPayloadEnumerator;
 		private int visibleFieldCount = default(int);
@@ -219,18 +211,6 @@ namespace SyncPrem.StreamingIO.Relational
 			}
 		}
 
-		protected bool? IsPayloadEnumerableClosed
-		{
-			get
-			{
-				return this.isPayloadEnumerableClosed;
-			}
-			set
-			{
-				this.isPayloadEnumerableClosed = value;
-			}
-		}
-
 		protected bool? IsBatchEnumerableClosed
 		{
 			get
@@ -240,6 +220,18 @@ namespace SyncPrem.StreamingIO.Relational
 			set
 			{
 				this.isBatchEnumerableClosed = value;
+			}
+		}
+
+		protected bool? IsPayloadEnumerableClosed
+		{
+			get
+			{
+				return this.isPayloadEnumerableClosed;
+			}
+			set
+			{
+				this.isPayloadEnumerableClosed = value;
 			}
 		}
 
@@ -271,6 +263,14 @@ namespace SyncPrem.StreamingIO.Relational
 
 		#region Methods/Operators
 
+		private static IEnumerable<IBatch> GetBatch(IEnumerable<IPayload> payloads)
+		{
+			if ((object)payloads == null)
+				throw new ArgumentNullException(nameof(payloads));
+
+			return null;
+		}
+
 		private bool AdvanceResult()
 		{
 			if (!(this.IsBatchEnumerableClosed ?? false))
@@ -280,7 +280,7 @@ namespace SyncPrem.StreamingIO.Relational
 				if (retval && this.HasResult)
 				{
 					IBatch batch;
-						
+
 					batch = this.TargetBatchEnumerator.Current;
 
 					if ((object)batch == null)

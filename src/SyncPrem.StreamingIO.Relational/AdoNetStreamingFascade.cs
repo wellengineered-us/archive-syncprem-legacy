@@ -10,8 +10,7 @@ using System.Data;
 using System.Data.Common;
 using System.Linq;
 using System.Reflection;
-
-using SyncPrem.StreamingIO.ProxyWrappers;
+using System.Threading.Tasks;
 
 using TextMetal.Middleware.Solder.Extensions;
 using TextMetal.Middleware.Solder.Primitives;
@@ -138,6 +137,11 @@ namespace SyncPrem.StreamingIO.Relational
 			return dbDataReader;
 		}
 
+		public Task<AdoNetStreamingDataReader> ExecuteReaderAsync(DbConnection dbConnection, DbTransaction dbTransaction, CommandType commandType, string commandText, IEnumerable<DbParameter> commandParameters, CommandBehavior commandBehavior, int? commandTimeout, bool commandPrepare)
+		{
+			throw new NotImplementedException();
+		}
+
 		/// <summary>
 		/// Execute a command against a data source, mapping the data reader to an enumerable of record dictionaries.
 		/// This method perfoms LAZY LOADING/DEFERRED EXECUTION.
@@ -191,6 +195,11 @@ namespace SyncPrem.StreamingIO.Relational
 			this.__leave(_);
 		}
 
+		public IAsyncEnumerable<IAdoNetStreamingRecord> ExecuteRecordsAsync(DbConnection dbConnection, DbTransaction dbTransaction, CommandType commandType, string commandText, IEnumerable<DbParameter> commandParameters, Action<int> recordsAffectedCallback)
+		{
+			throw new NotImplementedException();
+		}
+
 		/// <summary>
 		/// Execute a command against a data source, mapping the data reader to an enumerable of results, each with an enumerable of record dictionaries.
 		/// This method perfoms LAZY LOADING/DEFERRED EXECUTION.
@@ -241,6 +250,11 @@ namespace SyncPrem.StreamingIO.Relational
 			}
 
 			this.__leave(_);
+		}
+
+		public IAsyncEnumerable<IAdoNetStreamingResult> ExecuteResultsAsync(DbConnection dbConnection, DbTransaction dbTransaction, CommandType commandType, string commandText, IEnumerable<DbParameter> commandParameters)
+		{
+			throw new NotImplementedException();
 		}
 
 		/// <summary>
@@ -296,6 +310,11 @@ namespace SyncPrem.StreamingIO.Relational
 			this.__leave(_);
 		}
 
+		public IAsyncEnumerable<IAdoNetStreamingRecord> ExecuteSchemaRecordsAsync(DbConnection dbConnection, DbTransaction dbTransaction, CommandType commandType, string commandText, IEnumerable<DbParameter> commandParameters, Action<int> recordsAffectedCallback)
+		{
+			throw new NotImplementedException();
+		}
+
 		/// <summary>
 		/// Execute a command against a data source, mapping the data reader GetSchemaTable() result to an results, each with an enumerable of record dictionaries.
 		/// This method perfoms LAZY LOADING/DEFERRED EXECUTION.
@@ -346,6 +365,11 @@ namespace SyncPrem.StreamingIO.Relational
 			}
 
 			this.__leave(_);
+		}
+
+		public IAsyncEnumerable<IAdoNetStreamingResult> ExecuteSchemaResultsAsync(DbConnection dbConnection, DbTransaction dbTransaction, CommandType commandType, string commandText, IEnumerable<DbParameter> commandParameters)
+		{
+			throw new NotImplementedException();
 		}
 
 		/// <summary>
@@ -408,6 +432,11 @@ namespace SyncPrem.StreamingIO.Relational
 			this.__leave(_);
 		}
 
+		public IAsyncEnumerable<IAdoNetStreamingRecord> GetRecordsFromReaderAsync(DbDataReader dbDataReader, Action<int> recordsAffectedCallback)
+		{
+			throw new NotImplementedException();
+		}
+
 		/// <summary>
 		/// Execute a command against a data source, mapping the data reader to an enumerable of results, each with an enumerable of records.
 		/// This method perfoms LAZY LOADING/DEFERRED EXECUTION.
@@ -435,10 +464,10 @@ namespace SyncPrem.StreamingIO.Relational
 
 					result = new AdoNetStreamingResult(resultIndex);
 					records = this.GetRecordsFromReader(dbDataReader, (ra) =>
-																			{
-																				AdoNetStreamingResult _result = result; // prevent modified closure
-																				_result.RecordsAffected = ra;
-																			});
+																	{
+																		AdoNetStreamingResult _result = result; // prevent modified closure
+																		_result.RecordsAffected = ra;
+																	});
 					result.Records = records;
 
 					this.__trace(_, "on yield item");
@@ -454,6 +483,11 @@ namespace SyncPrem.StreamingIO.Relational
 			}
 
 			this.__leave(_);
+		}
+
+		public IAsyncEnumerable<IAdoNetStreamingResult> GetResultsFromReaderAsync(DbDataReader dbDataReader)
+		{
+			throw new NotImplementedException();
 		}
 
 		/// <summary>
@@ -535,6 +569,11 @@ namespace SyncPrem.StreamingIO.Relational
 			this.__leave(_);
 		}
 
+		public IAsyncEnumerable<IAdoNetStreamingRecord> GetSchemaRecordsFromReaderAsync(DbDataReader dbDataReader, Action<int> recordsAffectedCallback)
+		{
+			throw new NotImplementedException();
+		}
+
 		/// <summary>
 		/// Execute a command against a data source, mapping the data reader GetSchemaTable() result to an enumerable of results, each with an enumerable of records.
 		/// This method perfoms LAZY LOADING/DEFERRED EXECUTION.
@@ -581,6 +620,11 @@ namespace SyncPrem.StreamingIO.Relational
 			}
 
 			this.__leave(_);
+		}
+
+		public IAsyncEnumerable<IAdoNetStreamingResult> GetSchemaResultsFromReaderAsync(DbDataReader dbDataReader)
+		{
+			throw new NotImplementedException();
 		}
 
 		#endregion

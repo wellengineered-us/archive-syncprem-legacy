@@ -6,6 +6,7 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Threading;
 
 using TextMetal.Middleware.Solder.Primitives;
 
@@ -73,9 +74,15 @@ namespace SyncPrem.StreamingIO.Textual
 
 		public abstract IEnumerable<ITextualStreamingRecord> ReadFooterRecords(IEnumerable<TTextualFieldSpec> footers);
 
+		public abstract IAsyncEnumerable<ITextualStreamingRecord> ReadFooterRecordsAsync(IEnumerable<TTextualFieldSpec> footers, CancellationToken cancellationToken);
+
 		public abstract IEnumerable<TTextualFieldSpec> ReadHeaderFields();
 
+		public abstract IAsyncEnumerable<TTextualFieldSpec> ReadHeaderFieldsAsync(CancellationToken cancellationToken);
+
 		public abstract IEnumerable<ITextualStreamingRecord> ReadRecords();
+
+		public abstract IAsyncEnumerable<ITextualStreamingRecord> ReadRecordsAsync(CancellationToken cancellationToken);
 
 		#endregion
 	}

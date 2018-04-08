@@ -3,11 +3,7 @@
 	Distributed under the MIT license: http://www.opensource.org/licenses/mit-license.php
 */
 
-using System;
-
-using SyncPrem.Infrastructure.Configuration;
-
-namespace SyncPrem.Pipeline.Abstractions
+namespace SyncPrem.Infrastructure.Configuration
 {
 	public interface IConfigurable<TConfiguration>
 		where TConfiguration : IConfigurationObject

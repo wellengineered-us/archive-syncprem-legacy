@@ -29,24 +29,13 @@ namespace SyncPrem.Pipeline.Core.Configurations
 
 		#region Fields/Constants
 
-		private string textualFilePath;
 		private TTextualConfiguration textualConfiguration;
+
+		private string textualFilePath;
 
 		#endregion
 
 		#region Properties/Indexers/Events
-
-		public string TextualFilePath
-		{
-			get
-			{
-				return this.textualFilePath;
-			}
-			set
-			{
-				this.textualFilePath = value;
-			}
-		}
 
 		public TTextualConfiguration TextualConfiguration
 		{
@@ -58,6 +47,18 @@ namespace SyncPrem.Pipeline.Core.Configurations
 			{
 				this.EnsureParentOnPropertySet(this.textualConfiguration, value);
 				this.textualConfiguration = value;
+			}
+		}
+
+		public string TextualFilePath
+		{
+			get
+			{
+				return this.textualFilePath;
+			}
+			set
+			{
+				this.textualFilePath = value;
 			}
 		}
 
@@ -78,7 +79,7 @@ namespace SyncPrem.Pipeline.Core.Configurations
 
 			if ((object)this.TextualConfiguration == null)
 				messages.Add(NewError(string.Format("{0} adapter textual specification is required.", adapterContext)));
-			
+
 			return messages;
 		}
 

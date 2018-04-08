@@ -10,9 +10,13 @@ namespace SyncPrem.StreamingIO.Primitives
 {
 	public interface IBatch
 	{
+		#region Properties/Indexers/Events
+
 		IEnumerable<IPayload> Payloads
 		{
 			get;
 		}
+
+		#endregion
 	}
 }

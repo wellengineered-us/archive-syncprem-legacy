@@ -12,7 +12,6 @@ using SyncPrem.StreamingIO.DataMasking.Strategies;
 using SyncPrem.StreamingIO.Primitives;
 
 using TextMetal.Middleware.Solder.Extensions;
-using TextMetal.Middleware.Solder.Serialization;
 
 namespace SyncPrem.StreamingIO.DataMasking
 {
@@ -295,6 +294,11 @@ namespace SyncPrem.StreamingIO.DataMasking
 
 				yield return obfuscatedPayload;
 			}
+		}
+
+		public IAsyncEnumerable<IPayload> GetObfuscatedValuesAsync(IEnumerable<IPayload> records)
+		{
+			throw new NotImplementedException();
 		}
 
 		long IObfuscationContext.GetSignHash(object value)

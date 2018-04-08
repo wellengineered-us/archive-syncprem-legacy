@@ -18,6 +18,16 @@ namespace SyncPrem.Pipeline.Abstractions
 			get;
 		}
 
+		bool IsReusable
+		{
+			get;
+		}
+
+		bool SupportsAsync
+		{
+			get;
+		}
+
 		#endregion
 	}
 }

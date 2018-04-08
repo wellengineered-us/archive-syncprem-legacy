@@ -36,9 +36,11 @@
 		"StageAqtn": "SyncPrem.Pipeline.Core.Connectors.RestfulWebApiDestinationConnector, SyncPrem.Pipeline.Core",
 		"StageSpecificConfiguration":
 		{
-			"WebEndpointUri": "http://localhost:5000/api/values",
-			"SerializationStrategyAqtn": "TextMetal.Middleware.Solder.Serialization.JsonSerializationStrategy, TextMetal.Middleware.Solder.Serialization",
-			"CompressionStrategyAqtn": "SyncPrem.StreamingIO.ProxyWrappers.Strategies.GzipCompressionStrategy, SyncPrem.StreamingIO.ProxyWrappers"
+			"WebEndpointUri": "http://localhost:55555/api/values",
+			"SerializationStrategyAqtn":
+				"TextMetal.Middleware.Solder.Serialization.JsonSerializationStrategy, TextMetal.Middleware.Solder.Serialization",
+			"CompressionStrategyAqtn":
+				"SyncPrem.StreamingIO.ProxyWrappers.Strategies.GzipCompressionStrategy, SyncPrem.StreamingIO.ProxyWrappers"
 		}
 	}
 }

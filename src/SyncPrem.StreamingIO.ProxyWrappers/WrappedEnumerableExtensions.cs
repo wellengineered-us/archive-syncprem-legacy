@@ -29,9 +29,9 @@ namespace SyncPrem.StreamingIO.ProxyWrappers
 			}
 		}
 
-		public static IEnumerable<T> GetMetricsWrappedEnumerable<T>(this IEnumerable<T> enumerable, string source, Func<T, T> itemCallback, Action<string, ulong, bool, double> processingCallback)
+		public static IEnumerable<TItem> GetWrappedEnumerable<TItem>(this IEnumerable<TItem> enumerable, string sourceLabel, Func<long, TItem, TItem> itemCallback, Action<string, long, bool, double> processingCallback)
 		{
-			ulong itemCount = 0;
+			long itemIndex = 0;
 			DateTime startUtc;
 
 			startUtc = DateTime.UtcNow;
@@ -39,38 +39,32 @@ namespace SyncPrem.StreamingIO.ProxyWrappers
 			if ((object)enumerable == null)
 				throw new ArgumentNullException(nameof(enumerable));
 
-			foreach (T item in enumerable)
-			{
-				itemCount++;
+			if ((object)processingCallback != null)
+				processingCallback(sourceLabel, -1, false, (DateTime.UtcNow - startUtc).TotalSeconds);
 
-				if ((itemCount % PROCESSING_CALLBACK_WINDOW_SIZE) == 0)
+			foreach (TItem item in enumerable)
+			{
+				if ((itemIndex % PROCESSING_CALLBACK_WINDOW_SIZE) == 0)
 				{
 					if ((object)processingCallback != null)
-						processingCallback(source, itemCount, false, (DateTime.UtcNow - startUtc).TotalSeconds);
+						processingCallback(sourceLabel, itemIndex, false, (DateTime.UtcNow - startUtc).TotalSeconds);
 				}
 
 				if ((object)itemCallback != null)
-					yield return itemCallback(item);
+					yield return itemCallback(itemIndex, item);
 				else
 					yield return item;
+
+				itemIndex++;
 			}
 
 			if ((object)processingCallback != null)
-				processingCallback(source, itemCount, true, (DateTime.UtcNow - startUtc).TotalSeconds);
+				processingCallback(sourceLabel, itemIndex, true, (DateTime.UtcNow - startUtc).TotalSeconds);
 		}
 
-		public static IEnumerable<T> GetWrappedEnumerable<T>(this IEnumerable<T> enumerable, Func<T, T> itemCallback)
+		public static IEnumerable<T> GetWrappedEnumerable<T>(this IEnumerable<T> enumerable, Func<long, T, T> itemCallback)
 		{
-			if ((object)enumerable == null)
-				throw new ArgumentNullException(nameof(enumerable));
-
-			foreach (T item in enumerable)
-			{
-				if ((object)itemCallback != null)
-					yield return itemCallback(item);
-				else
-					yield return item;
-			}
+			return enumerable.GetWrappedEnumerable(null, itemCallback, null);
 		}
 
 		#endregion

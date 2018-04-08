@@ -7,6 +7,8 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Threading;
+using System.Threading.Tasks;
 
 using SyncPrem.Pipeline.Abstractions;
 using SyncPrem.Pipeline.Abstractions.Configuration;
@@ -105,7 +107,12 @@ namespace SyncPrem.Pipeline.Core.Connectors
 			}
 		}
 
-		protected override void PostExecuteRecord(IContext context, RecordConfiguration configuration)
+		protected override Task PostExecuteAsyncInternal(IContext context, RecordConfiguration configuration, CancellationToken cancellationToken, IProgress<int> progress)
+		{
+			throw new NotImplementedException();
+		}
+
+		protected override void PostExecuteInternal(IContext context, RecordConfiguration configuration)
 		{
 			if ((object)context == null)
 				throw new ArgumentNullException(nameof(context));
@@ -116,7 +123,12 @@ namespace SyncPrem.Pipeline.Core.Connectors
 			this.AssertValidConfiguration();
 		}
 
-		protected override void PreExecuteRecord(IContext context, RecordConfiguration configuration)
+		protected override Task PreExecuteAsyncInternal(IContext context, RecordConfiguration configuration, CancellationToken cancellationToken, IProgress<int> progress)
+		{
+			throw new NotImplementedException();
+		}
+
+		protected override void PreExecuteInternal(IContext context, RecordConfiguration configuration)
 		{
 			SchemaBuilder schemaBuilder;
 			ISchema schema;
@@ -178,7 +190,12 @@ namespace SyncPrem.Pipeline.Core.Connectors
 			localState.Add(Constants.ContextComponentScopedSchema, schema);
 		}
 
-		protected override IChannel ProduceRecord(IContext context, RecordConfiguration configuration)
+		protected override Task<IChannel> ProduceAsyncInternal(IContext context, RecordConfiguration configuration, CancellationToken cancellationToken, IProgress<int> progress)
+		{
+			throw new NotImplementedException();
+		}
+
+		protected override IChannel ProduceInternal(IContext context, RecordConfiguration configuration)
 		{
 			IChannel channel;
 			ISchema schema;

@@ -20,7 +20,7 @@ namespace SyncPrem.Infrastructure.Configuration
 
 		protected ConfigurationObject(IConfigurationObjectCollection<IConfigurationObject> items)
 		{
-			if((object)items == null)
+			if ((object)items == null)
 				throw new ArgumentNullException(nameof(items));
 
 			this.items = items;
@@ -106,14 +106,26 @@ namespace SyncPrem.Infrastructure.Configuration
 
 		#region Methods/Operators
 
-		protected static Type GetTypeFromString(string aqtn)
+		protected static Type GetTypeFromString(string aqtn, IList<Message> messages = null)
 		{
-			Type type;
+			Type type = null;
 
 			if (SolderFascadeAccessor.DataTypeFascade.IsNullOrWhiteSpace(aqtn))
 				return null;
 
-			type = Type.GetType(aqtn, false);
+			if ((object)messages == null)
+				type = Type.GetType(aqtn, false);
+			else
+			{
+				try
+				{
+					type = Type.GetType(aqtn, true);
+				}
+				catch (Exception ex)
+				{
+					messages.Add(NewError(string.Format("Error loading type '{0}' from string: {1}.", aqtn, ex.Message)));
+				}
+			}
 
 			return type;
 		}

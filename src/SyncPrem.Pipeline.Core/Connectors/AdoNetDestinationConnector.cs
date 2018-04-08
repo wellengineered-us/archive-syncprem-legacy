@@ -7,6 +7,8 @@ using System;
 using System.Collections.Generic;
 using System.Data;
 using System.Data.Common;
+using System.Threading;
+using System.Threading.Tasks;
 
 using SyncPrem.Pipeline.Abstractions.Configuration;
 using SyncPrem.Pipeline.Abstractions.Runtime;
@@ -55,9 +57,12 @@ namespace SyncPrem.Pipeline.Core.Connectors
 
 		#region Methods/Operators
 
-		protected abstract void ConsumeMessageReader(IContext context, RecordConfiguration configuration, DbDataReader sourceDataReader, out long rowsCopied);
+		protected override Task ConsumeAsyncInternal(IContext context, RecordConfiguration configuration, IChannel channel, CancellationToken cancellationToken, IProgress<int> progress)
+		{
+			throw new NotImplementedException();
+		}
 
-		protected override void ConsumeRecord(IContext context, RecordConfiguration configuration, IChannel channel)
+		protected override void ConsumeInternal(IContext context, RecordConfiguration configuration, IChannel channel)
 		{
 			ISchema schema;
 			IEnumerable<IRecord> records;
@@ -102,7 +107,14 @@ namespace SyncPrem.Pipeline.Core.Connectors
 			}*/
 		}
 
-		protected override void PostExecuteRecord(IContext context, RecordConfiguration configuration)
+		protected abstract void ConsumeMessageReader(IContext context, RecordConfiguration configuration, DbDataReader sourceDataReader, out long rowsCopied);
+
+		protected override Task PostExecuteAsyncInternal(IContext context, RecordConfiguration configuration, CancellationToken cancellationToken, IProgress<int> progress)
+		{
+			throw new NotImplementedException();
+		}
+
+		protected override void PostExecuteInternal(IContext context, RecordConfiguration configuration)
 		{
 			IEnumerable<IAdoNetStreamingResult> results;
 			IEnumerable<DbParameter> dbParameters;
@@ -136,7 +148,12 @@ namespace SyncPrem.Pipeline.Core.Connectors
 			this.DestinationUnitOfWork = null;
 		}
 
-		protected override void PreExecuteRecord(IContext context, RecordConfiguration configuration)
+		protected override Task PreExecuteAsyncInternal(IContext context, RecordConfiguration configuration, CancellationToken cancellationToken, IProgress<int> progress)
+		{
+			throw new NotImplementedException();
+		}
+
+		protected override void PreExecuteInternal(IContext context, RecordConfiguration configuration)
 		{
 			IEnumerable<IAdoNetStreamingResult> results;
 			IEnumerable<DbParameter> dbParameters;

@@ -6,6 +6,10 @@
   <Import Project="..\common.props" />
 
   <ItemGroup>
+    <PackageReference Include="System.Interactive.Async" Version="3.1.1" />
+  </ItemGroup>
+
+  <ItemGroup>
     <ProjectReference Include="..\SyncPrem.StreamingIO.Primitives\SyncPrem.StreamingIO.Primitives.csproj" />
     <ProjectReference Include="..\SyncPrem.StreamingIO.ProxyWrappers\SyncPrem.StreamingIO.ProxyWrappers.csproj" />
     <ProjectReference Include="..\TextMetal.Middleware.Solder.Extensions\TextMetal.Middleware.Solder.Extensions.csproj" />

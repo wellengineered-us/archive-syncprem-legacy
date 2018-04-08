@@ -9,6 +9,48 @@
   <Import Project="..\common.props" />
 
   <ItemGroup>
+    <None Remove="_static_adonet_to_reccmd.json" />
+    <None Remove="_static_adonet_to_sqlbcp.json" />
+    <None Remove="_static_cin_to_cout.json" />
+    <None Remove="_static_cin_to_null.json" />
+    <None Remove="_static_dtf_to_dtf.json" />
+    <None Remove="_static_dtf_to_webapi.json" />
+    <None Remove="_static_null_to_cout.json" />
+    <None Remove="_static_null_to_null.json" />
+    <None Remove="_static_null_to_webapi.json" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Content Include="_static_adonet_to_reccmd.json">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <Content Include="_static_adonet_to_sqlbcp.json">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <Content Include="_static_cin_to_cout.json">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <Content Include="_static_cin_to_null.json">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <Content Include="_static_dtf_to_dtf.json">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <Content Include="_static_dtf_to_webapi.json">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <Content Include="_static_null_to_cout.json">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <Content Include="_static_null_to_null.json">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <Content Include="_static_null_to_webapi.json">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+  </ItemGroup>
+
+  <ItemGroup>
     <None Update="appconfig.json">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>

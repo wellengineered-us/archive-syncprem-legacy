@@ -5,6 +5,8 @@
 
 using System;
 using System.Collections.Generic;
+using System.Threading;
+using System.Threading.Tasks;
 
 using SyncPrem.Pipeline.Abstractions.Configuration;
 using SyncPrem.Pipeline.Abstractions.Runtime;
@@ -59,7 +61,12 @@ namespace SyncPrem.Pipeline.Core.Processors
 			base.Dispose(disposing);
 		}
 
-		protected override void PostExecuteRecord(IContext context, RecordConfiguration configuration)
+		protected override Task PostExecuteAsyncInternal(IContext context, RecordConfiguration configuration, CancellationToken cancellationToken, IProgress<int> progress)
+		{
+			throw new NotImplementedException();
+		}
+
+		protected override void PostExecuteInternal(IContext context, RecordConfiguration configuration)
 		{
 			if ((object)context == null)
 				throw new ArgumentNullException(nameof(context));
@@ -73,7 +80,12 @@ namespace SyncPrem.Pipeline.Core.Processors
 			this.OxymoronEngine = null;
 		}
 
-		protected override void PreExecuteRecord(IContext context, RecordConfiguration configuration)
+		protected override Task PreExecuteAsyncInternal(IContext context, RecordConfiguration configuration, CancellationToken cancellationToken, IProgress<int> progress)
+		{
+			throw new NotImplementedException();
+		}
+
+		protected override void PreExecuteInternal(IContext context, RecordConfiguration configuration)
 		{
 			ResolveDictionaryValueDelegate resolveDictionaryValueCallback;
 			IObfuscationSpec obfuscationSpec;
@@ -90,7 +102,12 @@ namespace SyncPrem.Pipeline.Core.Processors
 			this.OxymoronEngine = new OxymoronEngine(resolveDictionaryValueCallback, obfuscationSpec);
 		}
 
-		protected override IChannel ProcessRecord(IContext context, RecordConfiguration configuration, IChannel channel, ProcessDelegate next)
+		protected override Task<IChannel> ProcessAsyncInternal(IContext context, RecordConfiguration configuration, IChannel channel, ProcessDelegate next, CancellationToken cancellationToken, IProgress<int> progress)
+		{
+			throw new NotImplementedException();
+		}
+
+		protected override IChannel ProcessInternal(IContext context, RecordConfiguration configuration, IChannel channel, ProcessDelegate next)
 		{
 			if ((object)context == null)
 				throw new ArgumentNullException(nameof(context));

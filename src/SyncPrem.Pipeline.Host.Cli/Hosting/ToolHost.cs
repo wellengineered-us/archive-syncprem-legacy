@@ -4,21 +4,20 @@
 */
 
 using System;
-using System.IO;
+using System.Collections.Generic;
 using System.Linq;
+using System.Threading;
+using System.Threading.Tasks;
 
-using SyncPrem.Infrastructure.Configuration;
-using SyncPrem.Pipeline.Abstractions;
 using SyncPrem.Pipeline.Abstractions.Configuration;
 using SyncPrem.Pipeline.Abstractions.Runtime;
 
 using TextMetal.Middleware.Solder.Injection;
 using TextMetal.Middleware.Solder.Primitives;
-using TextMetal.Middleware.Solder.Serialization;
 
 namespace SyncPrem.Pipeline.Host.Cli.Hosting
 {
-	public sealed class ToolHost : Component, IToolHost
+	public sealed class ToolHost : Abstractions.Runtime.Host, IToolHost
 	{
 		#region Constructors/Destructors
 
@@ -29,111 +28,86 @@ namespace SyncPrem.Pipeline.Host.Cli.Hosting
 
 		#endregion
 
-		#region Fields/Constants
-
-		private PipelineConfiguration configuration;
-
-		#endregion
-
-		#region Properties/Indexers/Events
-
-		public PipelineConfiguration Configuration
-		{
-			get
-			{
-				return this.configuration;
-			}
-			set
-			{
-				this.configuration = value;
-			}
-		}
-
-		#endregion
-
 		#region Methods/Operators
 
-		private static void ExecutePipelineThreadProc(object stateInfo)
+		private static async Task<int> ExecutePipelineAsync(Type pipelineType, PipelineConfiguration configuration, CancellationToken cancellationToken)
 		{
 			IPipeline pipeline;
-			Tuple<Type, PipelineConfiguration> tuple;
 
-			if ((object)stateInfo == null)
-				throw new ArgumentNullException(nameof(stateInfo));
+			if ((object)pipelineType == null)
+				throw new ArgumentNullException(nameof(pipelineType));
 
-			tuple = (Tuple<Type, PipelineConfiguration>)stateInfo;
-			pipeline = (IPipeline)Activator.CreateInstance(tuple.Item1);
+			if ((object)configuration == null)
+				throw new ArgumentNullException(nameof(configuration));
+
+			pipeline = (IPipeline)Activator.CreateInstance(pipelineType);
 
 			if ((object)pipeline == null)
 				throw new InvalidOperationException(nameof(pipeline));
 
 			using (pipeline)
 			{
-				pipeline.Configuration = tuple.Item2;
+				pipeline.Configuration = configuration;
 				pipeline.Create();
 
 				using (IContext context = pipeline.CreateContext())
 				{
 					context.Create();
 
-					pipeline.Execute(context);
+					return await pipeline.ExecuteAsync(context, cancellationToken);
 				}
 			}
 		}
 
-		private static TConfiguration FromJsonFile<TConfiguration>(string jsonFilePath)
-			where TConfiguration : class, IConfigurationObject, new()
+		protected override async Task RunAsyncInternal(CancellationToken cancellationToken, IProgress<int> progress)
 		{
-			TConfiguration configuration;
-			ISerializationStrategy serializationStrategy;
-
-			serializationStrategy = new JsonSerializationStrategy();
-			configuration = serializationStrategy.GetObjectFromFile<TConfiguration>(jsonFilePath);
-
-			return configuration;
-		}
-
-		public void Host(string sourceFilePath)
-		{
-			PipelineConfiguration pipelineConfiguration;
-
-			sourceFilePath = Path.GetFullPath(sourceFilePath);
-			pipelineConfiguration = FromJsonFile<PipelineConfiguration>(sourceFilePath);
-
-			this.Configuration = pipelineConfiguration;
-			this.Create();
-			this.RunHost();
-		}
-
-		private void RunHost()
-		{
+			Type hostType;
 			Type pipelineType;
 			Message[] messages;
 
 			if ((object)this.Configuration == null)
-				throw new InvalidOperationException(string.Format("Pipeline configuration is required"));
+				throw new InvalidOperationException(string.Format("Host configuration is required"));
 
 			messages = this.Configuration.Validate().ToArray();
 
 			if (messages.Length > 0)
-				throw new InvalidOperationException(string.Format("PipelineConfiguration validation failed:\r\n{0}", string.Join("\r\n", messages.Select(m => m.Description).ToArray())));
+				throw new InvalidOperationException(string.Format("Host configuration validation failed:\r\n{0}", string.Join("\r\n", messages.Select(m => m.Description).ToArray())));
 
-			pipelineType = this.Configuration.GetPipelineType();
+			hostType = this.GetType();
 
-			if ((object)pipelineType == null)
-				throw new InvalidOperationException(nameof(pipelineType));
+			List<Task> tasks = new List<Task>();
 
-			//while (true)
+			while (true)
 			{
-				//var t = new Thread(ExecutePipelineThreadProc);
-				//t.Start(Tuple.Create(pipelineType, this.Configuration));
-				//t.Join();
+				Console.WriteLine("poll() begin");
+
+				for (int i = 0; i < 10; i++)
+					foreach (PipelineConfiguration pipelineConfiguration in this.Configuration.PipelineConfigurations)
+					{
+						Task task;
+
+						if ((object)pipelineConfiguration == null)
+							throw new InvalidOperationException(nameof(pipelineConfiguration));
+
+						if (!(pipelineConfiguration.IsEnabled ?? false))
+							continue;
+
+						pipelineType = pipelineConfiguration.GetPipelineType();
+
+						if ((object)pipelineType == null)
+							throw new InvalidOperationException(nameof(pipelineType));
+
+						task = ExecutePipelineAsync(pipelineType, pipelineConfiguration, cancellationToken);
+						tasks.Add(task);
+					}
+
+				Console.WriteLine("poll() await...");
+				await Task.WhenAll(tasks);
+
+				Console.WriteLine("poll() delay...");
+				await Task.Delay(TimeSpan.FromSeconds(2), cancellationToken);
+				Console.WriteLine("poll() end");
 			}
-
-			ExecutePipelineThreadProc(Tuple.Create(pipelineType, this.Configuration));
-
-			//ThreadPool.QueueUserWorkItem(ExecutePipelineThreadProc, Tuple.Create(pipelineType, this.Configuration));
-			//Thread.Sleep(int.MaxValue);
 		}
 
 		#endregion

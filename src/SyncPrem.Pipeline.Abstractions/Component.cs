@@ -21,7 +21,9 @@ namespace SyncPrem.Pipeline.Abstractions
 
 		#region Fields/Constants
 
-		private readonly Guid componentId = new Guid();
+		private readonly Guid componentId = Guid.NewGuid();
+		private readonly bool isReusable = false;
+		private readonly bool supportsAsync = false;
 
 		#endregion
 
@@ -32,6 +34,22 @@ namespace SyncPrem.Pipeline.Abstractions
 			get
 			{
 				return this.componentId;
+			}
+		}
+
+		public bool IsReusable
+		{
+			get
+			{
+				return this.isReusable;
+			}
+		}
+
+		public bool SupportsAsync
+		{
+			get
+			{
+				return this.supportsAsync;
 			}
 		}
 

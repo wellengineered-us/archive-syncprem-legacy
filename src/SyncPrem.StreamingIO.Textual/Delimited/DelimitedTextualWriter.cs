@@ -6,6 +6,7 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Threading;
 
 using SyncPrem.StreamingIO.Primitives;
 
@@ -61,6 +62,46 @@ namespace SyncPrem.StreamingIO.Textual.Delimited
 
 		#region Methods/Operators
 
+		protected static string FormatFieldTitle(string fieldTitle)
+		{
+			string value;
+
+			if ((object)fieldTitle == null)
+				throw new ArgumentNullException(nameof(fieldTitle));
+
+			value = fieldTitle; // TODO: escape bad chars
+
+			return value;
+		}
+
+		public override void FlushAsync(CancellationToken cancellationToken)
+		{
+			throw new NotImplementedException();
+		}
+
+		protected string FormatFieldValue(long fieldIndex, string fieldTitle, object fieldValue)
+		{
+			IDelimitedTextualFieldSpec header = null;
+			string value;
+			string safeFieldValue;
+
+			if ((object)fieldTitle == null)
+				throw new ArgumentNullException(nameof(fieldTitle));
+
+			// TODO: do not assume order is corrcetly aligned to index
+			if (fieldIndex < this.TextualSpec.TextualHeaderSpecs.Count)
+				header = this.TextualSpec.TextualHeaderSpecs[(int)fieldIndex];
+
+			safeFieldValue = fieldValue?.ToString() ?? string.Empty;
+
+			if ((object)header != null && !SolderFascadeAccessor.DataTypeFascade.IsNullOrEmpty(header.FieldFormat))
+				value = string.Format("{0:" + header.FieldFormat + "}", safeFieldValue);
+			else
+				value = safeFieldValue;
+
+			return value;
+		}
+
 		private void WriteField(bool firstFieldInRecord, string fieldValue)
 		{
 			if (!firstFieldInRecord && !SolderFascadeAccessor.DataTypeFascade.IsNullOrEmpty(this.TextualSpec.FieldDelimiter))
@@ -103,6 +144,11 @@ namespace SyncPrem.StreamingIO.Textual.Delimited
 			}*/
 		}
 
+		public override void WriteFooterRecordsAsync(IEnumerable<IDelimitedTextualFieldSpec> specs, IEnumerable<ITextualStreamingRecord> footers, CancellationToken cancellationToken)
+		{
+			throw new NotImplementedException();
+		}
+
 		public override void WriteHeaderFields(IEnumerable<IDelimitedTextualFieldSpec> headers)
 		{
 			bool firstFieldInRecord;
@@ -132,39 +178,9 @@ namespace SyncPrem.StreamingIO.Textual.Delimited
 			}
 		}
 
-		protected static string FormatFieldTitle(string fieldTitle)
+		public override void WriteHeaderFieldsAsync(IEnumerable<IDelimitedTextualFieldSpec> specs, CancellationToken cancellationToken)
 		{
-			string value;
-
-			if ((object)fieldTitle == null)
-				throw new ArgumentNullException(nameof(fieldTitle));
-
-			value = fieldTitle; // TODO: escape bad chars
-
-			return value;
-		}
-
-		protected string FormatFieldValue(long fieldIndex, string fieldTitle, object fieldValue)
-		{
-			IDelimitedTextualFieldSpec header = null;
-			string value;
-			string safeFieldValue;
-
-			if ((object)fieldTitle == null)
-				throw new ArgumentNullException(nameof(fieldTitle));
-
-			// TODO: do not assume order is corrcetly aligned to index
-			if (fieldIndex < this.TextualSpec.TextualHeaderSpecs.Count)
-				header = this.TextualSpec.TextualHeaderSpecs[(int)fieldIndex];
-
-			safeFieldValue = fieldValue?.ToString() ?? string.Empty;
-
-			if ((object)header != null && !SolderFascadeAccessor.DataTypeFascade.IsNullOrEmpty(header.FieldFormat))
-				value = string.Format("{0:" + header.FieldFormat + "}", safeFieldValue);
-			else
-				value = safeFieldValue;
-
-			return value;
+			throw new NotImplementedException();
 		}
 
 		public override void WriteRecords(IEnumerable<IPayload> records)
@@ -185,7 +201,7 @@ namespace SyncPrem.StreamingIO.Textual.Delimited
 				long fieldIndex = 0;
 				foreach (KeyValuePair<string, object> item in record)
 				{
-					this.WriteField(firstFieldInRecord, FormatFieldValue(fieldIndex, item.Key, item.Value));
+					this.WriteField(firstFieldInRecord, this.FormatFieldValue(fieldIndex, item.Key, item.Value));
 
 					if (firstFieldInRecord)
 						firstFieldInRecord = false;
@@ -198,6 +214,11 @@ namespace SyncPrem.StreamingIO.Textual.Delimited
 
 				recordIndex++;
 			}
+		}
+
+		public override void WriteRecordsAsync(IEnumerable<IPayload> records, CancellationToken cancellationToken)
+		{
+			throw new NotImplementedException();
 		}
 
 		#endregion

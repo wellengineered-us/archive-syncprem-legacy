@@ -7,8 +7,6 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 
-using Newtonsoft.Json;
-
 namespace SyncPrem.StreamingIO.Primitives
 {
 	public sealed class SchemaBuilder : ISchemaBuilder, ISchema
@@ -197,17 +195,17 @@ namespace SyncPrem.StreamingIO.Primitives
 			return this;
 		}
 
-		public SchemaBuilder WithVersion(int value)
-		{
-			AssertCanSet(nameof(this.SchemaVersion), this.SchemaVersion, value);
-			this.SchemaVersion = value;
-			return this;
-		}
-
 		public SchemaBuilder WithType(SchemaType value)
 		{
 			AssertCanSet(nameof(this.SchemaType), this.SchemaType, value);
 			this.SchemaType = value;
+			return this;
+		}
+
+		public SchemaBuilder WithVersion(int value)
+		{
+			AssertCanSet(nameof(this.SchemaVersion), this.SchemaVersion, value);
+			this.SchemaVersion = value;
 			return this;
 		}
 
