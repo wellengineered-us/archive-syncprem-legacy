@@ -4,6 +4,7 @@
 */
 
 using System;
+using System.Collections.Generic;
 using System.Linq;
 
 namespace SyncPrem.StreamingIO.Primitives
@@ -16,6 +17,7 @@ namespace SyncPrem.StreamingIO.Primitives
 		{
 			IPayload key, value;
 			ISchemaBuilder k, v;
+			IEnumerable<IGrouping<bool, IField>> groups;
 
 			if ((object)originalSchema == null)
 				throw new ArgumentNullException(nameof(originalSchema));
@@ -23,7 +25,7 @@ namespace SyncPrem.StreamingIO.Primitives
 			if ((object)originalPayload == null)
 				throw new ArgumentNullException(nameof(originalPayload));
 
-			var groups = originalSchema.Fields.Values.OrderBy(f => f.FieldIndex).GroupBy(f => f.IsFieldKeyComponent);
+			groups = originalSchema.Fields.Values.OrderBy(f => f.FieldIndex).GroupBy(f => f.IsFieldKeyComponent);
 
 			key = new Payload();
 			value = new Payload();

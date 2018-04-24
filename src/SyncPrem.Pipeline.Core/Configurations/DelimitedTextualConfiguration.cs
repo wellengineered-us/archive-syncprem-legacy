@@ -9,6 +9,7 @@ using System.Collections.Generic;
 using SyncPrem.StreamingIO.Textual;
 using SyncPrem.StreamingIO.Textual.Delimited;
 
+using TextMetal.Middleware.Solder.Extensions;
 using TextMetal.Middleware.Solder.Primitives;
 
 namespace SyncPrem.Pipeline.Core.Configurations
@@ -114,6 +115,12 @@ namespace SyncPrem.Pipeline.Core.Configurations
 			messages = new List<Message>();
 
 			messages.AddRange(base.Validate(context));
+
+			if (SolderFascadeAccessor.DataTypeFascade.IsNullOrEmpty(this.RecordDelimiter))
+				messages.Add(NewError(string.Format("{0} textual (delimited) record delimiter is required.", context)));
+
+			if (SolderFascadeAccessor.DataTypeFascade.IsNullOrEmpty(this.FieldDelimiter))
+				messages.Add(NewError(string.Format("{0} textual (delimited) field delimiter is required.", context)));
 
 			return messages;
 		}

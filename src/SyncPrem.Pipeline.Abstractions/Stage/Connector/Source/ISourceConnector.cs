@@ -4,22 +4,10 @@
 */
 
 using System;
-using System.Threading;
-using System.Threading.Tasks;
-
-using SyncPrem.Pipeline.Abstractions.Configuration;
-using SyncPrem.Pipeline.Abstractions.Runtime;
 
 namespace SyncPrem.Pipeline.Abstractions.Stage.Connector.Source
 {
 	public interface ISourceConnector : IConnector
 	{
-		#region Methods/Operators
-
-		IChannel Produce(IContext context, RecordConfiguration configuration);
-
-		Task<IChannel> ProduceAsync(IContext context, RecordConfiguration configuration, CancellationToken cancellationToken);
-
-		#endregion
 	}
 }

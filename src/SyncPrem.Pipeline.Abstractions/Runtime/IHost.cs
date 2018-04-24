@@ -4,8 +4,6 @@
 */
 
 using System;
-using System.Threading;
-using System.Threading.Tasks;
 
 using SyncPrem.Infrastructure.Configuration;
 using SyncPrem.Pipeline.Abstractions.Configuration;
@@ -14,10 +12,5 @@ namespace SyncPrem.Pipeline.Abstractions.Runtime
 {
 	public interface IHost : IComponent, IConfigurable<HostConfiguration>
 	{
-		#region Methods/Operators
-
-		Task RunAsync(CancellationToken cancellationToken);
-
-		#endregion
 	}
 }

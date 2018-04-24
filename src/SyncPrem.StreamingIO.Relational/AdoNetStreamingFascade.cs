@@ -10,7 +10,7 @@ using System.Data;
 using System.Data.Common;
 using System.Linq;
 using System.Reflection;
-using System.Threading.Tasks;
+using System.Threading;
 
 using TextMetal.Middleware.Solder.Extensions;
 using TextMetal.Middleware.Solder.Primitives;
@@ -137,11 +137,6 @@ namespace SyncPrem.StreamingIO.Relational
 			return dbDataReader;
 		}
 
-		public Task<AdoNetStreamingDataReader> ExecuteReaderAsync(DbConnection dbConnection, DbTransaction dbTransaction, CommandType commandType, string commandText, IEnumerable<DbParameter> commandParameters, CommandBehavior commandBehavior, int? commandTimeout, bool commandPrepare)
-		{
-			throw new NotImplementedException();
-		}
-
 		/// <summary>
 		/// Execute a command against a data source, mapping the data reader to an enumerable of record dictionaries.
 		/// This method perfoms LAZY LOADING/DEFERRED EXECUTION.
@@ -152,9 +147,9 @@ namespace SyncPrem.StreamingIO.Relational
 		/// <param name="commandType"> The type of the command. </param>
 		/// <param name="commandText"> The SQL text or stored procedure name. </param>
 		/// <param name="commandParameters"> The parameters to use during the operation. </param>
-		/// <param name="rowsAffectedCallback"> Executed when the output count of records affected is available to return (post enumeration). </param>
+		/// <param name="recordsAffectedCallback"> Executed when the output count of records affected is available to return (post enumeration). </param>
 		/// <returns> An enumerable of result instances, each containing an enumerable of dictionaries with record key/value pairs of schema metadata. </returns>
-		public IEnumerable<IAdoNetStreamingRecord> ExecuteRecords(DbConnection dbConnection, DbTransaction dbTransaction, CommandType commandType, string commandText, IEnumerable<DbParameter> commandParameters, Action<int> rowsAffectedCallback)
+		public IEnumerable<IAdoNetStreamingRecord> ExecuteRecords(DbConnection dbConnection, DbTransaction dbTransaction, CommandType commandType, string commandText, IEnumerable<DbParameter> commandParameters, Action<int> recordsAffectedCallback)
 		{
 			IEnumerable<IAdoNetStreamingRecord> records;
 			DbDataReader dbDataReader;
@@ -176,7 +171,7 @@ namespace SyncPrem.StreamingIO.Relational
 			// MUST DISPOSE WITHIN A NEW YIELD STATE MACHINE
 			using (this.__use(_, dbDataReader = this.ExecuteReader(dbConnection, dbTransaction, commandType, commandText, commandParameters, COMMAND_BEHAVIOR, (int?)COMMAND_TIMEOUT, COMMAND_PREPARE)))
 			{
-				records = this.GetRecordsFromReader(dbDataReader, rowsAffectedCallback);
+				records = this.GetRecordsFromReader(dbDataReader, recordsAffectedCallback);
 
 				this.__trace(_, "before yield loop");
 
@@ -195,7 +190,7 @@ namespace SyncPrem.StreamingIO.Relational
 			this.__leave(_);
 		}
 
-		public IAsyncEnumerable<IAdoNetStreamingRecord> ExecuteRecordsAsync(DbConnection dbConnection, DbTransaction dbTransaction, CommandType commandType, string commandText, IEnumerable<DbParameter> commandParameters, Action<int> recordsAffectedCallback)
+		public IAsyncEnumerable<IAdoNetStreamingRecord> ExecuteRecordsAsync(DbConnection dbConnection, DbTransaction dbTransaction, CommandType commandType, string commandText, IEnumerable<DbParameter> commandParameters, Action<int> recordsAffectedCallback, CancellationToken cancellationToken)
 		{
 			throw new NotImplementedException();
 		}
@@ -252,7 +247,7 @@ namespace SyncPrem.StreamingIO.Relational
 			this.__leave(_);
 		}
 
-		public IAsyncEnumerable<IAdoNetStreamingResult> ExecuteResultsAsync(DbConnection dbConnection, DbTransaction dbTransaction, CommandType commandType, string commandText, IEnumerable<DbParameter> commandParameters)
+		public IAsyncEnumerable<IAdoNetStreamingResult> ExecuteResultsAsync(DbConnection dbConnection, DbTransaction dbTransaction, CommandType commandType, string commandText, IEnumerable<DbParameter> commandParameters, CancellationToken cancellationToken)
 		{
 			throw new NotImplementedException();
 		}
@@ -310,7 +305,7 @@ namespace SyncPrem.StreamingIO.Relational
 			this.__leave(_);
 		}
 
-		public IAsyncEnumerable<IAdoNetStreamingRecord> ExecuteSchemaRecordsAsync(DbConnection dbConnection, DbTransaction dbTransaction, CommandType commandType, string commandText, IEnumerable<DbParameter> commandParameters, Action<int> recordsAffectedCallback)
+		public IAsyncEnumerable<IAdoNetStreamingRecord> ExecuteSchemaRecordsAsync(DbConnection dbConnection, DbTransaction dbTransaction, CommandType commandType, string commandText, IEnumerable<DbParameter> commandParameters, Action<int> recordsAffectedCallback, CancellationToken cancellationToken)
 		{
 			throw new NotImplementedException();
 		}
@@ -367,7 +362,7 @@ namespace SyncPrem.StreamingIO.Relational
 			this.__leave(_);
 		}
 
-		public IAsyncEnumerable<IAdoNetStreamingResult> ExecuteSchemaResultsAsync(DbConnection dbConnection, DbTransaction dbTransaction, CommandType commandType, string commandText, IEnumerable<DbParameter> commandParameters)
+		public IAsyncEnumerable<IAdoNetStreamingResult> ExecuteSchemaResultsAsync(DbConnection dbConnection, DbTransaction dbTransaction, CommandType commandType, string commandText, IEnumerable<DbParameter> commandParameters, CancellationToken cancellationToken)
 		{
 			throw new NotImplementedException();
 		}
@@ -432,7 +427,7 @@ namespace SyncPrem.StreamingIO.Relational
 			this.__leave(_);
 		}
 
-		public IAsyncEnumerable<IAdoNetStreamingRecord> GetRecordsFromReaderAsync(DbDataReader dbDataReader, Action<int> recordsAffectedCallback)
+		public IAsyncEnumerable<IAdoNetStreamingRecord> GetRecordsFromReaderAsync(DbDataReader dbDataReader, Action<int> recordsAffectedCallback, CancellationToken cancellationToken)
 		{
 			throw new NotImplementedException();
 		}
@@ -485,7 +480,7 @@ namespace SyncPrem.StreamingIO.Relational
 			this.__leave(_);
 		}
 
-		public IAsyncEnumerable<IAdoNetStreamingResult> GetResultsFromReaderAsync(DbDataReader dbDataReader)
+		public IAsyncEnumerable<IAdoNetStreamingResult> GetResultsFromReaderAsync(DbDataReader dbDataReader, CancellationToken cancellationToken)
 		{
 			throw new NotImplementedException();
 		}
@@ -569,7 +564,7 @@ namespace SyncPrem.StreamingIO.Relational
 			this.__leave(_);
 		}
 
-		public IAsyncEnumerable<IAdoNetStreamingRecord> GetSchemaRecordsFromReaderAsync(DbDataReader dbDataReader, Action<int> recordsAffectedCallback)
+		public IAsyncEnumerable<IAdoNetStreamingRecord> GetSchemaRecordsFromReaderAsync(DbDataReader dbDataReader, Action<int> recordsAffectedCallback, CancellationToken cancellationToken)
 		{
 			throw new NotImplementedException();
 		}
@@ -622,7 +617,7 @@ namespace SyncPrem.StreamingIO.Relational
 			this.__leave(_);
 		}
 
-		public IAsyncEnumerable<IAdoNetStreamingResult> GetSchemaResultsFromReaderAsync(DbDataReader dbDataReader)
+		public IAsyncEnumerable<IAdoNetStreamingResult> GetSchemaResultsFromReaderAsync(DbDataReader dbDataReader, CancellationToken cancellationToken)
 		{
 			throw new NotImplementedException();
 		}

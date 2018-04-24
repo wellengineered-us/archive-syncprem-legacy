@@ -24,6 +24,7 @@ namespace SyncPrem.StreamingIO.Relational
 		#region Fields/Constants
 
 		private readonly long resultIndex;
+		private IAsyncEnumerable<IPayload> asyncRecords;
 		private IEnumerable<IPayload> records;
 		private int recordsAffected;
 
@@ -36,6 +37,18 @@ namespace SyncPrem.StreamingIO.Relational
 			get
 			{
 				return this.resultIndex;
+			}
+		}
+
+		public IAsyncEnumerable<IPayload> AsyncRecords
+		{
+			get
+			{
+				return this.asyncRecords;
+			}
+			set
+			{
+				this.asyncRecords = value;
 			}
 		}
 

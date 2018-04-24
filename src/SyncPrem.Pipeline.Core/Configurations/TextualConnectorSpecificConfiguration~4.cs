@@ -79,6 +79,8 @@ namespace SyncPrem.Pipeline.Core.Configurations
 
 			if ((object)this.TextualConfiguration == null)
 				messages.Add(NewError(string.Format("{0} adapter textual specification is required.", adapterContext)));
+			else
+				messages.AddRange(this.TextualConfiguration.Validate(context));
 
 			return messages;
 		}

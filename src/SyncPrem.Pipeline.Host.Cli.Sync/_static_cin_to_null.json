@@ -1,0 +1,33 @@
+{
+	"_": "_",
+
+	"EnableDispatchLoop": true, 
+
+	"PipelineConfigurations":
+	[
+		{
+			"IsEnabled": true,
+			"PipelineAqtn": "SyncPrem.Pipeline.Core.Sync.Runtime.DefaultSyncPipeline, SyncPrem.Pipeline.Core.Sync",
+
+			"SourceConfiguration":
+			{
+				"StageAqtn": "SyncPrem.Pipeline.Core.Sync.Connectors.ConsoleSourceConnector, SyncPrem.Pipeline.Core.Sync",
+				"StageSpecificConfiguration":
+				{
+				}
+			},
+
+			"ProcessorConfigurations":
+			[
+			],
+
+			"DestinationConfiguration":
+			{
+				"StageAqtn": "SyncPrem.Pipeline.Core.Sync.Connectors.NullDestinationConnector, SyncPrem.Pipeline.Core.Sync",
+				"StageSpecificConfiguration":
+				{
+				}
+			}
+		}
+	]
+}

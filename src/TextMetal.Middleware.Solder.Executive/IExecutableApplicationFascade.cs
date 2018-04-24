@@ -13,10 +13,6 @@ namespace TextMetal.Middleware.Solder.Executive
 	{
 		#region Methods/Operators
 
-		Task<int> EntryPointAsync(string[] args);
-
-		//int EntryPoint(string[] args);
-
 		/// <summary>
 		/// Given a string array of command line arguments, this method will parse the arguments using a well know pattern match to obtain a loosely typed dictionary of key/multi-value pairs for use by applications.
 		/// </summary>
@@ -34,6 +30,24 @@ namespace TextMetal.Middleware.Solder.Executive
 		/// <param name="value"> The output property value. </param>
 		/// <returns> A value indicating if the parse was successful or not. </returns>
 		bool TryParseCommandLineArgumentProperty(string arg, out string key, out string value);
+
+		#endregion
+	}
+
+	public interface IAsyncExecutableApplicationFascade : IExecutableApplicationFascade
+	{
+		#region Methods/Operators
+
+		Task<int> EntryPointAsync(string[] args);
+
+		#endregion
+	}
+
+	public interface ISyncExecutableApplicationFascade : IExecutableApplicationFascade
+	{
+		#region Methods/Operators
+
+		int EntryPoint(string[] args);
 
 		#endregion
 	}

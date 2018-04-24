@@ -1,0 +1,76 @@
+{
+	"_": "_",
+
+	"EnableDispatchLoop": true, 
+
+	"PipelineConfigurations":
+	[
+		{
+			"IsEnabled": true,
+			"PipelineAqtn": "SyncPrem.Pipeline.Core.Async.Runtime.DefaultAsyncPipeline, SyncPrem.Pipeline.Core.Async",
+
+			"SourceConfiguration":
+			{
+				"StageAqtn": "SyncPrem.Pipeline.Core.Async.Connectors.AdoNetSourceConnector, SyncPrem.Pipeline.Core.Async",
+				"StageSpecificConfiguration":
+				{
+					`
+					"ConnectionAqtn": "System.Data.SqlClient.SqlConnection, System.Data.SqlClient",
+					"ConnectionString":
+						"Server=(local);User ID=bank_account_demo_mssql_lcl_login;PWD=LrJGmP6UfW8TEp7x3wWhECUYULE6zzMcWQ03R6UxeB4xzVmnq5S4Lx0vApegZVH;Database=bank_account_demo;",
+
+					"PreExecuteCommand":
+					{
+						"CommandType": "",
+						"CommandText": ""
+					},
+
+					"ExecuteCommand":
+					{
+						"CommandType": "StoredProcedure",
+						"CommandText": "[bank_account_demo].[dbo].[ExecuteExport_AccountReporting]"
+					},
+
+					"PostExecuteCommand":
+					{
+						"CommandType": "",
+						"CommandText": ""
+					}
+				}
+			},
+
+			"ProcessorConfigurations":
+			[
+			],
+
+			"DestinationConfiguration":
+			{
+				"StageAqtn": "SyncPrem.Pipeline.Core.Async.Connectors.SqlBulkCopyDestinationConnector, SyncPrem.Pipeline.Core.Async",
+				"StageSpecificConfiguration":
+				{
+					"ConnectionAqtn": "System.Data.SqlClient.SqlConnection, System.Data.SqlClient",
+					"ConnectionString":
+						"Server=(local);User ID=bank_account_demo_mssql_lcl_login;PWD=LrJGmP6UfW8TEp7x3wWhECUYULE6zzMcWQ03R6UxeB4xzVmnq5S4Lx0vApegZVH;Database=bank_account_demo;",
+
+					"PreExecuteCommand":
+					{
+						"CommandType": "Text",
+						"CommandText": "TRUNCATE TABLE [bank_account_demo].[dbo].[Ox_AccountReporting]"
+					},
+
+					"ExecuteCommand":
+					{
+						"CommandType": "TableDirect",
+						"CommandText": "[bank_account_demo].[dbo].[Ox_AccountReporting]"
+					},
+
+					"PostExecuteCommand":
+					{
+						"CommandType": "",
+						"CommandText": ""
+					}
+				}
+			}
+		}
+	]
+}

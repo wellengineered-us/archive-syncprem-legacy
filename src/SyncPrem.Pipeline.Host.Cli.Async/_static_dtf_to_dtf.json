@@ -1,0 +1,158 @@
+{
+	"_": "_",
+
+	"EnableDispatchLoop": true, 
+
+	"PipelineConfigurations":
+	[
+		{
+			"IsEnabled": true,
+			"PipelineAqtn": "SyncPrem.Pipeline.Core.Async.Runtime.DefaultAsyncPipeline, SyncPrem.Pipeline.Core.Async",
+
+			"SourceConfiguration":
+			{
+				"StageAqtn": "SyncPrem.Pipeline.Core.Async.Connectors.DelimitedTextSourceConnector, SyncPrem.Pipeline.Core.Async",
+				"StageSpecificConfiguration":
+				{
+					"TextualFilePath": "d:\\SupplierData.csv",
+
+					"TextualConfiguration":
+					{
+						"FirstRecordIsHeader": true,
+						"LastRecordIsFooter": false,
+						"RecordDelimiter": "\r\n",
+						"FieldDelimiter": ",",
+						"OpenQuoteValue": "\"",
+						"CloseQuoteValue": "\"",
+
+						"TextualHeaderFieldConfigurations":
+						[
+							{
+								"FieldTitle": "Name",
+								"FieldType": "Text"
+							},
+							{
+								"FieldTitle": "Address",
+								"FieldType": "Text"
+							},
+							{
+								"FieldTitle": "Address 2",
+								"FieldType": "Text"
+							},
+							{
+								"FieldTitle": "City",
+								"FieldType": "Text"
+							},
+							{
+								"FieldTitle": "State",
+								"FieldType": "Text"
+							},
+							{
+								"FieldTitle": "Zip",
+								"FieldType": "Text"
+							},
+							{
+								"FieldTitle": "Zip Plus 4",
+								"FieldType": "Text"
+							},
+							{
+								"FieldTitle": "Phone",
+								"FieldType": "Text"
+							},
+							{
+								"FieldTitle": "Toll-Free Telephone",
+								"FieldType": "Text"
+							},
+							{
+								"FieldTitle": "Product Category Name",
+								"FieldType": "Text"
+							},
+							{
+								"FieldTitle": "Competitive Bid?",
+								"FieldType": "Text"
+							}
+						]
+					}
+				}
+			},
+
+			"ProcessorConfigurations":
+			[
+				/*{
+					"StageAqtn":
+						"SyncPrem.Pipeline.Core.Async.Processors.MessageReshapeProcessor, SyncPrem.Pipeline.Core.Async",
+					"StageSpecificConfiguration":
+					{
+					}
+				}*/
+			],
+
+			"DestinationConfiguration":
+			{
+				"StageAqtn": "SyncPrem.Pipeline.Core.Async.Connectors.DelimitedTextDestinationConnector, SyncPrem.Pipeline.Core.Async",
+				"StageSpecificConfiguration":
+				{
+					"TextualFilePath": "d:\\test", /*Public_Banking_Data.csv*/
+
+					"TextualConfiguration":
+					{
+						"FirstRecordIsHeader": true,
+						"LastRecordIsFooter": false,
+						"RecordDelimiter": "\n",
+						"FieldDelimiter": "\t",
+						"OpenQuoteValue": "",
+						"CloseQuoteValue": "",
+
+						"TextualHeaderFieldConfigurations":
+						[
+							{
+								"FieldTitle": "Name",
+								"FieldType": "Text"
+							},
+							{
+								"FieldTitle": "Address",
+								"FieldType": "Text"
+							},
+							{
+								"FieldTitle": "Address 2",
+								"FieldType": "Text"
+							},
+							{
+								"FieldTitle": "City",
+								"FieldType": "Text"
+							},
+							{
+								"FieldTitle": "State",
+								"FieldType": "Text"
+							},
+							{
+								"FieldTitle": "Zip",
+								"FieldType": "Text"
+							},
+							{
+								"FieldTitle": "Zip Plus 4",
+								"FieldType": "Text"
+							},
+							{
+								"FieldTitle": "Phone",
+								"FieldType": "Text"
+							},
+							{
+								"FieldTitle": "Toll-Free Telephone",
+								"FieldType": "Text"
+							},
+							{
+								"FieldTitle": "Product Category Name",
+								"FieldType": "Text"
+							},
+							{
+								"FieldTitle": "Competitive Bid?",
+								"FieldType": "Text"
+							}
+						]
+					}
+				}
+			}
+		}
+	]
+}

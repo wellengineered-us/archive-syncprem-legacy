@@ -93,13 +93,13 @@ namespace SyncPrem.Pipeline.Abstractions.Configuration
 					{
 						try
 						{
-							using (stage)
+							/*using (stage)
 							{
 								stage.Configuration = this;
 								stage.Create();
 
 								messages.AddRange(stage.StageSpecificValidatable.Validate(stageContext));
-							}
+							}*/
 						}
 						catch (Exception ex)
 						{

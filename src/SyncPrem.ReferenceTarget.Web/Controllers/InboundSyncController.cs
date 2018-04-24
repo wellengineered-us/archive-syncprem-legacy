@@ -25,7 +25,8 @@ namespace SyncPrem.ReferenceTarget.Web.Controllers
 
 								using (ProgressWrappedStream inputStream = new ProgressWrappedStream(stream))
 								{
-									using (ProgressWrappedStream outputStream = new ProgressWrappedStream(System.IO.File.Create(Path.Combine("d:\\", $"api-post-{Guid.NewGuid().ToString("N")}.json"))))
+									using (ProgressWrappedStream outputStream = new ProgressWrappedStream(Stream.Null)
+										/*new ProgressWrappedStream(System.IO.File.Create(Path.Combine("d:\\", $"api-post-{Guid.NewGuid().ToString("N")}.json")))*/)
 									{
 										inputStream.CopyTo(outputStream);
 									}

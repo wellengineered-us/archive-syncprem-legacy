@@ -83,11 +83,17 @@ namespace SyncPrem.StreamingIO.Textual.Delimited
 			if (!SolderFascadeAccessor.DataTypeFascade.IsNullOrEmpty(this.FieldDelimiter))
 				strings.Add(this.FieldDelimiter);
 
-			if (!SolderFascadeAccessor.DataTypeFascade.IsNullOrEmpty(this.OpenQuoteValue))
-				strings.Add(this.OpenQuoteValue);
-
-			if (!SolderFascadeAccessor.DataTypeFascade.IsNullOrEmpty(this.CloseQuoteValue))
-				strings.Add(this.CloseQuoteValue);
+			if (!SolderFascadeAccessor.DataTypeFascade.IsNullOrEmpty(this.OpenQuoteValue) &&
+				!SolderFascadeAccessor.DataTypeFascade.IsNullOrEmpty(this.CloseQuoteValue))
+			{
+				if (this.OpenQuoteValue == this.CloseQuoteValue)
+					strings.Add(this.OpenQuoteValue + this.CloseQuoteValue);
+				else
+				{
+					strings.Add(this.OpenQuoteValue);
+					strings.Add(this.CloseQuoteValue);
+				}
+			}
 
 			if (strings.GroupBy(s => s).Where(gs => gs.Count() > 1).Any())
 				throw new InvalidOperationException(string.Format("Duplicate delimiter/value encountered."));

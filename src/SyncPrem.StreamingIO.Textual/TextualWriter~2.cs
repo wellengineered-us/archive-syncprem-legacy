@@ -7,6 +7,7 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Threading;
+using System.Threading.Tasks;
 
 using SyncPrem.StreamingIO.Primitives;
 
@@ -77,22 +78,27 @@ namespace SyncPrem.StreamingIO.Textual
 
 		public void Flush()
 		{
-			this.BaseTextWriter.Flush();
+			if ((object)this.BaseTextWriter != null)
+				this.BaseTextWriter.Flush();
 		}
 
-		public abstract void FlushAsync(CancellationToken cancellationToken);
+		public async Task FlushAsync(CancellationToken cancellationToken)
+		{
+			if ((object)this.BaseTextWriter != null)
+				await this.BaseTextWriter.FlushAsync();
+		}
 
 		public abstract void WriteFooterRecords(IEnumerable<TTextualFieldSpec> footers, IEnumerable<ITextualStreamingRecord> records);
 
-		public abstract void WriteFooterRecordsAsync(IEnumerable<TTextualFieldSpec> specs, IEnumerable<ITextualStreamingRecord> footers, CancellationToken cancellationToken);
+		public abstract Task WriteFooterRecordsAsync(IAsyncEnumerable<TTextualFieldSpec> specs, IAsyncEnumerable<ITextualStreamingRecord> footers, CancellationToken cancellationToken);
 
 		public abstract void WriteHeaderFields(IEnumerable<TTextualFieldSpec> headers);
 
-		public abstract void WriteHeaderFieldsAsync(IEnumerable<TTextualFieldSpec> specs, CancellationToken cancellationToken);
+		public abstract Task WriteHeaderFieldsAsync(IAsyncEnumerable<TTextualFieldSpec> headers, CancellationToken cancellationToken);
 
 		public abstract void WriteRecords(IEnumerable<IPayload> records);
 
-		public abstract void WriteRecordsAsync(IEnumerable<IPayload> records, CancellationToken cancellationToken);
+		public abstract Task WriteRecordsAsync(IAsyncEnumerable<IPayload> records, CancellationToken cancellationToken);
 
 		#endregion
 	}

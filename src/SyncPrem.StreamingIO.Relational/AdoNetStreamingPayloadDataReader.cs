@@ -21,55 +21,46 @@ namespace SyncPrem.StreamingIO.Relational
 	{
 		#region Constructors/Destructors
 
-		public AdoNetStreamingPayloadDataReader(IEnumerable<IField> fieldMetadata, IEnumerable<IBatch> targetBatchEnumerable)
+		private AdoNetStreamingPayloadDataReader(ISchema schema, IEnumerable<IAdoNetStreamingResult> results)
 		{
-			if ((object)fieldMetadata == null)
-				throw new ArgumentNullException(nameof(fieldMetadata));
+			IEnumerator<IAdoNetStreamingResult> resultz;
 
-			if ((object)targetBatchEnumerable == null)
-				throw new ArgumentNullException(nameof(targetBatchEnumerable));
+			if ((object)schema == null)
+				throw new ArgumentNullException(nameof(schema));
 
-			this.targetBatchEnumerable = targetBatchEnumerable;
-			this.targetBatchEnumerator = targetBatchEnumerable.GetEnumerator();
+			if ((object)results == null)
+				throw new ArgumentNullException(nameof(results));
 
-			if ((object)this.TargetBatchEnumerator == null)
-				throw new InvalidOperationException(nameof(this.TargetBatchEnumerator));
+			resultz = results.GetEnumerator();
 
-			// if we are going to enumerate the enumerable anyways and incur possible side effects,
-			// we can first force to array, stash it in member, then project OLC...
-			this.ordinalLookupCache = (this.fieldMetadata = fieldMetadata.ToArray()).Select((mc, i) => new
-																										{
-																											Index = i,
-																											Name = mc.FieldName
-																										}).ToDictionary(
-				p => p.Name,
-				p => p.Index,
-				StringComparer.CurrentCultureIgnoreCase);
+			if ((object)resultz == null)
+				throw new InvalidOperationException(nameof(resultz));
 
-			if (!this.AdvanceResult())
-				throw new InvalidOperationException(nameof(this.AdvanceResult));
+			this.schema = schema;
+			this.results = results;
+			this.resultz = resultz;
+
+			this.fieldCache = schema.Fields.Select((f, i) => new
+																	{
+																		FieldName = f.Key,
+																		FieldOrdinal = i
+																	}).ToDictionary(p => p.FieldName, p => p.FieldOrdinal, StringComparer.CurrentCultureIgnoreCase);
 		}
 
-		public AdoNetStreamingPayloadDataReader(IEnumerable<IField> fieldMetadata, IEnumerable<IPayload> targetPayloadEnumerable)
-			: this(fieldMetadata, GetBatch(targetPayloadEnumerable))
-		{
-		}
+		private readonly IDictionary<string, int> fieldCache;
 
 		#endregion
 
 		#region Fields/Constants
 
-		private readonly IEnumerable<IField> fieldMetadata;
-		private readonly Dictionary<string, int> ordinalLookupCache;
-		private readonly IEnumerable<IBatch> targetBatchEnumerable;
-		private readonly IEnumerator<IBatch> targetBatchEnumerator;
-		private string[] currentKeys;
-		private object[] currentValues;
+		private readonly ISchema schema;
+		private IEnumerable<IAdoNetStreamingResult> results;
+		private IEnumerator<IAdoNetStreamingResult> resultz;
+		private IEnumerable<IAdoNetStreamingRecord> records;
+		private IEnumerator<IAdoNetStreamingRecord> recordz;
+
 		private bool? isBatchEnumerableClosed;
 		private bool? isPayloadEnumerableClosed;
-		private IEnumerable<IPayload> targetPayloadEnumerable;
-		private IEnumerator<IPayload> targetPayloadEnumerator;
-		private int visibleFieldCount = default(int);
 
 		#endregion
 
@@ -79,7 +70,7 @@ namespace SyncPrem.StreamingIO.Relational
 		{
 			get
 			{
-				return this.HasRecord ? this.TargetPayloadEnumerator.Current[name] : null;
+				return this.HasRecord ? this.Recordz.Current[name] : null;
 			}
 		}
 
@@ -103,15 +94,15 @@ namespace SyncPrem.StreamingIO.Relational
 		{
 			get
 			{
-				return this.HasRecord ? this.TargetPayloadEnumerator.Current.Keys.Count() : 0;
+				return this.HasRecord ? this.Recordz.Current.Keys.Count() : 0;
 			}
 		}
 
-		private IEnumerable<IField> FieldMetadata
+		private ISchema Schema
 		{
 			get
 			{
-				return this.fieldMetadata;
+				return this.schema;
 			}
 		}
 
@@ -119,7 +110,7 @@ namespace SyncPrem.StreamingIO.Relational
 		{
 			get
 			{
-				return this.HasResult && (object)this.TargetPayloadEnumerator.Current != null;
+				return this.HasResult && (object)this.Recordz.Current != null;
 			}
 		}
 
@@ -127,7 +118,7 @@ namespace SyncPrem.StreamingIO.Relational
 		{
 			get
 			{
-				return (object)this.TargetBatchEnumerator.Current != null;
+				return (object)this.Resultz.Current != null;
 			}
 		}
 
@@ -147,14 +138,6 @@ namespace SyncPrem.StreamingIO.Relational
 			}
 		}
 
-		private Dictionary<string, int> OrdinalLookupCache
-		{
-			get
-			{
-				return this.ordinalLookupCache;
-			}
-		}
-
 		public override int RecordsAffected
 		{
 			get
@@ -163,19 +146,19 @@ namespace SyncPrem.StreamingIO.Relational
 			}
 		}
 
-		private IEnumerable<IBatch> TargetBatchEnumerable
+		private IEnumerable<IAdoNetStreamingResult> Results
 		{
 			get
 			{
-				return this.targetBatchEnumerable;
+				return this.results;
 			}
 		}
 
-		private IEnumerator<IBatch> TargetBatchEnumerator
+		private IEnumerator<IAdoNetStreamingResult> Resultz
 		{
 			get
 			{
-				return this.targetBatchEnumerator;
+				return this.resultz;
 			}
 		}
 
@@ -183,31 +166,7 @@ namespace SyncPrem.StreamingIO.Relational
 		{
 			get
 			{
-				return this.visibleFieldCount;
-			}
-		}
-
-		private string[] CurrentKeys
-		{
-			get
-			{
-				return this.currentKeys;
-			}
-			set
-			{
-				this.currentKeys = value;
-			}
-		}
-
-		private object[] CurrentValues
-		{
-			get
-			{
-				return this.currentValues;
-			}
-			set
-			{
-				this.currentValues = value;
+				return 0;
 			}
 		}
 
@@ -235,27 +194,27 @@ namespace SyncPrem.StreamingIO.Relational
 			}
 		}
 
-		private IEnumerable<IPayload> TargetPayloadEnumerable
+		private IEnumerable<IAdoNetStreamingRecord> Records
 		{
 			get
 			{
-				return this.targetPayloadEnumerable;
+				return this.records;
 			}
 			set
 			{
-				this.targetPayloadEnumerable = value;
+				this.records = value;
 			}
 		}
 
-		private IEnumerator<IPayload> TargetPayloadEnumerator
+		private IEnumerator<IAdoNetStreamingRecord> Recordz
 		{
 			get
 			{
-				return this.targetPayloadEnumerator;
+				return this.recordz;
 			}
 			set
 			{
-				this.targetPayloadEnumerator = value;
+				this.recordz = value;
 			}
 		}
 
@@ -263,109 +222,70 @@ namespace SyncPrem.StreamingIO.Relational
 
 		#region Methods/Operators
 
-		private static IEnumerable<IBatch> GetBatch(IEnumerable<IPayload> payloads)
-		{
-			if ((object)payloads == null)
-				throw new ArgumentNullException(nameof(payloads));
-
-			return null;
-		}
-
-		private bool AdvanceResult()
-		{
-			if (!(this.IsBatchEnumerableClosed ?? false))
-			{
-				bool retval = !(bool)(this.IsBatchEnumerableClosed = !this.TargetBatchEnumerator.MoveNext());
-
-				if (retval && this.HasResult)
-				{
-					IBatch batch;
-
-					batch = this.TargetBatchEnumerator.Current;
-
-					if ((object)batch == null)
-						throw new ArgumentNullException(nameof(batch));
-
-					this.TargetPayloadEnumerable = batch.Payloads;
-
-					if ((object)this.TargetPayloadEnumerable == null)
-						throw new ArgumentNullException(nameof(this.TargetPayloadEnumerable));
-
-					this.TargetPayloadEnumerator = this.TargetPayloadEnumerable.GetEnumerator();
-
-					if ((object)this.TargetPayloadEnumerator == null)
-						throw new InvalidOperationException(nameof(this.TargetPayloadEnumerator));
-				}
-
-				return retval;
-			}
-			else
-				return true;
-		}
-
 		public override void Close()
 		{
 			IDisposable disposable;
 
-			disposable = this.TargetBatchEnumerator;
+			disposable = this.Recordz;
 
 			if ((object)disposable != null)
 				disposable.Dispose();
 
-			disposable = this.TargetBatchEnumerable as IDisposable;
+			disposable = this.Records as IDisposable;
 
 			if ((object)disposable != null)
 				disposable.Dispose();
 
-			disposable = this.TargetPayloadEnumerator;
+			disposable = this.Resultz;
 
 			if ((object)disposable != null)
 				disposable.Dispose();
 
-			disposable = this.TargetPayloadEnumerable as IDisposable;
+			disposable = this.Results as IDisposable;
 
 			if ((object)disposable != null)
 				disposable.Dispose();
+		}
 
-			disposable = this.FieldMetadata as IDisposable;
+		protected override void Dispose(bool disposing)
+		{
+			base.Dispose(disposing);
+		}
 
-			if ((object)disposable != null)
-				disposable.Dispose();
+		protected override DbDataReader GetDbDataReader(int ordinal)
+		{
+			return base.GetDbDataReader(ordinal);
 		}
 
 		public override bool GetBoolean(int i)
 		{
-			return this.HasRecord ? (Boolean)this.CurrentValues[i] : default(Boolean);
+			this.Schema.Fields
+			return (bool)this.Recordz.Current;
 		}
 
 		public override byte GetByte(int i)
 		{
-			return this.HasRecord ? (Byte)this.CurrentValues[i] : default(Byte);
+			return base.GetByte(i);
 		}
 
-		public override long GetBytes(int i, long fieldOffset, byte[] buffer, int bufferoffset, int length)
+		public override long GetBytes(int i, long fieldOffset, byte[] buffer, int bufferOffset, int length)
 		{
-			return 0;
+			return base.GetBytes(i, fieldOffset, buffer, bufferOffset, length);
 		}
 
 		public override char GetChar(int i)
 		{
-			return this.HasRecord ? (Char)this.CurrentValues[i] : default(Char);
+			return base.GetChar(i);
 		}
 
-		public override long GetChars(int i, long fieldoffset, char[] buffer, int bufferoffset, int length)
+		public override long GetChars(int i, long fieldOffset, char[] buffer, int bufferOffset, int length)
 		{
-			return 0;
+			return base.GetChars(i, fieldOffset, buffer, bufferOffset, length);
 		}
-
-		//public override DbDataReader GetData(int i)
-		//{
-		//	return null;
-		//}
 
 		public override string GetDataTypeName(int i)
 		{
-			return null;
+			return base.GetDataTypeName(i);
 		}
 
 		public override DateTime GetDateTime(int i)
@@ -385,7 +305,7 @@ namespace SyncPrem.StreamingIO.Relational
 
 		public override IEnumerator GetEnumerator()
 		{
-			return this.TargetBatchEnumerator;
+			return this.Recordz;
 		}
 
 		public override Type GetFieldType(int i)
@@ -435,10 +355,8 @@ namespace SyncPrem.StreamingIO.Relational
 
 		public override int GetOrdinal(string name)
 		{
-			int value;
-
-			if (this.OrdinalLookupCache.TryGetValue(name, out value))
-				return value;
+			if (this.Schema.Fields.TryGetValue(name, out IField field))
+				return (int)field.FieldIndex;
 
 			return -1;
 		}
@@ -500,7 +418,34 @@ namespace SyncPrem.StreamingIO.Relational
 
 		public override bool NextResult()
 		{
-			return this.AdvanceResult();
+			if (!(this.IsBatchEnumerableClosed ?? false))
+			{
+				bool retval = !(bool)(this.IsBatchEnumerableClosed = !this.TargetBatchEnumerator.MoveNext());
+
+				if (retval && this.HasResult)
+				{
+					IBatch batch;
+
+					batch = this.TargetBatchEnumerator.Current;
+
+					if ((object)batch == null)
+						throw new ArgumentNullException(nameof(batch));
+
+					this.TargetPayloadEnumerable = batch.Payloads;
+
+					if ((object)this.TargetPayloadEnumerable == null)
+						throw new ArgumentNullException(nameof(this.TargetPayloadEnumerable));
+
+					this.TargetPayloadEnumerator = this.TargetPayloadEnumerable.GetEnumerator();
+
+					if ((object)this.TargetPayloadEnumerator == null)
+						throw new InvalidOperationException(nameof(this.TargetPayloadEnumerator));
+				}
+
+				return retval;
+			}
+			else
+				return true;
 		}
 
 		public override Task<bool> NextResultAsync(CancellationToken cancellationToken)

@@ -8,6 +8,7 @@ using System.Collections.Generic;
 using System.Data;
 using System.Data.Common;
 using System.Linq;
+using System.Threading;
 
 using SyncPrem.StreamingIO.Primitives;
 
@@ -87,6 +88,19 @@ namespace SyncPrem.StreamingIO.Relational.UoW
 			return records;
 		}
 
+		public static IAsyncEnumerable<IPayload> ExecuteRecordsAsync(this IUnitOfWork unitOfWork, CommandType commandType, string commandText, IEnumerable<DbParameter> commandParameters, Action<int> rowsAffectedCallback, CancellationToken cancellationToken)
+		{
+			IAsyncEnumerable<IPayload> records;
+
+			if ((object)unitOfWork == null)
+				throw new ArgumentNullException(nameof(unitOfWork));
+
+			// DO NOT DISPOSE OF DATA READER HERE - THE YIELD STATE MACHINE BELOW WILL DO THIS
+			records = AdoNetStreamingFascade.ExecuteRecordsAsync(unitOfWork.Connection, unitOfWork.Transaction, commandType, commandText, commandParameters, rowsAffectedCallback, cancellationToken);
+
+			return records;
+		}
+
 		/// <summary>
 		/// An extension method to execute a result query operation against a target unit of work.
 		/// DO NOT DISPOSE OF UNIT OF WORK CONTEXT - UP TO THE CALLER.
@@ -105,6 +119,19 @@ namespace SyncPrem.StreamingIO.Relational.UoW
 
 			// DO NOT DISPOSE OF DATA READER HERE - THE YIELD STATE MACHINE BELOW WILL DO THIS
 			results = AdoNetStreamingFascade.ExecuteResults(unitOfWork.Connection, unitOfWork.Transaction, commandType, commandText, commandParameters);
+
+			return results;
+		}
+
+		public static IAsyncEnumerable<IAdoNetStreamingResult> ExecuteResultsAsync(this IUnitOfWork unitOfWork, CommandType commandType, string commandText, IEnumerable<DbParameter> commandParameters, CancellationToken cancellationToken)
+		{
+			IAsyncEnumerable<IAdoNetStreamingResult> results;
+
+			if ((object)unitOfWork == null)
+				throw new ArgumentNullException(nameof(unitOfWork));
+
+			// DO NOT DISPOSE OF DATA READER HERE - THE YIELD STATE MACHINE BELOW WILL DO THIS
+			results = AdoNetStreamingFascade.ExecuteResultsAsync(unitOfWork.Connection, unitOfWork.Transaction, commandType, commandText, commandParameters, cancellationToken);
 
 			return results;
 		}
@@ -155,6 +182,19 @@ namespace SyncPrem.StreamingIO.Relational.UoW
 			return records;
 		}
 
+		public static IAsyncEnumerable<IPayload> ExecuteSchemaRecordsAsync(this IUnitOfWork unitOfWork, CommandType commandType, string commandText, IEnumerable<DbParameter> commandParameters, Action<int> rowsAffectedCallback, CancellationToken cancellationToken)
+		{
+			IAsyncEnumerable<IPayload> records;
+
+			if ((object)unitOfWork == null)
+				throw new ArgumentNullException(nameof(unitOfWork));
+
+			// DO NOT DISPOSE OF DATA READER HERE - THE YIELD STATE MACHINE BELOW WILL DO THIS
+			records = AdoNetStreamingFascade.ExecuteSchemaRecordsAsync(unitOfWork.Connection, unitOfWork.Transaction, commandType, commandText, commandParameters, rowsAffectedCallback, cancellationToken);
+
+			return records;
+		}
+
 		/// <summary>
 		/// An extension method to execute a result query operation against a target unit of work.
 		/// DO NOT DISPOSE OF UNIT OF WORK CONTEXT - UP TO THE CALLER.
@@ -172,6 +212,18 @@ namespace SyncPrem.StreamingIO.Relational.UoW
 				throw new ArgumentNullException(nameof(unitOfWork));
 
 			results = AdoNetStreamingFascade.ExecuteSchemaResults(unitOfWork.Connection, unitOfWork.Transaction, commandType, commandText, commandParameters);
+
+			return results;
+		}
+
+		public static IAsyncEnumerable<IAdoNetStreamingResult> ExecuteSchemaResultsAsync(this IUnitOfWork unitOfWork, CommandType commandType, string commandText, IEnumerable<DbParameter> commandParameters, CancellationToken cancellationToken)
+		{
+			IAsyncEnumerable<IAdoNetStreamingResult> results;
+
+			if ((object)unitOfWork == null)
+				throw new ArgumentNullException(nameof(unitOfWork));
+
+			results = AdoNetStreamingFascade.ExecuteSchemaResultsAsync(unitOfWork.Connection, unitOfWork.Transaction, commandType, commandText, commandParameters, cancellationToken);
 
 			return results;
 		}

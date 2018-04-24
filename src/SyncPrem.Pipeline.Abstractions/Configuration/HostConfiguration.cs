@@ -30,6 +30,8 @@ namespace SyncPrem.Pipeline.Abstractions.Configuration
 
 		private string __;
 
+		private bool? enableDispatchLoop;
+
 		#endregion
 
 		#region Properties/Indexers/Events
@@ -51,6 +53,18 @@ namespace SyncPrem.Pipeline.Abstractions.Configuration
 			set
 			{
 				this.__ = value;
+			}
+		}
+
+		public bool? EnableDispatchLoop
+		{
+			get
+			{
+				return this.enableDispatchLoop;
+			}
+			set
+			{
+				this.enableDispatchLoop = value;
 			}
 		}
 

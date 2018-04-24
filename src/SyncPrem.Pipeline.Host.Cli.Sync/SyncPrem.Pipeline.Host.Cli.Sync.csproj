@@ -1,0 +1,54 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <TargetFramework>netcoreapp2.0</TargetFramework>
+    <ApplicationIcon />
+    <OutputType>Exe</OutputType>
+    <StartupObject />
+  </PropertyGroup>
+
+  <Import Project="..\common.props" />
+
+  <ItemGroup>
+    <None Update="appconfig.json">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Update="_static_adonet_to_reccmd.json">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Update="_static_adonet_to_sqlbcp.json">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Update="_static_cin_to_cout.json">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Update="_static_cin_to_null.json">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Update="_static_txt_to_txt.json">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Update="_static_dtf_to_dtf.json">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Update="_static_dtf_to_webapi.json">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Update="_static_null_to_cout.json">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Update="_static_null_to_null.json">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Update="_static_null_to_webapi.json">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\SyncPrem.Pipeline.Abstractions.Sync\SyncPrem.Pipeline.Abstractions.Sync.csproj" />
+    <ProjectReference Include="..\SyncPrem.Pipeline.Abstractions\SyncPrem.Pipeline.Abstractions.csproj" />
+    <ProjectReference Include="..\SyncPrem.Pipeline.Core.Sync\SyncPrem.Pipeline.Core.Sync.csproj" />
+    <ProjectReference Include="..\SyncPrem.Pipeline.Core\SyncPrem.Pipeline.Core.csproj" />
+  </ItemGroup>
+
+</Project>

@@ -7,7 +7,6 @@ using System.Collections.Generic;
 
 using SyncPrem.StreamingIO.Textual.Delimited;
 
-using TextMetal.Middleware.Solder.Extensions;
 using TextMetal.Middleware.Solder.Primitives;
 
 namespace SyncPrem.Pipeline.Core.Configurations
@@ -27,21 +26,10 @@ namespace SyncPrem.Pipeline.Core.Configurations
 		public override IEnumerable<Message> Validate(object context)
 		{
 			List<Message> messages;
-			string adapterContext;
 
-			adapterContext = context as string;
 			messages = new List<Message>();
 
 			messages.AddRange(base.Validate(context));
-
-			if ((object)this.TextualConfiguration != null)
-			{
-				if (SolderFascadeAccessor.DataTypeFascade.IsNullOrEmpty(this.TextualConfiguration.RecordDelimiter))
-					messages.Add(NewError(string.Format("{0} adapter textual (delimited) record delimiter is required.", adapterContext)));
-
-				if (SolderFascadeAccessor.DataTypeFascade.IsNullOrEmpty(this.TextualConfiguration.FieldDelimiter))
-					messages.Add(NewError(string.Format("{0} adapter textual (delimited) field delimiter is required.", adapterContext)));
-			}
 
 			return messages;
 		}

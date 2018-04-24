@@ -6,6 +6,7 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Threading;
+using System.Threading.Tasks;
 
 using SyncPrem.StreamingIO.Primitives;
 
@@ -35,19 +36,19 @@ namespace SyncPrem.StreamingIO.Textual
 
 		void Flush();
 
-		void FlushAsync(CancellationToken cancellationToken);
+		Task FlushAsync(CancellationToken cancellationToken);
 
 		void WriteFooterRecords(IEnumerable<TTextualFieldSpec> specs, IEnumerable<ITextualStreamingRecord> footers);
 
-		void WriteFooterRecordsAsync(IEnumerable<TTextualFieldSpec> specs, IEnumerable<ITextualStreamingRecord> footers, CancellationToken cancellationToken);
+		Task WriteFooterRecordsAsync(IAsyncEnumerable<TTextualFieldSpec> specs, IAsyncEnumerable<ITextualStreamingRecord> footers, CancellationToken cancellationToken);
 
 		void WriteHeaderFields(IEnumerable<TTextualFieldSpec> specs);
 
-		void WriteHeaderFieldsAsync(IEnumerable<TTextualFieldSpec> specs, CancellationToken cancellationToken);
+		Task WriteHeaderFieldsAsync(IAsyncEnumerable<TTextualFieldSpec> specs, CancellationToken cancellationToken);
 
 		void WriteRecords(IEnumerable<IPayload /* SHOULD BE LCD INTERFACE */> records);
 
-		void WriteRecordsAsync(IEnumerable<IPayload /* SHOULD BE LCD INTERFACE */> records, CancellationToken cancellationToken);
+		Task WriteRecordsAsync(IAsyncEnumerable<IPayload> records, CancellationToken cancellationToken);
 
 		#endregion
 	}

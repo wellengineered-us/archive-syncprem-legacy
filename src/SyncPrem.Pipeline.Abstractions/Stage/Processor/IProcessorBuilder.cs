@@ -9,14 +9,5 @@ namespace SyncPrem.Pipeline.Abstractions.Stage.Processor
 {
 	public interface IProcessorBuilder
 	{
-		#region Methods/Operators
-
-		ProcessDelegate Build();
-
-		IProcessorBuilder New();
-
-		IProcessorBuilder Use(Func<ProcessDelegate, ProcessDelegate> middleware);
-
-		#endregion
 	}
 }

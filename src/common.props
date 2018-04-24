@@ -22,14 +22,14 @@
 		<GeneratePackageOnBuild>true</GeneratePackageOnBuild>
 		<Product>SyncPrem</Product>
 		<Description>$(MSBuildProjectName) Library</Description>
-		<VersionPrefix>0.1.0</VersionPrefix>
+		<VersionPrefix>0.2.0</VersionPrefix>
 		<VersionSuffix>mvp</VersionSuffix>
 		<Authors>Daniel P. Bullington (dpbullington@gmail.com)</Authors>
-		<Copyright>©2002-2017 Daniel P. Bullington (dpbullington@gmail.com)</Copyright>
+		<Copyright>©2002-2018 Daniel P. Bullington (dpbullington@gmail.com)</Copyright>
 		<PackageId>$(MSBuildProjectName)</PackageId>
 		<PackageTags>SyncPrem</PackageTags>
 		<PackageRequireLicenseAcceptance>true</PackageRequireLicenseAcceptance>
-		<PackageIconUrl>https://github.com/dpbullington/syncprem/blob/master/doc/syncprem-logo.png</PackageIconUrl>
+		<PackageIconUrl>https://github.com/syncprem/main/blob/master/doc/syncprem-logo.png</PackageIconUrl>
 		<PackageProjectUrl>http://www.syncprem.com</PackageProjectUrl>
 		<PackageLicenseUrl>http://www.opensource.org/licenses/mit-license.php</PackageLicenseUrl>
 		<RepositoryType>git</RepositoryType>

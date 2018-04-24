@@ -9,6 +9,7 @@ using System.IO;
 using System.Linq;
 using System.Text;
 using System.Threading;
+using System.Threading.Tasks;
 
 using TextMetal.Middleware.Solder.Extensions;
 
@@ -95,7 +96,7 @@ namespace SyncPrem.StreamingIO.Textual.Delimited
 			string[] fieldNames;
 			IDelimitedTextualFieldSpec delimitedTextualFieldSpec;
 
-			fieldNames = this.ParserState.header.Keys.ToArray();
+			fieldNames = this.ParserState.Header.Keys.ToArray();
 
 			if ((object)this.TextualSpec == null ||
 				(object)this.TextualSpec.TextualHeaderSpecs == null ||
@@ -170,7 +171,7 @@ namespace SyncPrem.StreamingIO.Textual.Delimited
 				if (this.ParserState.isHeaderRecord)
 				{
 					// stash field if FRIS enabled and zeroth record
-					this.ParserState.record.Add(tempStringValue, this.ParserState.fieldIndex.ToString("0000"));
+					this.ParserState.Record.Add(tempStringValue, this.ParserState.fieldIndex.ToString("0000"));
 				}
 				else
 				{
@@ -224,13 +225,13 @@ namespace SyncPrem.StreamingIO.Textual.Delimited
 						throw new InvalidOperationException(string.Format("Delimited text reader parse state failure: field string value '{0}' could not be parsed into a valid '{1}'.", tempStringValue, fieldType.FullName));
 
 					// lookup field name (key) by index and commit value to record
-					this.ParserState.record.Add(delimitedTextualFieldSpec.FieldTitle, fieldValue);
+					this.ParserState.Record.Add(delimitedTextualFieldSpec.FieldTitle, fieldValue);
 				}
 
 				// handle blank lines (we assume that any RECORDS with valid RECORD delimiter is OK)
 				if (SolderFascadeAccessor.DataTypeFascade.IsNullOrEmpty(tempStringValue) &&
-					this.ParserState.record.Keys.Count == 1)
-					this.ParserState.record = null;
+					this.ParserState.Record.Keys.Count == 1)
+					this.ParserState.Record = null;
 
 				// now what to do?
 				if (this.ParserState.isEOF)
@@ -333,7 +334,30 @@ namespace SyncPrem.StreamingIO.Textual.Delimited
 
 		public override IAsyncEnumerable<IDelimitedTextualFieldSpec> ReadHeaderFieldsAsync(CancellationToken cancellationToken)
 		{
-			throw new NotImplementedException();
+			if (this.ParserState.recordIndex == 0 &&
+				this.TextualSpec.IsFirstRecordHeader)
+			{
+				return AsyncEnumerable.CreateEnumerable<IDelimitedTextualFieldSpec>(() => AsyncEnumerable.CreateEnumerator(MoveNextAsync, Current, Dispose));
+
+				async Task<bool> MoveNextAsync(CancellationToken cancellationToken_)
+				{
+					await this.ResumableParserMainLoopAsync(cancellationToken_);
+					this.FixupHeaderRecord();
+					return false;
+				}
+
+				IDelimitedTextualFieldSpec Current()
+				{
+					return null; //this.TextualSpec.TextualHeaderSpecs;
+				}
+
+				void Dispose()
+				{
+					// do nothing
+				}
+			}
+
+			throw new InvalidOperationException();
 		}
 
 		public override IEnumerable<ITextualStreamingRecord> ReadRecords()
@@ -343,14 +367,30 @@ namespace SyncPrem.StreamingIO.Textual.Delimited
 
 		public override IAsyncEnumerable<ITextualStreamingRecord> ReadRecordsAsync(CancellationToken cancellationToken)
 		{
-			throw new NotImplementedException();
+			return AsyncEnumerable.CreateEnumerable<ITextualStreamingRecord>(() => AsyncEnumerable.CreateEnumerator(MoveNextAsync, Current, Dispose));
+
+			async Task<bool> MoveNextAsync(CancellationToken cancellationToken_)
+			{
+				await this.ResumableParserMainLoopAsync(cancellationToken_);
+				return !this.parserState.isEOF && !cancellationToken.IsCancellationRequested;
+			}
+
+			ITextualStreamingRecord Current()
+			{
+				return this.parserState.Record;
+			}
+
+			void Dispose()
+			{
+				// do nothing
+			}
 		}
 
 		private void ResetParserState()
 		{
 			const long DEFAULT_INDEX = 0;
 
-			this.ParserState.record = new TextualStreamingRecord(0, 0, 0);
+			this.ParserState.Record = new TextualStreamingRecord(0, 0, 0);
 			this.ParserState.transientStringBuilder = new StringBuilder();
 			this.ParserState.readCurrentCharacter = '\0';
 			this.ParserState.peekNextCharacter = '\0';
@@ -408,18 +448,18 @@ namespace SyncPrem.StreamingIO.Textual.Delimited
 				if (this.ParserStateMachine())
 				{
 					// if record is null here, then is was a blank line - no error just avoid doing work
-					if ((object)this.ParserState.record != null)
+					if ((object)this.ParserState.Record != null)
 					{
 						// should never yield the header record
 						if (!this.ParserState.isHeaderRecord)
 						{
 							// aint this some shhhhhhhh!t?
-							yield return this.ParserState.record;
+							yield return this.ParserState.Record;
 						}
 						else
 						{
-							this.ParserState.header = this.ParserState.record; // cache elsewhere
-							this.ParserState.record = null; // pretend it was a blank line
+							this.ParserState.Header = this.ParserState.Record; // cache elsewhere
+							this.ParserState.Record = null; // pretend it was a blank line
 							//this.ParserState.recordIndex--; // adjust down to zero
 						}
 					}
@@ -429,12 +469,89 @@ namespace SyncPrem.StreamingIO.Textual.Delimited
 						throw new InvalidOperationException(string.Format("Delimited text reader parse state failure: zero record index unexpected."));
 
 					// create a new record for the next index; will be used later
-					this.ParserState.record = new TextualStreamingRecord(this.ParserState.recordIndex, this.ParserState.contentIndex, this.ParserState.characterIndex);
+					this.ParserState.Record = new TextualStreamingRecord(this.ParserState.recordIndex, this.ParserState.contentIndex, this.ParserState.characterIndex);
 
 					if (once) // state-based resumption of loop ;)
 						break; // MUST NOT USE YIELD BREAK - as we will RESUME the enumeration based on state
 				}
 			}
+		}
+
+		private async Task<ITextualStreamingRecord> ResumableParserMainLoopAsync(CancellationToken cancellationToken)
+		{
+			int __value;
+			char ch;
+
+			ITextualStreamingRecord yieldReturn = null;
+
+			// main loop - character stream
+			while (!this.ParserState.isEOF && !cancellationToken.IsCancellationRequested)
+			{
+				// read the next byte
+				char[] buffer = new char[1];
+				await this.BaseTextReader.ReadAsync(buffer, 0, 1);
+				__value = buffer[0];
+				ch = (char)__value;
+
+				// check for -1 (EOF)
+				if (__value == -1)
+				{
+					this.ParserState.isEOF = true; // set terminal state
+
+					// sanity check - should never end with an open quote value
+					if (this.ParserState.isQuotedValue)
+						throw new InvalidOperationException(string.Format("Delimited text reader parse state failure: end of file encountered while reading open quoted value."));
+				}
+				else
+				{
+					// append character to temp buffer
+					this.ParserState.readCurrentCharacter = ch;
+					this.ParserState.transientStringBuilder.Append(ch);
+
+					// advance character index
+					this.ParserState.characterIndex++;
+				}
+
+				// eval on every loop
+				this.ParserState.isHeaderRecord = this.ParserState.recordIndex == 0 && this.TextualSpec.IsFirstRecordHeader;
+				this.ParserState.isFooterRecord = false; //this.ParserState.recordIndex == 0 && (this.TextualSpec.IsLastRecordFooter ?? false);
+
+				// peek the next byte
+				__value = this.BaseTextReader.Peek();
+				ch = (char)__value;
+				this.ParserState.peekNextCharacter = ch;
+
+				if (this.ParserStateMachine())
+				{
+					// if record is null here, then is was a blank line - no error just avoid doing work
+					if ((object)this.ParserState.Record != null)
+					{
+						// should never yield the header record
+						if (!this.ParserState.isHeaderRecord)
+						{
+							// aint this some shhhhhhhh!t?
+							yieldReturn = this.ParserState.Record;
+						}
+						else
+						{
+							this.ParserState.Header = this.ParserState.Record; // cache elsewhere
+							yieldReturn = this.ParserState.Record = null; // pretend it was a blank line
+							//this.ParserState.recordIndex--; // adjust down to zero
+						}
+					}
+
+					// sanity check - should never get here with zero record index
+					if ( /*!this.ParserState.isHeaderRecord &&*/ this.ParserState.recordIndex == 0)
+						throw new InvalidOperationException(string.Format("Delimited text reader parse state failure: zero record index unexpected."));
+
+					// create a new record for the next index; will be used later
+					this.ParserState.Record = new TextualStreamingRecord(this.ParserState.recordIndex, this.ParserState.contentIndex, this.ParserState.characterIndex);
+
+					break;
+				}
+			}
+
+			return yieldReturn;
 		}
 
 		#endregion
@@ -448,19 +565,43 @@ namespace SyncPrem.StreamingIO.Textual.Delimited
 			public long characterIndex;
 			public long contentIndex;
 			public long fieldIndex;
-			public ITextualStreamingRecord header;
+			private ITextualStreamingRecord header;
 			public bool isEOF;
 			public bool isFooterRecord;
 			public bool isHeaderRecord;
 			public bool isQuotedValue;
 			public char peekNextCharacter;
 			public char readCurrentCharacter;
-			public ITextualStreamingRecord record;
+			private ITextualStreamingRecord record;
 			public long recordIndex;
 			public StringBuilder transientStringBuilder;
 			public long valueIndex;
 
 			#endregion
+
+			public ITextualStreamingRecord Record
+			{
+				get
+				{
+					return this.record;
+				}
+				set
+				{
+					this.record = value;
+				}
+			}
+
+			public ITextualStreamingRecord Header
+			{
+				get
+				{
+					return this.header;
+				}
+				set
+				{
+					this.header = value;
+				}
+			}
 		}
 
 		#endregion

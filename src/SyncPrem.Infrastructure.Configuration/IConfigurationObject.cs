@@ -6,13 +6,14 @@
 using System;
 
 using TextMetal.Middleware.Solder.Primitives;
+using TextMetal.Middleware.Solder.Primitives.Async;
 
 namespace SyncPrem.Infrastructure.Configuration
 {
 	/// <summary>
 	/// Represents an configuration object and it's "schema".
 	/// </summary>
-	public interface IConfigurationObject : IValidatable
+	public interface IConfigurationObject : IValidatable, IAsyncValidatable
 	{
 		#region Properties/Indexers/Events
 

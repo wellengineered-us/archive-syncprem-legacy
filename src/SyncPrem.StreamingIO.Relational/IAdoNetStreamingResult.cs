@@ -14,6 +14,11 @@ namespace SyncPrem.StreamingIO.Relational
 	{
 		#region Properties/Indexers/Events
 
+		IAsyncEnumerable<IPayload> AsyncRecords
+		{
+			get;
+		}
+
 		IEnumerable<IPayload> Records
 		{
 			get;

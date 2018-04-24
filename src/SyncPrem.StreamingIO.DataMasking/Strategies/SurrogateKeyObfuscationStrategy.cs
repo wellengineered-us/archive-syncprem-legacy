@@ -47,7 +47,7 @@ namespace SyncPrem.StreamingIO.DataMasking.Strategies
 			_value = value.ChangeType<Int64>();
 
 			random = new Random((int)randomSeed);
-			int max = random.Next(0, 99);
+			int max = random.Next(1, 100);
 
 			// TODO - use lighweight dynmamic method here?
 			for (int i = 0; i < max; i++)

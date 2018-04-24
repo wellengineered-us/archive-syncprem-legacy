@@ -1,0 +1,49 @@
+{
+	"_": "_",
+
+	"EnableDispatchLoop": true, 
+
+	"PipelineConfigurations":
+	[
+		{
+			"IsEnabled": true,
+			"PipelineAqtn": "SyncPrem.Pipeline.Core.Sync.Runtime.DefaultSyncPipeline, SyncPrem.Pipeline.Core.Sync",
+
+			"SourceConfiguration":
+			{
+				"StageAqtn": "SyncPrem.Pipeline.Core.Sync.Connectors.LinedTextSourceConnector, SyncPrem.Pipeline.Core.Sync",
+				"StageSpecificConfiguration":
+				{
+					"TextualFilePath": "d:\\SupplierData.csv",
+
+					"TextualConfiguration":
+					{
+						"TextualHeaderFieldConfigurations":
+						[
+						]
+					}
+				}
+			},
+
+			"ProcessorConfigurations":
+			[
+			],
+
+			"DestinationConfiguration":
+			{
+				"StageAqtn": "SyncPrem.Pipeline.Core.Sync.Connectors.LinedTextDestinationConnector, SyncPrem.Pipeline.Core.Sync",
+				"StageSpecificConfiguration":
+				{
+					"TextualFilePath": "d:\\test",
+
+					"TextualConfiguration":
+					{
+						"TextualHeaderFieldConfigurations":
+						[
+						]
+					}
+				}
+			}
+		}
+	]
+}

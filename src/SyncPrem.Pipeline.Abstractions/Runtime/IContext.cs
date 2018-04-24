@@ -23,11 +23,5 @@ namespace SyncPrem.Pipeline.Abstractions.Runtime
 		}
 
 		#endregion
-
-		#region Methods/Operators
-
-		IChannel CreateChannel(IEnumerable<IRecord> records);
-
-		#endregion
 	}
 }

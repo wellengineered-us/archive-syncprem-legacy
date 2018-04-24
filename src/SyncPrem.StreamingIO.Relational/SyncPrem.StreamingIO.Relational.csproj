@@ -6,6 +6,16 @@
   <Import Project="..\common.props" />
 
   <ItemGroup>
+    <Compile Remove="AdoNetStreamingPayloadDataReader.cs" />
+    <Compile Remove="AdoNetStreamingPayloadDataReaderAsync.cs" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Include="AdoNetStreamingPayloadDataReader.cs" />
+    <None Include="AdoNetStreamingPayloadDataReaderAsync.cs" />
+  </ItemGroup>
+
+  <ItemGroup>
     <PackageReference Include="System.Interactive.Async" Version="3.1.1" />
   </ItemGroup>
 

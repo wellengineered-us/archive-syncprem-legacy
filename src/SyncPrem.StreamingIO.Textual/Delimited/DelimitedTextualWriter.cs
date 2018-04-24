@@ -7,6 +7,7 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Threading;
+using System.Threading.Tasks;
 
 using SyncPrem.StreamingIO.Primitives;
 
@@ -74,11 +75,6 @@ namespace SyncPrem.StreamingIO.Textual.Delimited
 			return value;
 		}
 
-		public override void FlushAsync(CancellationToken cancellationToken)
-		{
-			throw new NotImplementedException();
-		}
-
 		protected string FormatFieldValue(long fieldIndex, string fieldTitle, object fieldValue)
 		{
 			IDelimitedTextualFieldSpec header = null;
@@ -116,6 +112,20 @@ namespace SyncPrem.StreamingIO.Textual.Delimited
 				this.BaseTextWriter.Write(this.TextualSpec.CloseQuoteValue);
 		}
 
+		private async Task WriteFieldAsync(bool firstFieldInRecord, string fieldValue, CancellationToken cancellationToken)
+		{
+			if (!firstFieldInRecord && !SolderFascadeAccessor.DataTypeFascade.IsNullOrEmpty(this.TextualSpec.FieldDelimiter))
+				await this.BaseTextWriter.WriteAsync(this.TextualSpec.FieldDelimiter);
+
+			if (!SolderFascadeAccessor.DataTypeFascade.IsNullOrEmpty(this.TextualSpec.OpenQuoteValue))
+				await this.BaseTextWriter.WriteAsync(this.TextualSpec.OpenQuoteValue);
+
+			await this.BaseTextWriter.WriteAsync(fieldValue);
+
+			if (!SolderFascadeAccessor.DataTypeFascade.IsNullOrEmpty(this.TextualSpec.CloseQuoteValue))
+				await this.BaseTextWriter.WriteAsync(this.TextualSpec.CloseQuoteValue);
+		}
+
 		public override void WriteFooterRecords(IEnumerable<IDelimitedTextualFieldSpec> footers, IEnumerable<ITextualStreamingRecord> records)
 		{
 			//bool firstFieldInRecord;
@@ -144,15 +154,13 @@ namespace SyncPrem.StreamingIO.Textual.Delimited
 			}*/
 		}
 
-		public override void WriteFooterRecordsAsync(IEnumerable<IDelimitedTextualFieldSpec> specs, IEnumerable<ITextualStreamingRecord> footers, CancellationToken cancellationToken)
+		public override Task WriteFooterRecordsAsync(IAsyncEnumerable<IDelimitedTextualFieldSpec> specs, IAsyncEnumerable<ITextualStreamingRecord> footers, CancellationToken cancellationToken)
 		{
 			throw new NotImplementedException();
 		}
 
 		public override void WriteHeaderFields(IEnumerable<IDelimitedTextualFieldSpec> headers)
 		{
-			bool firstFieldInRecord;
-
 			if (this.HeaderRecordWritten)
 				throw new InvalidOperationException(string.Format("Header record (fields) has (have) alredy been written."));
 
@@ -162,13 +170,12 @@ namespace SyncPrem.StreamingIO.Textual.Delimited
 			if ((object)headers != null &&
 				this.TextualSpec.IsFirstRecordHeader)
 			{
-				firstFieldInRecord = true;
+				long fieldIndex = 0;
 				foreach (IDelimitedTextualFieldSpec header in headers)
 				{
-					this.WriteField(firstFieldInRecord, FormatFieldTitle(header.FieldTitle));
+					this.WriteField(fieldIndex == 0, FormatFieldTitle(header.FieldTitle));
 
-					if (firstFieldInRecord)
-						firstFieldInRecord = false;
+					fieldIndex++;
 				}
 
 				if (!SolderFascadeAccessor.DataTypeFascade.IsNullOrEmpty(this.TextualSpec.RecordDelimiter))
@@ -178,15 +185,40 @@ namespace SyncPrem.StreamingIO.Textual.Delimited
 			}
 		}
 
-		public override void WriteHeaderFieldsAsync(IEnumerable<IDelimitedTextualFieldSpec> specs, CancellationToken cancellationToken)
+		public override async Task WriteHeaderFieldsAsync(IAsyncEnumerable<IDelimitedTextualFieldSpec> headers, CancellationToken cancellationToken)
 		{
-			throw new NotImplementedException();
+			if (this.HeaderRecordWritten)
+				throw new InvalidOperationException(string.Format("Header record (fields) has (have) alredy been written."));
+
+			// fields != null IF AND ONLY IF caller wishes to override DelimitedTextualSpec.DelimitedTextHeaderSpecs
+			//headers = headers ?? this.TextualSpec.TextualHeaderSpecs;
+
+			if ((object)headers != null &&
+				this.TextualSpec.IsFirstRecordHeader)
+			{
+				IAsyncEnumerator<IDelimitedTextualFieldSpec> headerz;
+
+				headerz = headers.GetEnumerator();
+
+				long fieldIndex = 0;
+				while (await headerz.MoveNext(cancellationToken))
+				{
+					IDelimitedTextualFieldSpec header = headerz.Current;
+
+					await this.WriteFieldAsync(fieldIndex == 0, FormatFieldTitle(header.FieldTitle), cancellationToken);
+
+					fieldIndex++;
+				}
+
+				if (!SolderFascadeAccessor.DataTypeFascade.IsNullOrEmpty(this.TextualSpec.RecordDelimiter))
+					await this.BaseTextWriter.WriteAsync(this.TextualSpec.RecordDelimiter /*, cancellationToken*/); // TODO: no CT overload in 2.0 - SMH
+
+				this.HeaderRecordWritten = true;
+			}
 		}
 
 		public override void WriteRecords(IEnumerable<IPayload> records)
 		{
-			bool firstFieldInRecord;
-
 			if ((object)records == null)
 				throw new ArgumentNullException(nameof(records));
 
@@ -196,15 +228,10 @@ namespace SyncPrem.StreamingIO.Textual.Delimited
 			long recordIndex = 0;
 			foreach (IPayload record in records)
 			{
-				firstFieldInRecord = true;
-
 				long fieldIndex = 0;
 				foreach (KeyValuePair<string, object> item in record)
 				{
-					this.WriteField(firstFieldInRecord, this.FormatFieldValue(fieldIndex, item.Key, item.Value));
-
-					if (firstFieldInRecord)
-						firstFieldInRecord = false;
+					this.WriteField(fieldIndex == 0, this.FormatFieldValue(fieldIndex, item.Key, item.Value));
 
 					fieldIndex++;
 				}
@@ -216,9 +243,36 @@ namespace SyncPrem.StreamingIO.Textual.Delimited
 			}
 		}
 
-		public override void WriteRecordsAsync(IEnumerable<IPayload> records, CancellationToken cancellationToken)
+		public override async Task WriteRecordsAsync(IAsyncEnumerable<IPayload> records, CancellationToken cancellationToken)
 		{
-			throw new NotImplementedException();
+			if ((object)records == null)
+				throw new ArgumentNullException(nameof(records));
+
+			if (!this.HeaderRecordWritten)
+				await this.WriteHeaderFieldsAsync(null, cancellationToken); // force fields if not explicitly called in advance
+
+			long recordIndex = 0;
+			IAsyncEnumerator<IPayload> recordz;
+
+			recordz = records.GetEnumerator();
+
+			while (await recordz.MoveNext(cancellationToken))
+			{
+				IPayload record = recordz.Current;
+
+				long fieldIndex = 0;
+				foreach (KeyValuePair<string, object> item in record)
+				{
+					await this.WriteFieldAsync(fieldIndex == 0, this.FormatFieldValue(fieldIndex, item.Key, item.Value), cancellationToken);
+
+					fieldIndex++;
+				}
+
+				if (!SolderFascadeAccessor.DataTypeFascade.IsNullOrEmpty(this.TextualSpec.RecordDelimiter))
+					await this.BaseTextWriter.WriteAsync(this.TextualSpec.RecordDelimiter /*, cancellationToken*/); // TODO: no CT overload in 2.0 - SMH
+
+				recordIndex++;
+			}
 		}
 
 		#endregion

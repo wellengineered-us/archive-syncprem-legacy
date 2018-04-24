@@ -84,7 +84,7 @@ namespace SyncPrem.StreamingIO.Textual
 			}
 		}
 
-		public string RecordDelimiter
+		public virtual string RecordDelimiter
 		{
 			get
 			{

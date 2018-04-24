@@ -1,0 +1,56 @@
+{
+	"_": "_",
+
+	"EnableDispatchLoop": true, 
+
+	"PipelineConfigurations":
+	[
+		{
+			"IsEnabled": true,
+			"PipelineAqtn": "SyncPrem.Pipeline.Core.Sync.Runtime.DefaultSyncPipeline, SyncPrem.Pipeline.Core.Sync",
+
+			"SourceConfiguration":
+			{
+				"StageAqtn": "SyncPrem.Pipeline.Core.Sync.Connectors.NullSourceConnector, SyncPrem.Pipeline.Core.Sync",
+				"StageSpecificConfiguration":
+				{
+				}
+			},
+
+			"ProcessorConfigurations":
+			[
+				{
+					"StageAqtn": "SyncPrem.Pipeline.Core.Sync.Processors.NullProcessor, SyncPrem.Pipeline.Core.Sync",
+					"StageSpecificConfiguration":
+					{
+					}
+				},
+				{
+					"StageAqtn": "SyncPrem.Pipeline.Core.Sync.Processors.NullProcessor, SyncPrem.Pipeline.Core.Sync",
+					"StageSpecificConfiguration":
+					{
+					}
+				},
+				{
+					"StageAqtn": "SyncPrem.Pipeline.Core.Sync.Processors.NullProcessor, SyncPrem.Pipeline.Core.Sync",
+					"StageSpecificConfiguration":
+					{
+					}
+				}
+			],
+
+			"DestinationConfiguration":
+			{
+				"StageAqtn": "SyncPrem.Pipeline.Core.Sync.Connectors.RestfulWebApiDestinationConnector, SyncPrem.Pipeline.Core.Sync",
+				"StageSpecificConfiguration":
+				{
+					"WebEndpointUri": "http://localhost:55555/api/values",
+					"SerializationStrategyAqtn":
+						"TextMetal.Middleware.Solder.Serialization.JsonSerializationStrategy, TextMetal.Middleware.Solder.Serialization",
+					"CompressionStrategyAqtn":
+						"SyncPrem.StreamingIO.ProxyWrappers.Strategies.GzipCompressionStrategy, SyncPrem.StreamingIO.ProxyWrappers"
+				}
+			}
+		}
+	]
+}

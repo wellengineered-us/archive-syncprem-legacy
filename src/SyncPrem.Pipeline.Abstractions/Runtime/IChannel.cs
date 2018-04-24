@@ -4,19 +4,10 @@
 */
 
 using System;
-using System.Collections.Generic;
 
 namespace SyncPrem.Pipeline.Abstractions.Runtime
 {
 	public interface IChannel : IComponent
 	{
-		#region Properties/Indexers/Events
-
-		IEnumerable<IRecord> Records
-		{
-			get;
-		}
-
-		#endregion
 	}
 }

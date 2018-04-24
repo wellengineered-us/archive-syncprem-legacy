@@ -4,14 +4,9 @@
 */
 
 using System;
-using System.Threading;
-using System.Threading.Tasks;
 
 using SyncPrem.Infrastructure.Configuration;
 using SyncPrem.Pipeline.Abstractions.Configuration;
-using SyncPrem.Pipeline.Abstractions.Runtime;
-
-using TextMetal.Middleware.Solder.Primitives;
 
 namespace SyncPrem.Pipeline.Abstractions.Stage
 {
@@ -23,23 +18,6 @@ namespace SyncPrem.Pipeline.Abstractions.Stage
 		{
 			get;
 		}
-
-		IValidatable StageSpecificValidatable
-		{
-			get;
-		}
-
-		#endregion
-
-		#region Methods/Operators
-
-		void PostExecute(IContext context, RecordConfiguration configuration);
-
-		Task PostExecuteAsync(IContext context, RecordConfiguration configuration, CancellationToken cancellationToken);
-
-		void PreExecute(IContext context, RecordConfiguration configuration);
-
-		Task PreExecuteAsync(IContext context, RecordConfiguration configuration, CancellationToken cancellationToken);
 
 		#endregion
 	}

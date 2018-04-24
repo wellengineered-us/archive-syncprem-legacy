@@ -4,22 +4,10 @@
 */
 
 using System;
-using System.Threading;
-using System.Threading.Tasks;
-
-using SyncPrem.Pipeline.Abstractions.Configuration;
-using SyncPrem.Pipeline.Abstractions.Runtime;
 
 namespace SyncPrem.Pipeline.Abstractions.Stage.Processor
 {
 	public interface IProcessor : IStage
 	{
-		#region Methods/Operators
-
-		IChannel Process(IContext context, RecordConfiguration configuration, IChannel channel, ProcessDelegate next);
-
-		Task<IChannel> ProcessAsync(IContext context, RecordConfiguration configuration, IChannel channel, ProcessDelegate next, CancellationToken cancellationToken);
-
-		#endregion
 	}
 }

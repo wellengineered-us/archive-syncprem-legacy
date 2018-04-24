@@ -1,0 +1,137 @@
+{
+	"_": "_",
+
+	"EnableDispatchLoop": true, 
+
+	"PipelineConfigurations":
+	[
+		{
+			"IsEnabled": false,
+			"PipelineAqtn": "SyncPrem.Pipeline.Core.Sync.Runtime.DefaultSyncPipeline, SyncPrem.Pipeline.Core.Sync",
+
+			"SourceConfiguration":
+			{
+				"StageAqtn": "SyncPrem.Pipeline.Core.Sync.Connectors.NullSourceConnector, SyncPrem.Pipeline.Core.Sync",
+				"StageSpecificConfiguration":
+				{
+				}
+			},
+
+			"ProcessorConfigurations":
+			[
+			],
+
+			"DestinationConfiguration":
+			{
+				"StageAqtn": "SyncPrem.Pipeline.Core.Sync.Connectors.NullDestinationConnector, SyncPrem.Pipeline.Core.Sync",
+				"StageSpecificConfiguration":
+				{
+				}
+			}
+		},
+		{
+			"IsEnabled": true,
+			"PipelineAqtn": "SyncPrem.Pipeline.Core.Sync.Runtime.DefaultSyncPipeline, SyncPrem.Pipeline.Core.Sync",
+
+			"SourceConfiguration":
+			{
+				"StageAqtn": "SyncPrem.Pipeline.Core.Sync.Connectors.DelimitedTextSourceConnector, SyncPrem.Pipeline.Core.Sync",
+				"StageSpecificConfiguration":
+				{
+					"TextualFilePath": "d:\\Confidential_Banking_Data.txt",
+
+					"TextualConfiguration":
+					{
+						"FirstRecordIsHeader": true,
+						"LastRecordIsFooter": false,
+						"RecordDelimiter": "\r\n",
+						"FieldDelimiter": "\t",
+						"OpenQuoteValue": "",
+						"CloseQuoteValue": "",
+
+						"TextualHeaderFieldConfigurations":
+						[
+							{
+								"FieldTitle": "institution",
+								"FieldType": "Text",
+								"IsFieldIdentity": true
+							},
+							{
+								"FieldTitle": "txid",
+								"FieldType": "Number",
+								"IsFieldIdentity": true
+							},
+							{
+								"FieldTitle": "number",
+								"FieldType": "Text"
+							},
+							{
+								"FieldTitle": "date",
+								"FieldType": "DateTime"
+							},
+							{
+								"FieldTitle": "payee",
+								"FieldType": "Text"
+							},
+							{
+								"FieldTitle": "amount",
+								"FieldType": "Currency"
+							},
+							{
+								"FieldTitle": "cleared",
+								"FieldType": "Number"
+							},
+							{
+								"FieldTitle": "category",
+								"FieldType": "Text"
+							},
+							{
+								"FieldTitle": "due",
+								"FieldType": "DateTime"
+							},
+							{
+								"FieldTitle": "comments",
+								"FieldType": "Text"
+							}
+						]
+					}
+				}
+			},
+
+			"ProcessorConfigurations":
+			[
+				/*{
+					"StageAqtn": "SyncPrem.Pipeline.Core.Sync.Processors.NullProcessor, SyncPrem.Pipeline.Core.Sync",
+					"StageSpecificConfiguration":
+					{
+					}
+				},
+				{
+					"StageAqtn": "SyncPrem.Pipeline.Core.Sync.Processors.NullProcessor, SyncPrem.Pipeline.Core.Sync",
+					"StageSpecificConfiguration":
+					{
+					}
+				},
+				{
+					"StageAqtn": "SyncPrem.Pipeline.Core.Sync.Processors.NullProcessor, SyncPrem.Pipeline.Core.Sync",
+					"StageSpecificConfiguration":
+					{
+					}
+				}*/
+			],
+
+			"DestinationConfiguration":
+			{
+				"StageAqtn": "SyncPrem.Pipeline.Core.Sync.Connectors.RestfulWebApiDestinationConnector, SyncPrem.Pipeline.Core.Sync",
+				"StageSpecificConfiguration":
+				{
+					"WebEndpointUri": "http://localhost:58080/api/inboundsync",
+					"SerializationStrategyAqtn":
+						"TextMetal.Middleware.Solder.Serialization.JsonSerializationStrategy, TextMetal.Middleware.Solder.Serialization",
+					"CompressionStrategyAqtn":
+						"SyncPrem.StreamingIO.ProxyWrappers.Strategies.NoneCompressionStrategy, SyncPrem.StreamingIO.ProxyWrappers"
+				}
+			}
+		}
+	]
+}

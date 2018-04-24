@@ -5,6 +5,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Threading.Tasks;
 
 using TextMetal.Middleware.Solder.Extensions;
 using TextMetal.Middleware.Solder.Primitives;
@@ -166,6 +167,18 @@ namespace SyncPrem.Infrastructure.Configuration
 		public virtual IEnumerable<Message> Validate(object context)
 		{
 			return new Message[] { };
+		}
+
+		public Task<IEnumerable<Message>> ValidateAsync()
+		{
+			return this.ValidateAsync(null);
+		}
+
+		public virtual Task<IEnumerable<Message>> ValidateAsync(object context)
+		{
+			IEnumerable<Message> messages;
+			messages = new Message[] { };
+			return Task.FromResult(messages);
 		}
 
 		#endregion
