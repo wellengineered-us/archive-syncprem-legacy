@@ -20,7 +20,8 @@ using SyncPrem.StreamingIO.Textual;
 
 namespace SyncPrem.Pipeline.Core.Sync.Connectors
 {
-	public abstract class TextualSourceConnector<TTextualFieldConfiguration, TTextualConfiguration, TTextualFieldSpec, TTextualSpec, TTextualConnectorSpecificConfiguration, TTextualReader> : SyncSourceConnector<TTextualConnectorSpecificConfiguration>
+	public abstract class TextualSourceConnector<
+		TTextualFieldConfiguration, TTextualConfiguration, TTextualFieldSpec, TTextualSpec, TTextualConnectorSpecificConfiguration, TTextualReader> : SyncSourceConnector<TTextualConnectorSpecificConfiguration>
 		where TTextualFieldConfiguration : TextualFieldConfiguration
 		where TTextualConfiguration : TextualConfiguration<TTextualFieldConfiguration, TTextualFieldSpec, TTextualSpec>
 		where TTextualFieldSpec : ITextualFieldSpec

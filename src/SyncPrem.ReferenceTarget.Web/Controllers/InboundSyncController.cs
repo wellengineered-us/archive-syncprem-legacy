@@ -17,30 +17,32 @@ namespace SyncPrem.ReferenceTarget.Web.Controllers
 		[DisableRequestSizeLimit]
 		public async Task<IActionResult> Post()
 		{
-			Task task;
+			Stream stream = this.Request.Body;
+			string file = null;
+			
+			using (ProgressWrappedStream inputStream = new ProgressWrappedStream(stream))
+			{
+				using (ProgressWrappedStream outputStream = /*new ProgressWrappedStream(Stream.Null)*/
+					new ProgressWrappedStream(System.IO.File.Create(Path.Combine("d:\\", file = $"api-post-{Guid.NewGuid().ToString("N")}.json")))
+				)
+				{
+					await inputStream.CopyToAsync(outputStream);
+				}
+			}
+			
+			Console.WriteLine(file);
 
-			task = Task.Run(() =>
-							{
-								Stream stream = this.Request.Body;
-
-								using (ProgressWrappedStream inputStream = new ProgressWrappedStream(stream))
-								{
-									using (ProgressWrappedStream outputStream = new ProgressWrappedStream(Stream.Null)
-										/*new ProgressWrappedStream(System.IO.File.Create(Path.Combine("d:\\", $"api-post-{Guid.NewGuid().ToString("N")}.json")))*/)
-									{
-										inputStream.CopyTo(outputStream);
-									}
-								}
-							});
-
-			await task;
-
-			if (task.IsCompletedSuccessfully)
-				return this.Ok();
-			else
-				return this.StatusCode(500);
+			return this.Created(file, "");
 		}
 
+		[HttpGet]
+		[HttpHead]
+		[DisableRequestSizeLimit]
+		public async Task<IActionResult> Get()
+		{
+			return this.Content("{}");
+		}
+		
 		#endregion
 	}
 }

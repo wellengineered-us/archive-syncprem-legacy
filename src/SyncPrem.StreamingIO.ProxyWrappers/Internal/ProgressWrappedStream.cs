@@ -104,12 +104,5 @@ namespace SyncPrem.StreamingIO.ProxyWrappers.Internal
 		}
 
 		#endregion
-
-		/*public override void CopyTo(Stream destination, int bufferSize)
-		{
-			// disconnect between .NET Core and .NET Standard APIs
-			Console.WriteLine("COPY");
-			base.CopyTo(destination, bufferSize);
-		}*/
 	}
 }

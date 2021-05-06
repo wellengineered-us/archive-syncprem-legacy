@@ -151,8 +151,8 @@ namespace SyncPrem.Pipeline.Abstractions.Configuration
 
 			messages = new List<_Message>();
 
-			if (SolderFascadeAccessor.DataTypeFascade.IsNullOrWhiteSpace(this.ContextAqtn))
-				; //messages.Add(NewError(string.Format("{0} pipeline context is required.", context)));
+			if (string.IsNullOrWhiteSpace(this.ContextAqtn))
+				messages.Add(NewError(string.Format("{0} pipeline context is required.", context)));
 			else
 			{
 				contextType = this.GetContextType(messages);
